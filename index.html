@@ -7,17 +7,53 @@
 
 	<script type="text/javascript">
 		var wsproxyURL = "ws://localhost:5999/"
+		var ws, transport, term = null
+
+		var term_cols = Math.floor(window.innerWidth / 10) - 4
+		var term_rows = Math.floor(window.innerHeight / 19) - 1
 	</script>
+
 	<link rel="stylesheet" href="css/fonts.css" />
 	<link rel="stylesheet" href="css/main.css" />
 	<link rel="stylesheet" href="css/sidenav.css" />
+	<link rel="stylesheet" href="css/xterm.css" />
 
-	<script type="text/javascript" src="js/multiTerm.js"></script>
+	<!-- Core defines -->
+	<script type="text/javascript" src="js/defines.js"></script>
+
+	<!-- Cryptography Libraries -->
+	<script src="js/Libraries/BigInteger.min.js"></script>
+	<script src="js/Libraries/struct.min.js"></script>
+	<script src="js/Libraries/utilities.min.js"></script>
+	<script src="js/Libraries/aes.min.js"></script>
+	<script src="js/Libraries/sha1.min.js"></script>
+	<script src="js/Libraries/hmac.min.js"></script>
+
+	<!-- Terminal Scripts -->
+	<script type="text/javascript" src="js/Libraries/xterm.min.js"></script>
+
+	<!-- SShy Scripts -->
+	<script src="js/crypto.js"></script>
+	<script src="js/message.js"></script>
+	<script src="js/transport.js"></script>
+	<script src="js/parceler.js"></script>
+	<script src="js/auth_handler.js"></script>
+	<script src="js/dh_group1.js"></script>
+	<script src="js/dh_group_ex.js"></script>
+
+
 
 	<script type="text/javascript">
 		window.onload = function() {
 			document.getElementById('login_cred').style.display = "block";
 		};
+
+		// Run every time the webpage is resized
+		window.onresize = function resize() {
+			// recalculate the term_cols and rows
+			term_cols = window.innerWidth / 10 - 4
+			term_rows = window.innerHeight / 19 - 1
+		}
 
 		function openNav() {
 			document.getElementById("settingsNav").style.width = "250px";
@@ -27,12 +63,178 @@
 			document.getElementById("settingsNav").style.width = "0";
 		}
 
-		// stores a reference of terminal windows -> divs
-		var terms = []
+		// Rudimentary checks that an IP address is external and is a valid hostname or IP address
+		function validate(id, text) {
+			if (!text) {
+				document.getElementById(id).style.borderBottom = 'solid 2px #ff4d4d'
+			} else {
+				if (id == "ipaddress") {
+					// incase we have a error for the port
+					if (text.includes(':')) {
+						if (!validate_port(text.split(':')[1])) {
+							document.getElementById(id).style.borderBottom = 'solid 2px #ff4d4d'
+							return
+						} else {
+							document.getElementById(id).style.borderBottom = 'solid 2px #c9c9c9'
+							document.getElementById('failure').style.display = "none"
+						}
+					} else {
+						// if we're not doing ports then hide the failure message
+						document.getElementById('failure').style.display = "none"
+					}
+					// test for valid domain name
+					if (!/^([a-z0-9]+\.)*[a-z0-9]+\.[a-z]+(\:[0-9]{1,5})?$/.test(text)) {
+						if (check_internal(text)) {
+							display_error("Could no resolve hostname: Please use an external address")
+						}
+						// test ip aswell.
+						if (!/^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$|(\:[0-9]{1,5}))){4}$/.test(text)) {
+							document.getElementById(id).style.borderBottom = 'solid 2px #ff4d4d'
+							return
+						} else {
+							if (check_internal(text)) {
+								display_error("Could no resolve hostname: Please use an external address")
+							}
+							document.getElementById(id).style.borderBottom = 'solid 2px #c9c9c9'
+							return
+						}
+						document.getElementById(id).style.borderBottom = 'solid 2px #ff4d4d'
+						return
+					}
+				}
+				document.getElementById(id).style.borderBottom = 'solid 2px #c9c9c9'
+			}
+		}
+		// Validates the port is 0 > port < 65536
+		function validate_port(port_num) {
+			if (port_num > 0 && port_num < 65536) {
+				return port_num
+			} else {
+				display_error("Invalid port: port must be between 1 - 65535")
+				validate('ipaddress', '')
+			}
+		}
+		// checks for 10.*.*.*, 192.168.*.*, 172.16.*.*, 127.0.0.1 & loocalhost
+		function check_internal(ip_address) {
+			if (/10\.\d+\.\d+\.\d+/.test(ip_address) || /192\.168\.\d+\.\d+/.test(ip_address) || /172\.16\.\d+\.\d+/.test(ip_address)) {
+				return true
+			} else if (ip_address == '127.0.0.1' || ip_address == 'localhost') {
+				return true
+			}
+
+			return false
+		}
+		// Displays a given err on the page
+		function display_error(err) {
+			// remove the loading cog and set the 'connecting' to connect
+			document.getElementById('loading').style.display = "none"
+			document.getElementById('connect').value = "connect"
+
+			document.getElementById('failure').innerText = err
+			document.getElementById('failure').style.display = "block"
+		}
+		// Starts the SSH client in scripts/transport.js
+		function startSSHy() {
+			var html_ipaddress = document.getElementById('ipaddress').value
+			var html_username = document.getElementById('username').value
+			var html_password = document.getElementById('password').value
+
+			if(!html_ipaddress){
+				document.getElementById('ipaddress').value = html_ipaddress = "ts.stuicey.info"
+				document.getElementById('username').value = html_username = "dunessh"
+			}
+
+			// find the port number
+			if (html_ipaddress.includes(':')) {
+				var split = html_ipaddress.split(':')
+				html_ipaddress = split[0]
+				html_port = validate_port(split[1])
+			} else {
+				html_port = 22
+			}
+
+			if(check_internal(html_ipaddress) == true){
+				display_error("Could no resolve hostname: Please use an external address")
+				return
+			}
+
+			if (html_username.length == 0 || html_password.length == 0) {
+				validate('username', html_username)
+				validate('password', html_password)
+				return
+			}
+
+			// Error checking is done so remove any currently displayed errors
+			document.getElementById('failure').style.display = "none"
+			document.getElementById('connect').value = 'Connecting...'
+			document.getElementById('loading').style.display = "block"
+
+			// Opens the websocket!
+			ws = new WebSocket(wsproxyURL + html_ipaddress + ':' + html_port, 'base64')
+			// Sets up websocket listeners
+			ws.onopen = function(e) {
+				transport = new SSHyClient.Transport(ws)
+			}
+
+			ws.onclose = function(e) {
+				if (ws.readyState > 1) {
+					display_error("Could not resolve hostname: " + html_ipaddress + ":" + html_port)
+					validate('ipaddress', '')
+				}
+			}
+
+			ws.onmessage = function(e) {
+				transport.handle(atob(e.data))
+			}
+		}
+	function startxtermjs() {
+		// clear the modal elements on screen
+		document.getElementById('loading').style.display = "none";
+		document.getElementById('login_cred').style.display = "none";
+		// Define the terminal rows/cols
+		term = new Terminal({
+			cols: term_cols,
+			rows: term_rows
+		})
+		// start xterm.js
+		term.open(document.getElementById('terminal'))
+
+		// sets up some listeners for the terminal (keydown, paste)
+		term.textarea.onkeydown = function(e) {
+			if (!ws || !transport) { // check for websocket..
+				return
+			}
+			// So we don't spam single control characters
+			if (e.key.length > 1 && (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey)) {
+				return
+			}
+			// Decides if the keypress is an alphanumeric character or needs escaping
+			if (e.key.length == 1 && !(e.altKey || e.ctrlKey || e.metaKey)) {
+				var command = {
+					key: e.key
+				}
+			} else {
+				//xtermjs is kind enough to evaluate our special characters instead of having to translate every char ourself
+				var command = term.evaluateKeyEscapeSequence(e)
+			}
+
+			transport.expect_key(command.key)
+		}
+		//TODO: Find work around for firefox
+		term.textarea.onpaste = function(ev) {
+			if (ev.clipboardData) {
+				var text = ev.clipboardData.getData('text/plain');
+
+				transport.expect_key(text)
+
+			}
+		}
+	}
 	</script>
 </head>
 
 <body>
+	<div id="terminal"></div>
 	<div id="settingsNav" class="sidenav">
 		<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
 	</div>
@@ -63,8 +265,10 @@
 					</tr>
 				</table>
 				<i id="failure" class="failure"></i>
-				<input type="button" id="connect" class="button" value="Connect" onclick="startDuneSSH()">
+				<input type="button" id="connect" class="button" value="Connect" onclick="startSSHy()">
 			</div>
+		</div>
+		<div id="loading" class="loading">
 		</div>
 	</div>
 </body>
