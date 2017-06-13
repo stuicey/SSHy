@@ -1,0 +1,3 @@
+[submodule "wsproxy"]
+	path = wsproxy
+	url = https://github.com/stuicey/wsproxy
