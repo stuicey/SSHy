@@ -1,0 +1,100 @@
+html, body {
+	height: 100%;
+    background: #000;
+    overflow: hidden;
+	color: #fff;
+}
+.loading {
+    display: none;
+    position: fixed;
+    left: 47.5%;
+    color: white;
+}
+
+.failure {
+    color: red;
+    display: none;
+    font-size: 12px;
+    text-align: center;
+}
+.modal {
+	display: none;
+    z-index: 1;
+    width: 400px;
+    height: 220px;
+    position: absolute;
+    margin: auto;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    font-family: courier-new, courier, monospace;
+    font-feature-settings: "liga" 0;
+}
+
+/* Modal Content */
+.modal-content {
+    position: relative;
+    background-color: #fefefe;
+    margin: auto;
+    padding: 0;
+    border: 1px solid #888;
+	border-radius: 8px;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    -webkit-animation-name: animatetop;
+    -webkit-animation-duration: 0.4s;
+    animation-name: animatetop;
+    animation-duration: 0.4s
+}
+
+
+/* Add Animation */
+@-webkit-keyframes animatetop {
+    from {top:-300px; opacity:0}
+    to {top:0; opacity:1}
+}
+
+@keyframes animatetop {
+    from {top:-300px; opacity:0}
+    to {top:0; opacity:1}
+}
+
+.modal-header {
+    padding: 2px 0px;
+	text-align: center;
+    background-color: #242d32;
+    color: white;
+	border-top-left-radius: 8px;
+	border-top-right-radius: 8px;
+}
+
+.modal-body {padding: 2px 16px;}
+
+.button {
+    background-color: #242d32;
+    border-radius: 5px;
+    color: white;
+    padding: 2px 16px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    width: 40%;
+	margin-left: 30.5%;
+}
+
+input {
+  padding: 4px;
+  border: none;
+  border-bottom: solid 2px #c9c9c9;
+  transition: border 0.3s;
+}
+input:focus, input.focus {
+  border-bottom: solid 2px #969696;
+}
+
+tbody {
+	color: #000;
+	font-family: courier-new, courier, monospace;
+}

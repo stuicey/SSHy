@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>SSHy.us</title>
+
+	<script type="text/javascript">
+		var wsproxyURL = "ws://localhost:5999/"
+	</script>
+	<link rel="stylesheet" href="css/fonts.css" />
+	<link rel="stylesheet" href="css/main.css" />
+	<link rel="stylesheet" href="css/sidenav.css" />
+
+	<script type="text/javascript" src="js/multiTerm.js"></script>
+
+	<script type="text/javascript">
+		window.onload = function() {
+			document.getElementById('login_cred').style.display = "block";
+		};
+
+		function openNav() {
+			document.getElementById("settingsNav").style.width = "250px";
+		}
+
+		function closeNav() {
+			document.getElementById("settingsNav").style.width = "0";
+		}
+
+		// stores a reference of terminal windows -> divs
+		var terms = []
+	</script>
+</head>
+
+<body>
+	<div id="settingsNav" class="sidenav">
+		<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+	</div>
+
+	<!-- hide the settings till we have some? -->
+	<span class="icon-cogs" onclick="openNav()"></span>
+	<!-- hide more terminals option until one is opened -->
+	<span class="icon-plus" style="display:block" onclick="spawnTerminalDiv()"></span>
+
+	<div id="login_cred" class="modal">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h2><span class="icon-lock"></span> SSHv2 Login</h2>
+			</div>
+			<div class="modal-body">
+				<table style="width: 100%">
+					<tr>
+						<td><span class="icon-address-book"></span> IP Address:</td>
+						<td><input type="text" id="ipaddress" placeholder="sshy.us" style="width: 90%" onblur="validate(this.id, this.value)"></td>
+					</tr>
+					<tr>
+						<td><span class="icon-user-circle-o"></span> Username:</td>
+						<td><input type="text" id="username" placeholder="eval" style="width: 90%" onblur="validate(this.id, this.value)"></td>
+					</tr>
+					<tr>
+						<td><span class="icon-eye"></span> Password:</td>
+						<td><input type="password" id="password" style="width: 90%" onblur="validate(this.id, this.value)"></td>
+					</tr>
+				</table>
+				<i id="failure" class="failure"></i>
+				<input type="button" id="connect" class="button" value="Connect" onclick="startDuneSSH()">
+			</div>
+		</div>
+	</div>
+</body>
+</html>
