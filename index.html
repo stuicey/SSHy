@@ -31,6 +31,7 @@
 
 	<!-- Terminal Scripts -->
 	<script type="text/javascript" src="js/Libraries/xterm.min.js"></script>
+	<script type="text/javascript" src="js/colorScheme.js"></script>
 
 	<!-- SShy Scripts -->
 	<script src="js/crypto.js"></script>
@@ -125,7 +126,7 @@
 		// Displays a given err on the page
 		function display_error(err) {
 			// remove the loading cog and set the 'connecting' to connect
-			document.getElementById('loading').style.display = "none"
+			document.getElementById('load-container').style.display = "none"
 			document.getElementById('connect').value = "connect"
 
 			document.getElementById('failure').innerText = err
@@ -138,7 +139,7 @@
 			var html_password = document.getElementById('password').value
 
 			if (!html_ipaddress) {
-				document.getElementById('ipaddress').value = html_ipaddress = "ts.stuicey.info"
+				document.getElementById('ipaddress').value = html_ipaddress = "138.68.148.147"
 				document.getElementById('username').value = html_username = "dunessh"
 			}
 
@@ -165,7 +166,7 @@
 			// Error checking is done so remove any currently displayed errors
 			document.getElementById('failure').style.display = "none"
 			document.getElementById('connect').value = 'Connecting...'
-			document.getElementById('loading').style.display = "block"
+			document.getElementById('load-container').style.display = "block"
 
 			// Opens the websocket!
 			ws = new WebSocket(wsproxyURL + html_ipaddress + ':' + html_port, 'base64')
@@ -188,7 +189,7 @@
 
 		function startxtermjs() {
 			// clear the modal elements on screen
-			document.getElementById('loading').style.display = "none";
+			document.getElementById('load-container').style.display = "none";
 			document.getElementById('login_cred').style.display = "none";
 			// Define the terminal rows/cols
 			term = new Terminal({
@@ -236,9 +237,9 @@
 	<div id="terminal"></div>
 	<div id="settingsNav" class="sidenav">
 		<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+		<a href="javascript:void(0)" onclick="cycleColorSchemes()">Cycle ColorScheme</a>
 	</div>
 
-	<!-- hide the settings till we have some? -->
 	<span class="icon-cogs" onclick="openNav()"></span>
 
 	<div id="login_cred" class="modal">
@@ -265,8 +266,12 @@
 				<input type="button" id="connect" class="button" value="Connect" onclick="startSSHy()">
 			</div>
 		</div>
-		<div id="loading" class="loading">
+		<div id="load-container" class="load-container">
+			<svg id="load" x="0px" y="0px" viewBox="0 0 150 150">
+		  		<circle id="loading-inner" cx="75" cy="75" r="60"/>
+			</svg>
 		</div>
+	</div>
 	</div>
 </body>
 

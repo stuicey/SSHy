@@ -24,7 +24,7 @@ html, body {
     height: 220px;
     position: absolute;
     margin: auto;
-    top: 0;
+    top: -220px;
     right: 0;
     bottom: 0;
     left: 0;
@@ -103,4 +103,42 @@ input:focus, input.focus {
 tbody {
 	color: #000;
 	font-family: courier-new, courier, monospace;
+}
+
+.load-container {
+	padding-left: 125px;
+	display: none;
+}
+
+#load {
+  width: 150px;
+  animation: loading 3s linear infinite;
+}
+
+#load #loading-inner {
+  stroke-dashoffset: 0;
+  stroke-dasharray: 300;
+  stroke-width: 5;
+  stroke-miterlimit: 10;
+  stroke-linecap: round;
+  animation: loading-circle 2s linear infinite;
+  stroke: #eee;
+  fill: transparent;
+}
+
+@keyframes loading {
+  0% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+@keyframes loading-circle {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -600;
+  }
 }
