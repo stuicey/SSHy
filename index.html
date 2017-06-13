@@ -41,8 +41,6 @@
 	<script src="js/dh_group1.js"></script>
 	<script src="js/dh_group_ex.js"></script>
 
-
-
 	<script type="text/javascript">
 		window.onload = function() {
 			document.getElementById('login_cred').style.display = "block";
@@ -139,7 +137,7 @@
 			var html_username = document.getElementById('username').value
 			var html_password = document.getElementById('password').value
 
-			if(!html_ipaddress){
+			if (!html_ipaddress) {
 				document.getElementById('ipaddress').value = html_ipaddress = "ts.stuicey.info"
 				document.getElementById('username').value = html_username = "dunessh"
 			}
@@ -153,7 +151,7 @@
 				html_port = 22
 			}
 
-			if(check_internal(html_ipaddress) == true){
+			if (check_internal(html_ipaddress) == true) {
 				display_error("Could no resolve hostname: Please use an external address")
 				return
 			}
@@ -187,49 +185,50 @@
 				transport.handle(atob(e.data))
 			}
 		}
-	function startxtermjs() {
-		// clear the modal elements on screen
-		document.getElementById('loading').style.display = "none";
-		document.getElementById('login_cred').style.display = "none";
-		// Define the terminal rows/cols
-		term = new Terminal({
-			cols: term_cols,
-			rows: term_rows
-		})
-		// start xterm.js
-		term.open(document.getElementById('terminal'))
 
-		// sets up some listeners for the terminal (keydown, paste)
-		term.textarea.onkeydown = function(e) {
-			if (!ws || !transport) { // check for websocket..
-				return
-			}
-			// So we don't spam single control characters
-			if (e.key.length > 1 && (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey)) {
-				return
-			}
-			// Decides if the keypress is an alphanumeric character or needs escaping
-			if (e.key.length == 1 && !(e.altKey || e.ctrlKey || e.metaKey)) {
-				var command = {
-					key: e.key
+		function startxtermjs() {
+			// clear the modal elements on screen
+			document.getElementById('loading').style.display = "none";
+			document.getElementById('login_cred').style.display = "none";
+			// Define the terminal rows/cols
+			term = new Terminal({
+				cols: term_cols,
+				rows: term_rows
+			})
+			// start xterm.js
+			term.open(document.getElementById('terminal'))
+
+			// sets up some listeners for the terminal (keydown, paste)
+			term.textarea.onkeydown = function(e) {
+				if (!ws || !transport) { // check for websocket..
+					return
 				}
-			} else {
-				//xtermjs is kind enough to evaluate our special characters instead of having to translate every char ourself
-				var command = term.evaluateKeyEscapeSequence(e)
+				// So we don't spam single control characters
+				if (e.key.length > 1 && (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey)) {
+					return
+				}
+				// Decides if the keypress is an alphanumeric character or needs escaping
+				if (e.key.length == 1 && !(e.altKey || e.ctrlKey || e.metaKey)) {
+					var command = {
+						key: e.key
+					}
+				} else {
+					//xtermjs is kind enough to evaluate our special characters instead of having to translate every char ourself
+					var command = term.evaluateKeyEscapeSequence(e)
+				}
+
+				transport.expect_key(command.key)
 			}
+			//TODO: Find work around for firefox
+			term.textarea.onpaste = function(ev) {
+				if (ev.clipboardData) {
+					var text = ev.clipboardData.getData('text/plain');
 
-			transport.expect_key(command.key)
-		}
-		//TODO: Find work around for firefox
-		term.textarea.onpaste = function(ev) {
-			if (ev.clipboardData) {
-				var text = ev.clipboardData.getData('text/plain');
+					transport.expect_key(text)
 
-				transport.expect_key(text)
-
+				}
 			}
 		}
-	}
 	</script>
 </head>
 
@@ -241,8 +240,6 @@
 
 	<!-- hide the settings till we have some? -->
 	<span class="icon-cogs" onclick="openNav()"></span>
-	<!-- hide more terminals option until one is opened -->
-	<span class="icon-plus" style="display:block" onclick="spawnTerminalDiv()"></span>
 
 	<div id="login_cred" class="modal">
 		<div class="modal-content">
@@ -272,4 +269,5 @@
 		</div>
 	</div>
 </body>
+
 </html>

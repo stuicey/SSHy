@@ -38,9 +38,12 @@ span.icon-cogs{
 	right: 5px;
 	color: #ddd;
 	font-size: 28px;
+	opacity: 0.5;
+	transition: 1s;
 }
 span.icon-cogs:hover {
 	text-shadow: 0 0 2px #fff;
+	opacity: 1;
 }
 .icon-cog:before {
   content: "\e901";

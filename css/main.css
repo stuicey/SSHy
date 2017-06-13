@@ -82,6 +82,12 @@ html, body {
     margin: 4px 2px;
     width: 40%;
 	margin-left: 30.5%;
+	transition: 1s;
+}
+
+.button:hover{
+	background-color: #456;
+	box-shadow: 0px 0px 2px #242424;
 }
 
 input {
