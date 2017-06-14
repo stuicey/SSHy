@@ -153,7 +153,11 @@ SSHyClient.Transport.prototype = {
         97: function(self, m) {
             term.write("Connection to " + html_ipaddress + " closed.")
 			// TODO: Close the SSH connection
-        }
+        },
+		/* SSH_MSG_CHANNEL_REQUEST: sent by the server to request a new channel, as the client we can just ignore this*/
+		98: function(self, m){
+			return
+		}
     },
 
     cut_padding: function(m) {
