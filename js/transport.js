@@ -269,7 +269,7 @@ SSHyClient.Transport.prototype = {
         this.parceler.outbound_mac_key = this.generate_key('E', 20, SHAVersion)
 
         this.parceler.outbound_cipher = new SSHyClient.crypto.AES(this.parceler.outbound_enc_key,
-            SSHyClient.cipher_mode.AES_CTR,
+            SSHyClient.AES_CTR,
             this.parceler.outbound_enc_iv,
             new SSHyClient.crypto.counter(128, inflate_long(this.parceler.outbound_enc_iv)))
 
@@ -278,7 +278,7 @@ SSHyClient.Transport.prototype = {
         this.parceler.inbound_mac_key = this.generate_key('F', 20, SHAVersion)
 
         this.parceler.inbound_cipher = new SSHyClient.crypto.AES(this.parceler.inbound_enc_key,
-            SSHyClient.cipher_mode.AES_CTR,
+            SSHyClient.AES_CTR,
             this.parceler.inbound_enc_iv,
             new SSHyClient.crypto.counter(128, inflate_long(this.parceler.inbound_enc_iv)))
 

@@ -39,10 +39,8 @@ SSHyClient = {
 	MSG_CHANNEL_FAILURE: 100,
 
     WINDOW_SIZE: 1048576, 	// Coppied from openSSH
-    MAX_PACKET_SIZE: 16384
-}
-
-SSHyClient.cipher_mode = {
+    MAX_PACKET_SIZE: 16384,
+	
     AES_CBC: 2,
     AES_CTR: 6
 }

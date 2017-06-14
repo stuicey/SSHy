@@ -11,7 +11,7 @@ SSHyClient.crypto.AES = function(key, mode, iv, counter) {
     this.cipher = new sjcl.cipher.aes(sjcl.codec.bytes.toBits(toByteArray(key)), mode)
     this.mode = mode
     // some support for CBC mode - however not fully implemented
-    if (this.mode == SSHyClient.cipher_mode.AES_CBC) {
+    if (this.mode == SSHyClient.AES_CBC) {
         this.iv = toByteArray(iv)
     }
     this.counter = counter
@@ -21,7 +21,7 @@ SSHyClient.crypto.AES.prototype = {
     encrypt: function(plaintext) {
         // encrypt the plaintext!
         var ciphertext = this.cipher.encrypt(toByteArray(plaintext), this.iv, this.counter)
-        if (this.mode == SSHyClient.cipher_mode.AES_CBC) {
+        if (this.mode == SSHyClient.AES_CBC) {
             // take the last 16 bytes for our IV
             this.iv = ciphertext.slice(-16)
         }
@@ -32,7 +32,7 @@ SSHyClient.crypto.AES.prototype = {
     decrypt: function(ciphertext) {
         ciphertext = toByteArray(ciphertext)
         // do different stuff for CTR & CBC mode
-        if (this.mode == SSHyClient.cipher_mode.AES_CBC) {
+        if (this.mode == SSHyClient.AES_CBC) {
             var plaintext = this.cipher.decrypt(ciphertext, this.iv);
             this.iv = ciphertext.slice(-16);
         } else {
