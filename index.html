@@ -21,6 +21,10 @@
 	<!-- Core defines -->
 	<script type="text/javascript" src="js/defines.js"></script>
 
+	<!-- Terminal Scripts -->
+	<script type="text/javascript" src="js/Libraries/xterm.js"></script>
+	<script type="text/javascript" src="js/colorScheme.js"></script>
+
 	<!-- Cryptography Libraries -->
 	<script src="js/Libraries/BigInteger.min.js"></script>
 	<script src="js/Libraries/struct.min.js"></script>
@@ -28,10 +32,6 @@
 	<script src="js/Libraries/aes.min.js"></script>
 	<script src="js/Libraries/sha1.min.js"></script>
 	<script src="js/Libraries/hmac.min.js"></script>
-
-	<!-- Terminal Scripts -->
-	<script type="text/javascript" src="js/Libraries/xterm.min.js"></script>
-	<script type="text/javascript" src="js/colorScheme.js"></script>
 
 	<!-- SShy Scripts -->
 	<script src="js/crypto.js"></script>
@@ -50,8 +50,8 @@
 		// Run every time the webpage is resized
 		window.onresize = function resize() {
 			// recalculate the term_cols and rows
-			term_cols = window.innerWidth / 10 - 4
-			term_rows = window.innerHeight / 19 - 1
+			term_cols = Math.floor(window.innerWidth / 10) - 4
+			term_rows = Math.floor(window.innerHeight / 19) - 1
 		}
 
 		function openNav() {
@@ -197,7 +197,7 @@
 				rows: term_rows
 			})
 			// start xterm.js
-			term.open(document.getElementById('terminal'))
+			term.open(document.getElementById('terminal'), true)
 
 			// sets up some listeners for the terminal (keydown, paste)
 			term.textarea.onkeydown = function(e) {
