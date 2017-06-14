@@ -9,7 +9,7 @@ SSHyClient.Transport = function(ws) {
     this.H = null // A hash used for encryption key generation by the preferred_keys algorithm
 
     // Our supported Algorithms
-    this.preferred_algorithms = ['diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1',
+    this.preferred_algorithms = ['diffie-hellman-group-exchange-sha256,diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha256,diffie-hellman-group14-sha1,diffie-hellman-group1-sha256,diffie-hellman-group1-sha1',
         'ssh-rsa',
         'aes128-ctr',
         'hmac-sha1',
@@ -33,14 +33,23 @@ SSHyClient.Transport.prototype = {
 
     kex_info: {
         'diffie-hellman-group1-sha1': function(self) {
-            return new SSHyClient.dhGroup1(self, 1)
+            return new SSHyClient.dhGroup1(self, 1, 'SHA-1')
         },
         'diffie-hellman-group14-sha1': function(self) {
-            return new SSHyClient.dhGroup1(self, 14)
+            return new SSHyClient.dhGroup1(self, 14, 'SHA-1')
         },
         'diffie-hellman-group-exchange-sha1': function(self) {
-            return new SSHyClient.dhGroupEx(self)
-        }
+            return new SSHyClient.dhGroupEx(self, 'SHA-1')
+        },
+		'diffie-hellman-group1-sha256': function(self) {
+			return new SSHyClient.dhGroup1(self, 1, 'SHA-256')
+		},
+		'diffie-hellman-group14-sha256': function(self) {
+			return new SSHyClient.dhGroup1(self, 14, 'SHA-256')
+		},
+		'diffie-hellman-group-exchange-sha256': function(self) {
+			return new SSHyClient.dhGroupEx(self, 'SHA-256')
+		}
     },
 
     // Handles inbound traffic over the socket
@@ -234,7 +243,7 @@ SSHyClient.Transport.prototype = {
             display_error("Incompatable ssh server (no compatable - " + missing + " )")
             throw "Chosen Algs = kex=" + kex + ", keys=" + keys + ", cipher=" + cipher + ", mac=" + mac
         }
-
+		console.log(kex)
         // Set those preferred Algs
         this.preferred_kex = this.kex_info[kex](this)
     },
@@ -244,30 +253,31 @@ SSHyClient.Transport.prototype = {
     	C = Encryption Key 	client -> server
     	E = Integrity Key 	client -> server
     */
-    generate_key: function(char, size) {
+    generate_key: function(char, size, SHAVersion) {
         var m = new SSHyClient.Message()
         m.add_mpint(this.K)
         m.add_bytes(this.H)
         m.add_bytes(char)
         m.add_bytes(this.session_id)
 
-        return new SSHyClient.hash.SHA1(m.toString()).digest().substring(0, size)
+        return SHAVersion == 'SHA-1' ? new SSHyClient.hash.SHA1(m.toString()).digest().substring(0,size) : new SSHyClient.hash.SHA256(m.toString()).digest().substring(0,size)
     },
 
-    activate_encryption: function() {
+    activate_encryption: function(SHAVersion) {
+		console.log(SHAVersion)
         // Generate the keys we need for encryption and HMAC
-        this.parceler.outbound_enc_iv = this.generate_key('A', 16)
-        this.parceler.outbound_enc_key = this.generate_key('C', 16)
-        this.parceler.outbound_mac_key = this.generate_key('E', 20)
+        this.parceler.outbound_enc_iv = this.generate_key('A', 16, SHAVersion)
+        this.parceler.outbound_enc_key = this.generate_key('C', 16, SHAVersion)
+        this.parceler.outbound_mac_key = this.generate_key('E', 20, SHAVersion)
 
         this.parceler.outbound_cipher = new SSHyClient.crypto.AES(this.parceler.outbound_enc_key,
             SSHyClient.cipher_mode.AES_CTR,
             this.parceler.outbound_enc_iv,
             new SSHyClient.crypto.counter(128, inflate_long(this.parceler.outbound_enc_iv)))
 
-        this.parceler.inbound_enc_iv = this.generate_key('B', 16)
-        this.parceler.inbound_enc_key = this.generate_key('D', 16)
-        this.parceler.inbound_mac_key = this.generate_key('F', 20)
+        this.parceler.inbound_enc_iv = this.generate_key('B', 16, SHAVersion)
+        this.parceler.inbound_enc_key = this.generate_key('D', 16, SHAVersion)
+        this.parceler.inbound_mac_key = this.generate_key('F', 20, SHAVersion)
 
         this.parceler.inbound_cipher = new SSHyClient.crypto.AES(this.parceler.inbound_enc_key,
             SSHyClient.cipher_mode.AES_CTR,
@@ -298,12 +308,12 @@ SSHyClient.Transport.prototype = {
         this.auth.send_command(command)
     },
 
-    send_new_keys: function() {
+    send_new_keys: function(SHAVersion) {
         var m = new SSHyClient.Message()
         m.add_bytes(String.fromCharCode(SSHyClient.MSG_NEW_KEYS))
 
         this.send_packet(m)
-        this.activate_encryption()
+        this.activate_encryption(SHAVersion)
 
         this.parceler.inbound_sequence_num++
     }

@@ -1,9 +1,9 @@
-DuneSSH.hash.SHA256 = function(a) {
+SSHyClient.hash.SHA256 = function(a) {
 	this.data = a || ""
 	this.digest_size = 32
 }
 
-DuneSSH.hash.SHA256.prototype = {
+SSHyClient.hash.SHA256.prototype = {
     digest: function() {
       var hashData = toByteArray(this.data);
 

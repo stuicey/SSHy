@@ -1,5 +1,6 @@
-SSHyClient.dhGroup1 = function(transport, group) {
+SSHyClient.dhGroup1 = function(transport, group, SHAVersion) {
     this.transport = transport
+	this.SHAVersion = SHAVersion
     this.x = new BigInteger("0", 10) // random number
     this.e = new BigInteger("0", 10) // client generated modPow
     this.f = new BigInteger("0", 10) // server generated modPow
@@ -59,8 +60,8 @@ SSHyClient.dhGroup1.prototype = {
 
         // TODO: Verify host key and Signature
         this.transport.K = K
-        this.transport.session_id = this.transport.H = new SSHyClient.hash.SHA1(m.toString()).digest()
+        this.transport.session_id = this.transport.H = this.SHAVersion == 'SHA-1' ? new SSHyClient.hash.SHA1(m.toString()).digest() : new SSHyClient.hash.SHA256(m.toString()).digest()
 
-        this.transport.send_new_keys()
+        this.transport.send_new_keys(this.SHAVersion)
     }
 }

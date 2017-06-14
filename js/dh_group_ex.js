@@ -1,5 +1,6 @@
-SSHyClient.dhGroupEx = function(transport) {
+SSHyClient.dhGroupEx = function(transport, SHAVersion) {
     this.transport = transport
+	this.SHAVersion = SHAVersion
     this.p = null
     this.q = null
     this.g = null
@@ -11,17 +12,12 @@ SSHyClient.dhGroupEx = function(transport) {
     this.max_bits = 8192
     this.preferred_bits = 2048
 }
-// Some named constants we'll only in this scope
-SSHyClient.dhGroupEx.MSG_KEXDH_GEX_GROUP = 31
-SSHyClient.dhGroupEx.MSG_KEXDH_GEX_INIT = 32
-SSHyClient.dhGroupEx.MSG_KEXDH_GEX_REPLY = 33
-SSHyClient.dhGroupEx.MSG_KEXDH_GEX_REQUEST = 34
 
 SSHyClient.dhGroupEx.prototype = {
     // start Group Exchange by sending the initialisation packet
     start: function() {
         var m = new SSHyClient.Message()
-        m.add_bytes(String.fromCharCode(SSHyClient.dhGroupEx.MSG_KEXDH_GEX_REQUEST))
+        m.add_bytes(String.fromCharCode(SSHyClient.MSG_KEXDH_GEX_REQUEST))
         m.add_int(this.min_bits)
         m.add_int(this.preferred_bits)
         m.add_int(this.max_bits)
@@ -30,9 +26,9 @@ SSHyClient.dhGroupEx.prototype = {
     },
     // Distinguish which type of message the SSH server has sent and parse it properly
     parse_reply: function(ptype, m) {
-        if (ptype == SSHyClient.dhGroupEx.MSG_KEXDH_GEX_GROUP) {
+        if (ptype == SSHyClient.MSG_KEXDH_GEX_GROUP) {
             this.parse_gex_group(m)
-        } else if (ptype == SSHyClient.dhGroupEx.MSG_KEXDH_GEX_REPLY) {
+        } else if (ptype == SSHyClient.MSG_KEXDH_GEX_REPLY) {
             this.parse_gex_reply(m)
         }
     },
@@ -71,7 +67,7 @@ SSHyClient.dhGroupEx.prototype = {
         this.e = this.g.modPow(this.x, this.p)
 
         m = new SSHyClient.Message()
-        m.add_bytes(String.fromCharCode(SSHyClient.dhGroupEx.MSG_KEXDH_GEX_INIT))
+        m.add_bytes(String.fromCharCode(SSHyClient.MSG_KEXDH_GEX_INIT))
         m.add_mpint(this.e)
         this.transport.send_packet(m)
     },
@@ -110,7 +106,7 @@ SSHyClient.dhGroupEx.prototype = {
 
         // TODO: Verify host key and Signature
         this.transport.K = K
-        this.transport.session_id = this.transport.H = new SSHyClient.hash.SHA1(m.toString()).digest()
-        this.transport.send_new_keys()
+		this.transport.session_id = this.transport.H = this.SHAVersion == 'SHA-1' ? new SSHyClient.hash.SHA1(m.toString()).digest() : new SSHyClient.hash.SHA256(m.toString()).digest()
+        this.transport.send_new_keys(this.SHAVersion)
     },
 }
