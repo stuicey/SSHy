@@ -5,8 +5,10 @@ var colorScheme_ashes = ["#1c2023","#1c2023","#c7ae95","#95c7ae","#aec795","#ae9
 
 var colorSchemes = ['', colorScheme_solarized, colorScheme_monokai, colorScheme_ashes]
 
+var c = 0	// Stores the current index of the theme loaded in colorSchemes
+
 // format (hex) - [bg,0,1,2,3 ... 14,15, cur, fg]
-function set_colorscheme(colors){
+function setColorScheme(colors){
 	var term_style = document.styleSheets[0]
 	// Remove active colour scheme if there is a custom one.
 	if(!colorScheme_tango){
@@ -38,19 +40,21 @@ function importXresources(){
 	var file = document.getElementById('Xresources').value
 	var lines = file.split("\n")
 	// natural sort the Xresources list to bg, 1 - 15, cur, fg colours & slice the leading 18 lines (!blue ect)
-	lines = lines.sort(new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'}).compare).slice(18)
-
+	lines = lines.sort(new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'}).compare)
 
 	colorScheme_custom = []
 
 	for(var i = 0; i < lines.length; i++){
-		colorScheme_custom.push("#" + lines[i].split("#")[1])
+		// Only lines containing '#' are added
+		if(lines[i].indexOf('#') != -1){
+			colorScheme_custom.push("#" + lines[i].split("#")[1])
+		}
 	}
 
-	set_colorscheme(colorScheme_custom)
+	setColorScheme(colorScheme_custom)
 }
 
-var c = 0
-function cycleColorSchemes(){
-	set_colorscheme(colorSchemes[++c > colorSchemes.length - 1 ? c = 0 : c])
+function cycleColorSchemes(dir){
+	// Cycles through (c = 0 -> colorSchemes.length - 1) where dir = true is incrementing and dir = false decrements
+	setColorScheme(colorSchemes[(dir == true ? ++c : (--c < 0 ? c = colorSchemes.length - 1 : c = c)) > colorSchemes.length - 1 ? c = 0 : c])
 }

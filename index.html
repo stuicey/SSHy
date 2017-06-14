@@ -9,8 +9,11 @@
 		var wsproxyURL = "ws://localhost:5999/"
 		var ws, transport, term = null
 
-		var term_cols = Math.floor(window.innerWidth / 10) - 4
-		var term_rows = Math.floor(window.innerHeight / 19) - 1
+		// Since firefox renders at a different resolution to the rest we can identify it and apply special rules
+		var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+
+		var term_cols = Math.floor(window.innerWidth / 10) - (isFirefox ? -2 : 0)
+		var	term_rows = Math.floor(window.innerHeight / 19) - (isFirefox ? 1 : -3)
 	</script>
 
 	<link rel="stylesheet" href="css/fonts.css" />
@@ -45,13 +48,14 @@
 	<script type="text/javascript">
 		window.onload = function() {
 			document.getElementById('login_cred').style.display = "block";
+			setColorScheme(colorScheme_ashes)
 		};
 
 		// Run every time the webpage is resized
 		window.onresize = function resize() {
 			// recalculate the term_cols and rows
-			term_cols = Math.floor(window.innerWidth / 10) - 4
-			term_rows = Math.floor(window.innerHeight / 19) - 1
+			term_cols = Math.floor(window.innerWidth / 10) - (isFirefox ? -2 : 0)
+			term_rows = Math.floor(window.innerHeight / 19) - (isFirefox ? 1 : -3)
 
 			if (ws && transport) {
 				term.resize(term_cols, term_rows)
@@ -59,12 +63,8 @@
 			}
 		}
 
-		function openNav() {
-			document.getElementById("settingsNav").style.width = "250px";
-		}
-
-		function closeNav() {
-			document.getElementById("settingsNav").style.width = "0";
+		function toggleNav(size){
+			document.getElementById("settingsNav").style.width = size
 		}
 
 		// Rudimentary checks that an IP address is external and is a valid hostname or IP address
@@ -209,22 +209,31 @@
 				if (!ws || !transport) { // check for websocket..
 					return
 				}
+
 				// So we don't spam single control characters
 				if (e.key.length > 1 && (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey)) {
 					return
 				}
+				var command = {
+					key: null
+				}
+
 				// Decides if the keypress is an alphanumeric character or needs escaping
 				if (e.key.length == 1 && !(e.altKey || e.ctrlKey || e.metaKey)) {
-					var command = {
-						key: e.key
+					command.key = e.key
+				} else if(e.key.length == 1 && (e.shiftKey && e.ctrlKey)){
+					// allows ctrl + shift + v for pasting
+					if(e.key != 'V'){
+						e.preventDefault()
 					}
 				} else {
 					//xtermjs is kind enough to evaluate our special characters instead of having to translate every char ourself
-					var command = term.evaluateKeyEscapeSequence(e)
+					command = term.evaluateKeyEscapeSequence(e)
 				}
 
-				transport.expect_key(command.key)
+				return command.key == null ? null : transport.expect_key(command.key)
 			}
+
 			//TODO: Find work around for firefox
 			term.textarea.onpaste = function(ev) {
 				if (ev.clipboardData) {
@@ -241,11 +250,11 @@
 <body>
 	<div id="terminal"></div>
 	<div id="settingsNav" class="sidenav">
-		<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-		<a href="javascript:void(0)" onclick="cycleColorSchemes()">Cycle ColorScheme</a>
+		<a href="javascript:void(0)" class="closebtn" onclick="toggleNav('0px')">&times;</a>
+		<a href="javascript:void(0)" onclick="cycleColorSchemes(1)">Cycle ColorScheme</a>
 	</div>
 
-	<span class="icon-cogs" onclick="openNav()"></span>
+	<span class="icon-cogs" onclick="toggleNav('250px')"></span>
 
 	<div id="login_cred" class="modal">
 		<div class="modal-content">
@@ -256,11 +265,11 @@
 				<table style="width: 100%">
 					<tr>
 						<td><span class="icon-address-book"></span> IP Address:</td>
-						<td><input type="text" id="ipaddress" placeholder="sshy.us" style="width: 90%" onblur="validate(this.id, this.value)"></td>
+						<td><input type="text" id="ipaddress" placeholder="sshy.us(:22)" style="width: 90%" onblur="validate(this.id, this.value)"></td>
 					</tr>
 					<tr>
 						<td><span class="icon-user-circle-o"></span> Username:</td>
-						<td><input type="text" id="username" placeholder="eval" style="width: 90%" onblur="validate(this.id, this.value)"></td>
+						<td><input type="text" id="username" placeholder="username" style="width: 90%" onblur="validate(this.id, this.value)"></td>
 					</tr>
 					<tr>
 						<td><span class="icon-eye"></span> Password:</td>
@@ -273,10 +282,9 @@
 		</div>
 		<div id="load-container" class="load-container">
 			<svg id="load" x="0px" y="0px" viewBox="0 0 150 150">
-		  		<circle id="loading-inner" cx="75" cy="75" r="60"/>
+		  		<circle id="loading-inner" cx="75" cy="75" r="60"></circle>
 			</svg>
 		</div>
-	</div>
 	</div>
 </body>
 
