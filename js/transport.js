@@ -75,16 +75,29 @@ SSHyClient.Transport.prototype = {
         }
     },
 
+	/*
+		A table storing various function calls corresponding to the Message ID numbers defined [https://www.ietf.org/rfc/rfc4250.txt]
+		called like :
+			`handler_table[id](<object> SSHyClient.transport, <string> message)`
+	*/
     handler_table: {
+		/* SSH_MSG_DISCONNECT - sent by the SSH server when the connection is gracefully closed */
         1: function(self, m) {
-            term.write("Connection to " + html_ipaddress + " closed.")
+            term.write("Connection to " + document.getElementById('ipaddress').value + " closed.")
         },
+		/* SSH_MSG_IGNORE - sent by the SSH server when keys are not to be echoed */
+		2: function(self, m){
+			return
+		},
+		/* SSH_MSG_SERVICE_ACCEPT: sent by the SSH server after the client request's a service (post-kex) */
         6: function(self, m) {
-            // Get the packed string from the authenication message
-            if (new SSHyClient.Message(m.slice(1)).get_string() == "ssh-userauth") {
+			var service = new SSHyClient.Message(m.slice(1)).get_string()
+            // Check th type of message sent by the server and start the appropriate service
+            if ( service == "ssh-userauth") {
                 self.auth.ssh_connection()
             }
         },
+		/* SSH_MSG_KEXINIT: sent by the server after algorithm negotiation - contains server's keys and hash */
         20: function(self, m) {
             // Remote_kex_message must have no padding or length meta data so we have to strip that out
             var m = new SSHyClient.Message(m).get_string()
@@ -92,42 +105,54 @@ SSHyClient.Transport.prototype = {
             self.remote_kex_message = self.cut_padding(m) // we need this later for calculating H
             self.preferred_kex.start()
         },
+		/* SSH_MSG_KEX_DH_GEX_GROUP: used for DH GroupEx when negotiating which group to use */
         31: function(self, m) {
             /* Since we're just extracting data from r in parse_reply, we don't need to do the processing to remove the padding
 			 and can just remove the first 6 bytes (length, padding length, message code) */
             self.preferred_kex.parse_reply(31, m.slice(6))
         },
+		/* SSH_MSG_KEX_DH_GEX_REPLY: used for DH GroupEx, sent by the server - contains server's keys and hash */
         33: function(self, m) {
             self.preferred_kex.parse_reply(33, m.slice(6))
         },
+		/* SSH_MSG_USERAUTH_FAILURE: sent by the server when there is a complete or partial failure with user authentication */
         51: function(self, m) {
             self.auth.auth_failure()
         },
+		/* SSH_MSG_USERAUTH_SUCCESS: sent by the server when an authentication attempt succeeds */
         52: function(self, m) {
             self.auth.authenticated = true
             self.auth.auth_success(true)
         },
+		/* SSH_MSG_GLOBAL_REQUEST: sent by the server to request information, server sends its hostkey after user-auth
+		   but RSA keys (TODO) aren't implemented so for now we can ignore this message */
         80: function(self, m) {
             return
         },
+		/* SSH_MSG_CHANNEL_OPEN_CONFIRMATION: sent by the server to inform the client that a new channel has been opened */
         91: function(self, m) {
             self.auth.get_pty('xterm-256color', term_cols, term_rows)
         },
+		/* SSH_MSG_CHANNEL_WINDOW_ADJUST: sent by the server to inform the client of the maximum window size (bytes) */
         93: function(self, m) {
+			// Slice the first 5 bytes (<1b> flag + <4b> channel_id) and increase our window size by the ammount specified
+			SSHyClient.WINDOW_SIZE += new SSHyClient.Message(m.slice(5)).get_int()
             return
         },
+		/* SSH_MSG_CHANNEL_DATA: text sent by the server which is displayed by writing to the terminal */
         94: function(self, m) {
-            m = m.slice(9)
-            term.write(m)
+			// Slice the heading 9 bytes and send the remaining xterm sequence to the terminal
+            term.write(m.slice(9))
         },
+		/* SSH_MSG_CHANNEL_EOF: sent by the server indicating no more data will be sent to the channel*/
         96: function(self, m) {
             term.write("logout\n\r")
+			// TODO: Close the SSH channel
         },
+		/* SSH_MSG_CHANNEL_CLOSE: sent by the server to indicate the channel is now closed; the SSH connection remains open*/
         97: function(self, m) {
             term.write("Connection to " + html_ipaddress + " closed.")
-        },
-        98: function(self, m) {
-            return
+			// TODO: Close the SSH connection
         }
     },
 
