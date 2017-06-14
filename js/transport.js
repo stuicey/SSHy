@@ -243,7 +243,6 @@ SSHyClient.Transport.prototype = {
             display_error("Incompatable ssh server (no compatable - " + missing + " )")
             throw "Chosen Algs = kex=" + kex + ", keys=" + keys + ", cipher=" + cipher + ", mac=" + mac
         }
-		console.log(kex)
         // Set those preferred Algs
         this.preferred_kex = this.kex_info[kex](this)
     },
@@ -264,7 +263,6 @@ SSHyClient.Transport.prototype = {
     },
 
     activate_encryption: function(SHAVersion) {
-		console.log(SHAVersion)
         // Generate the keys we need for encryption and HMAC
         this.parceler.outbound_enc_iv = this.generate_key('A', 16, SHAVersion)
         this.parceler.outbound_enc_key = this.generate_key('C', 16, SHAVersion)
