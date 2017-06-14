@@ -52,6 +52,11 @@
 			// recalculate the term_cols and rows
 			term_cols = Math.floor(window.innerWidth / 10) - 4
 			term_rows = Math.floor(window.innerHeight / 19) - 1
+
+			if (ws && transport) {
+				term.resize(term_cols, term_rows)
+				transport.auth.resize_pty(term_cols, term_rows)
+			}
 		}
 
 		function openNav() {
