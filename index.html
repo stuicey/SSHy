@@ -12,8 +12,11 @@
 		// Since firefox renders at a different resolution to the rest we can identify it and apply special rules
 		var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
-		var term_cols = Math.floor(window.innerWidth / 10) - (isFirefox ? -2 : 0)
-		var	term_rows = Math.floor(window.innerHeight / 19) - (isFirefox ? 1 : -2)
+		var termCols = Math.floor(window.innerWidth / 10) - (isFirefox ? -2 : 0)
+		var	termRows = Math.floor(window.innerHeight / 19) - (isFirefox ? 1 : -2)
+
+		var termUsername = ''
+		var termPassword = ''
 	</script>
 
 	<link rel="stylesheet" href="css/fonts.css" />
@@ -45,13 +48,13 @@
 
 		// Run every time the webpage is resized
 		window.onresize = function resize() {
-			// recalculate the term_cols and rows
-			term_cols = Math.floor(window.innerWidth / 10) - (isFirefox ? -2 : 0)
-			term_rows = Math.floor(window.innerHeight / 19) - (isFirefox ? 1 : -2)
+			// recalculate the termCols and rows
+			termCols = Math.floor(window.innerWidth / 10) - (isFirefox ? -2 : 0)
+			termRows = Math.floor(window.innerHeight / 19) - (isFirefox ? 1 : -2)
 
 			if (ws && transport) {
-				term.resize(term_cols, term_rows)
-				transport.auth.resize_pty(term_cols, term_rows)
+				term.resize(termCols, termRows)
+				transport.auth.resize_pty(termCols, termRows)
 			}
 		}
 
@@ -132,12 +135,12 @@
 		// Starts the SSH client in scripts/transport.js
 		function startSSHy() {
 			var html_ipaddress = document.getElementById('ipaddress').value
-			var html_username = document.getElementById('username').value
-			var html_password = document.getElementById('password').value
+			termUsername = document.getElementById('username').value
+			termPassword = document.getElementById('password').value
 
 			if (!html_ipaddress) {
 				document.getElementById('ipaddress').value = html_ipaddress = "138.68.148.147"
-				document.getElementById('username').value = html_username = "dunessh"
+				document.getElementById('username').value = termUsername = "dunessh"
 			}
 
 			// find the port number
@@ -154,9 +157,9 @@
 				return
 			}
 
-			if (html_username.length == 0 || html_password.length == 0) {
-				validate('username', html_username)
-				validate('password', html_password)
+			if (termUsername.length == 0 || termPassword.length == 0) {
+				validate('username', termUsername)
+				validate('password', termPassword)
 				return
 			}
 
@@ -190,8 +193,8 @@
 			document.getElementById('login_cred').style.display = "none";
 			// Define the terminal rows/cols
 			term = new Terminal({
-				cols: term_cols,
-				rows: term_rows
+				cols: termCols,
+				rows: termRows
 			})
 			// start xterm.js
 			term.open(document.getElementById('terminal'), true)

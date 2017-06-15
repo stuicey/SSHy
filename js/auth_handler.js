@@ -17,11 +17,11 @@ SSHyClient.auth.prototype = {
     ssh_connection: function() {
         var p = new SSHyClient.Message()
         p.add_bytes(String.fromCharCode(SSHyClient.MSG_USERAUTH_REQUEST))
-        p.add_string(document.getElementById('username').value)
+        p.add_string(termUsername)
         p.add_string("ssh-connection")
         p.add_string("password")
         p.add_boolean(false)
-        p.add_string(document.getElementById('password').value)
+        p.add_string(termPassword)
 
         this.parceler.send(p)
     },
