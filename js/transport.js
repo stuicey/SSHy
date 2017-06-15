@@ -140,7 +140,7 @@ SSHyClient.Transport.prototype = {
         },
 		/* SSH_MSG_CHANNEL_OPEN_CONFIRMATION: sent by the server to inform the client that a new channel has been opened */
         91: function(self, m) {
-            self.auth.get_pty('xterm-256color', term_cols, term_rows)
+            self.auth.get_pty('xterm-256color', termCols, termRows)
         },
 		/* SSH_MSG_CHANNEL_WINDOW_ADJUST: sent by the server to inform the client of the maximum window size (bytes) */
         93: function(self, m) {
