@@ -13,7 +13,7 @@
 		var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
 		var term_cols = Math.floor(window.innerWidth / 10) - (isFirefox ? -2 : 0)
-		var	term_rows = Math.floor(window.innerHeight / 19) - (isFirefox ? 1 : -3)
+		var	term_rows = Math.floor(window.innerHeight / 19) - (isFirefox ? 1 : -2)
 	</script>
 
 	<link rel="stylesheet" href="css/fonts.css" />
@@ -47,7 +47,7 @@
 		window.onresize = function resize() {
 			// recalculate the term_cols and rows
 			term_cols = Math.floor(window.innerWidth / 10) - (isFirefox ? -2 : 0)
-			term_rows = Math.floor(window.innerHeight / 19) - (isFirefox ? 1 : -3)
+			term_rows = Math.floor(window.innerHeight / 19) - (isFirefox ? 1 : -2)
 
 			if (ws && transport) {
 				term.resize(term_cols, term_rows)
