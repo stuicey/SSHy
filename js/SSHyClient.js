@@ -7,7 +7,7 @@ var termCols = Math.floor(window.innerWidth / 10) - (isFirefox ? -2 : 0)
 var	termRows = Math.floor(window.innerHeight / 19) - (isFirefox ? 1 : -2)
 
 var termUsername = ''
-var termPassword = ''
+var termPassword
 
 window.onload = function() {
 	setColorScheme(colorScheme_ashes)
@@ -50,6 +50,11 @@ function startxtermjs() {
 	// start xterm.js
 	term.open(document.getElementById('terminal'), true)
 
+	// if we haven't authenticated yet we're doing an interactive login
+	if(!transport.auth.authenticated){
+		term.write('Login as: ')
+	}
+
 	// sets up some listeners for the terminal (keydown, paste)
 	term.textarea.onkeydown = function(e) {
 		if (!ws || !transport) { // check for websocket..
@@ -60,6 +65,48 @@ function startxtermjs() {
 		if (e.key.length > 1 && (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey)) {
 			return
 		}
+
+		if(!transport.auth.authenticated){
+			// putty doesn't allow control characters during authentication
+			if(e.altKey || e.ctrlKey || e.metaKey){
+				return
+			}
+
+			switch(e.keyCode){
+				case 8:	 // backspace
+					if(termPassword == undefined){
+						if(termUsername.length > 0){
+							term.write('\b')
+							term.eraseRight(term.x, term.y)
+							termUsername = termUsername.slice(0,termUsername.length - 1)
+						}
+					} else {
+						termPassword = termPassword.slice(0,termPassword.length - 1)
+					}
+
+					break
+				case 13: // enter
+					if(!termPassword){
+						term.write("\n\r" + termUsername + '@' + wsproxyURL.split('/')[3].split(':')[0] + '\'s password:')
+						termPassword = ''
+					} else {
+						transport.auth.ssh_connection()
+						termUsername = ''
+						termPassword = undefined
+						return
+					}
+					break
+				default:
+					if(termPassword == undefined){
+						termUsername += e.key
+						term.write(e.key)
+					} else {
+						termPassword += e.key
+					}
+			}
+			return
+		}
+
 		var command = {
 			key: null
 		}

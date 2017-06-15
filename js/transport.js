@@ -27,6 +27,9 @@ SSHyClient.Transport = function(ws) {
 
     this.parceler = new SSHyClient.parceler(ws, this)
     this.auth = new SSHyClient.auth(this.parceler)
+
+	this.need_buffer = false
+	this.temp_buffer = ''
 }
 
 SSHyClient.Transport.prototype = {
@@ -72,16 +75,32 @@ SSHyClient.Transport.prototype = {
             return
         }
 
+		// very hacky quick fix for super long KEX init messages TODO: finish work in clean-up
+		if(new SSHyClient.Message(r).get_int() > r.length && !this.need_buffer){
+			this.need_buffer = true
+		}
+
+		if(this.need_buffer){
+			if(!this.temp_buffer){
+				this.temp_buffer = r
+				return
+			}
+			this.temp_buffer += r
+			this.parceler.inbound_sequence_num++
+			this.need_buffer = false
+			this.handler_table[this.temp_buffer.substring(5,6).charCodeAt(0)](this, this.temp_buffer)
+			return
+		}
+
         this.parceler.inbound_sequence_num++
 
-            // Now we have one message we should check the code and see what to do with it.
-            try {
-                this.handler_table[r.substring(5, 6).charCodeAt(0)](this, r)
-            }
-        catch (err) {
-            console.log(err)
-            console.log("Error! code - " + r.substring(5, 6).charCodeAt(0) + " does not exist!")
-        }
+		// Now we have one message we should check the code and see what to do with it.
+		try {
+			this.handler_table[r.substring(5, 6).charCodeAt(0)](this, r)
+		} catch (err) {
+			console.log(err)
+			console.log("Error! code - " + r.substring(5, 6).charCodeAt(0) + " does not exist!")
+		}
     },
 
 	/*

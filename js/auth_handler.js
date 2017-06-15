@@ -15,15 +15,20 @@ SSHyClient.auth.prototype = {
     },
     // Sends the username and password provided by index.html
     ssh_connection: function() {
-        var p = new SSHyClient.Message()
-        p.add_bytes(String.fromCharCode(SSHyClient.MSG_USERAUTH_REQUEST))
-        p.add_string(termUsername)
-        p.add_string("ssh-connection")
-        p.add_string("password")
-        p.add_boolean(false)
-        p.add_string(termPassword)
+		if(termUsername && termPassword){
+	        var p = new SSHyClient.Message()
+	        p.add_bytes(String.fromCharCode(SSHyClient.MSG_USERAUTH_REQUEST))
+	        p.add_string(termUsername)
+	        p.add_string("ssh-connection")
+	        p.add_string("password")
+	        p.add_boolean(false)
+	        p.add_string(termPassword)
 
-        this.parceler.send(p)
+	        this.parceler.send(p)
+		} else {
+			// If no termUser or termPass has been set then we are likely using the wrapper
+			startxtermjs()
+		}
     },
     // Called on successful or partially successful SSH connection authentications
     auth_success: function(success) {
@@ -100,6 +105,10 @@ SSHyClient.auth.prototype = {
 
         this.parceler.send(m)
         // Start xterm.js
+		if(termPassword == undefined){
+			term.write('\n\r')
+			return
+		}
         startxtermjs()
     },
     // encapsulates a character or command and sends it to the SSH server
