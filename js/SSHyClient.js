@@ -2,6 +2,7 @@ var ws, transport, term = null
 
 // Since firefox renders at a different resolution to the rest we can identify it and apply special rules
 var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+var isWrapper = true
 
 var termCols = Math.floor(window.innerWidth / 10) - (isFirefox ? -2 : 0)
 var	termRows = Math.floor(window.innerHeight / 19) - (isFirefox ? 1 : -2)
@@ -40,6 +41,8 @@ function auth_failure() {
 
 // Starts the SSH client in scripts/transport.js
 function startSSHy() {
+	// Initialise the window title
+	document.title = "SSHy Client"
 	// Opens the websocket!
 	ws = new WebSocket(wsproxyURL, 'base64')
 
@@ -98,7 +101,7 @@ function startxtermjs() {
 
 					break
 				case 13: // enter
-					if(!termPassword){
+					if(termPassword == undefined){
 						term.write("\n\r" + termUsername + '@' + wsproxyURL.split('/')[3].split(':')[0] + '\'s password:')
 						termPassword = ''
 					} else {

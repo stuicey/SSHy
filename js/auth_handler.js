@@ -16,7 +16,7 @@ SSHyClient.auth.prototype = {
     },
     // Sends the username and password provided by index.html
     ssh_connection: function() {
-		if(termUsername && termPassword){
+		if(isWrapper && term){
 	        var p = new SSHyClient.Message()
 	        p.add_bytes(String.fromCharCode(SSHyClient.MSG_USERAUTH_REQUEST))
 	        p.add_string(termUsername)
@@ -35,6 +35,8 @@ SSHyClient.auth.prototype = {
     // Called on successful or partially successful SSH connection authentications
     auth_success: function(success) {
         if (success) {
+			// Change the window title
+			document.title = termUsername + '@' + wsproxyURL.split('/')[3].split(':')[0]
 			// Purge the username and password
 			termUsername = ''
 			termPassword = undefined
