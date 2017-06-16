@@ -181,7 +181,7 @@ SSHyClient.Transport.prototype = {
         },
 		/* SSH_MSG_CHANNEL_CLOSE: sent by the server to indicate the channel is now closed; the SSH connection remains open*/
         97: function(self, m) {
-            term.write("Connection to " + html_ipaddress + " closed.")
+            term.write("Connection to " + wsproxyURL.split('/')[3].split(':')[0] + " closed.")
 			// TODO: Close the SSH connection
         },
 		/* SSH_MSG_CHANNEL_REQUEST: sent by the server to request a new channel, as the client we can just ignore this*/
