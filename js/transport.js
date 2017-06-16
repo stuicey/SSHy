@@ -117,6 +117,10 @@ SSHyClient.Transport.prototype = {
 		2: function(self, m){
 			return
 		},
+		/* SSH_MSG_UNIMPLEMENTED - sent by the server to indicate a function is not implemented on the remote */
+		3: function(self, m){
+			return
+		},
 		/* SSH_MSG_SERVICE_ACCEPT: sent by the SSH server after the client request's a service (post-kex) */
         6: function(self, m) {
 			var service = new SSHyClient.Message(m.slice(1)).get_string()
@@ -176,8 +180,8 @@ SSHyClient.Transport.prototype = {
         },
 		/* SSH_MSG_CHANNEL_EOF: sent by the server indicating no more data will be sent to the channel*/
         96: function(self, m) {
-            term.write("logout\n\r")
 			// TODO: Close the SSH channel
+			return
         },
 		/* SSH_MSG_CHANNEL_CLOSE: sent by the server to indicate the channel is now closed; the SSH connection remains open*/
         97: function(self, m) {
