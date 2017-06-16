@@ -132,6 +132,18 @@
 			document.getElementById('failure').innerText = err
 			document.getElementById('failure').style.display = "block"
 		}
+		 // Called on unsuccessful SSH connection authentication
+		function auth_failure() {
+		        // set the username and password fields red
+		        validate('username', "")
+		        validate('password', "")
+		        // Display an error along with the red fields
+		        display_error("Invalid username or password")
+
+		        // clear the password field
+		        document.getElementById('password').value = ''
+		    }
+
 		// Starts the SSH client in scripts/transport.js
 		function startSSHy() {
 			var html_ipaddress = document.getElementById('ipaddress').value

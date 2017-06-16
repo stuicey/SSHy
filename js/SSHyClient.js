@@ -9,6 +9,8 @@ var	termRows = Math.floor(window.innerHeight / 19) - (isFirefox ? 1 : -2)
 var termUsername = ''
 var termPassword
 
+var failedAttempts = 0
+
 window.onload = function() {
 	setColorScheme(colorScheme_ashes)
 	startSSHy()
@@ -25,6 +27,16 @@ window.onresize = function resize() {
 		transport.auth.resize_pty(termCols, termRows)
 	}
 }
+// Called on unsuccessful SSH connection authentication
+function auth_failure() {
+	term.write("\n\rAccess Denied")
+	if(++failedAttempts >= 5){
+		term.write("\n\rToo many failed authentication attempts")
+		return
+	}
+	term.write("\n\r" + termUsername + '@' + wsproxyURL.split('/')[3].split(':')[0] + '\'s password:')
+	termPassword = ''
+   }
 
 // Starts the SSH client in scripts/transport.js
 function startSSHy() {
@@ -57,7 +69,7 @@ function startxtermjs() {
 
 	// sets up some listeners for the terminal (keydown, paste)
 	term.textarea.onkeydown = function(e) {
-		if (!ws || !transport) { // check for websocket..
+		if (!ws || !transport || failedAttempts >= 5 || transport.auth.awaitingAuthentication) { // Sanity Checks
 			return
 		}
 
@@ -91,8 +103,6 @@ function startxtermjs() {
 						termPassword = ''
 					} else {
 						transport.auth.ssh_connection()
-						termUsername = ''
-						termPassword = undefined
 						return
 					}
 					break

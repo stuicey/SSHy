@@ -3,6 +3,7 @@ SSHyClient.auth = function(parceler) {
     this.username = null
     this.password = null
     this.authenticated = null
+	this.awaitingAuthentication = false
 }
 
 SSHyClient.auth.prototype = {
@@ -25,6 +26,7 @@ SSHyClient.auth.prototype = {
 	        p.add_string(termPassword)
 
 	        this.parceler.send(p)
+			this.awaitingAuthentication = true
 		} else {
 			// If no termUser or termPass has been set then we are likely using the wrapper
 			startxtermjs()
@@ -33,21 +35,13 @@ SSHyClient.auth.prototype = {
     // Called on successful or partially successful SSH connection authentications
     auth_success: function(success) {
         if (success) {
+			// Purge the username and password
+			termUsername = ''
+			termPassword = undefined
             // We've been authenticated, lets open a channel
             this.open_channel('session')
         }
         // TODO: implement follow on tries for authentication (keyboard/public key)
-    },
-    // Called on unsuccessful SSH connection authentication
-    auth_failure: function() {
-        // set the username and password fields red
-        validate('username', "")
-        validate('password', "")
-        // Display an error along with the red fields
-        display_error("Invalid username or password")
-
-        // clear the password field
-        document.getElementById('password').value = ''
     },
     // Opens a channel - generally called right after authenticating with the SSH server
     open_channel: function(type, onsuccess = null) {

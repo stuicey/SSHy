@@ -145,11 +145,13 @@ SSHyClient.Transport.prototype = {
         },
 		/* SSH_MSG_USERAUTH_FAILURE: sent by the server when there is a complete or partial failure with user authentication */
         51: function(self, m) {
-            self.auth.auth_failure()
+			self.auth.awaitingAuthentication = false
+            auth_failure()
         },
 		/* SSH_MSG_USERAUTH_SUCCESS: sent by the server when an authentication attempt succeeds */
         52: function(self, m) {
             self.auth.authenticated = true
+			self.auth.awaitingAuthentication = false
             self.auth.auth_success(true)
         },
 		/* SSH_MSG_GLOBAL_REQUEST: sent by the server to request information, server sends its hostkey after user-auth
