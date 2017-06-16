@@ -111,7 +111,12 @@ SSHyClient.parceler.prototype = {
 
             // increment the seq number
             this.inbound_sequence_num++
+			// calculate how much WINDOW_SIZE we have left
+			SSHyClient.WINDOW_SIZE -= packet_size
 
+			if(SSHyClient.WINDOW_SIZE <= 0){
+				this.transport.winAdjust()
+			}
             this.transport.handle_dec(packet)
         }
     },

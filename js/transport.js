@@ -190,9 +190,7 @@ SSHyClient.Transport.prototype = {
         },
 		/* SSH_MSG_CHANNEL_WINDOW_ADJUST: sent by the server to inform the client of the maximum window size (bytes) */
         93: function(self, m) {
-			// Slice the first 5 bytes (<1b> flag + <4b> channel_id) and increase our window size by the ammount specified
-			SSHyClient.WINDOW_SIZE += new SSHyClient.Message(m.slice(5)).get_int()
-            return
+			return
         },
 		/* SSH_MSG_CHANNEL_DATA: text sent by the server which is displayed by writing to the terminal */
         94: function(self, m) {
@@ -214,6 +212,18 @@ SSHyClient.Transport.prototype = {
 			return
 		}
     },
+
+	// Increase Window Size
+	winAdjust: function(){
+		var m = new SSHyClient.Message()
+		m.add_bytes(String.fromCharCode(SSHyClient.MSG_CHANNEL_WINDOW_ADJUST))
+		m.add_int(0)
+		m.add_int(40674)
+
+		this.send_packet(m.toString())
+		SSHyClient.WINDOW_SIZE = 40674
+	},
+
 	// Disconnect the web client from the server with a given error code (11 - SSH_DISCONNECT_BY_APPLICATION )
 	disconnect: function(reason = 11){
 		var m = new SSHyClient.Message()

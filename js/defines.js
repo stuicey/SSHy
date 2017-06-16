@@ -38,9 +38,9 @@ SSHyClient = {
     MSG_CHANNEL_SUCCESS: 99,
 	MSG_CHANNEL_FAILURE: 100,
 
-    WINDOW_SIZE: 1048576, 	// Coppied from openSSH
+    WINDOW_SIZE: 40674, 	// Coppied from Putty
     MAX_PACKET_SIZE: 16384,
-	
+
     AES_CBC: 2,
     AES_CTR: 6
 }
