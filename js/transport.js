@@ -12,7 +12,7 @@ SSHyClient.Transport = function(ws) {
     this.preferred_algorithms = ['diffie-hellman-group-exchange-sha256,diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha256,diffie-hellman-group14-sha1,diffie-hellman-group1-sha256,diffie-hellman-group1-sha1',
         'ssh-rsa',
         'aes128-ctr',
-        'hmac-sha1',
+        'hmac-sha2-256,hmac-sha1',
         'none'
     ]
 
@@ -54,6 +54,19 @@ SSHyClient.Transport.prototype = {
 			return new SSHyClient.dhGroupEx(self, 'SHA-256')
 		}
     },
+
+	mac_info: {
+		'hmac-sha1': function(self){
+			self.parceler.hmacSHAVersion = 'SHA-1'
+			self.parceler.macSize = 20
+			return
+		},
+		'hmac-sha2-256': function(self){
+			self.parceler.hmacSHAVersion = 'SHA-256'
+			self.parceler.macSize = 32
+			return
+		}
+	},
 
     // Handles inbound traffic over the socket
     handle: function(r) {
@@ -111,7 +124,8 @@ SSHyClient.Transport.prototype = {
     handler_table: {
 		/* SSH_MSG_DISCONNECT - sent by the SSH server when the connection is gracefully closed */
         1: function(self, m) {
-            term.write("Connection to " + document.getElementById('ipaddress').value + " closed.")
+			self.disconnect()
+			return
         },
 		/* SSH_MSG_IGNORE - sent by the SSH server when keys are not to be echoed */
 		2: function(self, m){
@@ -128,6 +142,7 @@ SSHyClient.Transport.prototype = {
             if ( service == "ssh-userauth") {
                 self.auth.ssh_connection()
             }
+			return
         },
 		/* SSH_MSG_KEXINIT: sent by the server after algorithm negotiation - contains server's keys and hash */
         20: function(self, m) {
@@ -136,27 +151,32 @@ SSHyClient.Transport.prototype = {
             self.parse_kex_reply(m)
             self.remote_kex_message = self.cut_padding(m) // we need this later for calculating H
             self.preferred_kex.start()
+			return
         },
 		/* SSH_MSG_KEX_DH_GEX_GROUP: used for DH GroupEx when negotiating which group to use */
         31: function(self, m) {
             /* Since we're just extracting data from r in parse_reply, we don't need to do the processing to remove the padding
 			 and can just remove the first 6 bytes (length, padding length, message code) */
             self.preferred_kex.parse_reply(31, m.slice(6))
+			return
         },
 		/* SSH_MSG_KEX_DH_GEX_REPLY: used for DH GroupEx, sent by the server - contains server's keys and hash */
         33: function(self, m) {
             self.preferred_kex.parse_reply(33, m.slice(6))
+			return
         },
 		/* SSH_MSG_USERAUTH_FAILURE: sent by the server when there is a complete or partial failure with user authentication */
         51: function(self, m) {
 			self.auth.awaitingAuthentication = false
             auth_failure()
+			return
         },
 		/* SSH_MSG_USERAUTH_SUCCESS: sent by the server when an authentication attempt succeeds */
         52: function(self, m) {
             self.auth.authenticated = true
 			self.auth.awaitingAuthentication = false
             self.auth.auth_success(true)
+			return
         },
 		/* SSH_MSG_GLOBAL_REQUEST: sent by the server to request information, server sends its hostkey after user-auth
 		   but RSA keys (TODO) aren't implemented so for now we can ignore this message */
@@ -166,6 +186,7 @@ SSHyClient.Transport.prototype = {
 		/* SSH_MSG_CHANNEL_OPEN_CONFIRMATION: sent by the server to inform the client that a new channel has been opened */
         91: function(self, m) {
             self.auth.get_pty('xterm-256color', termCols, termRows)
+			return
         },
 		/* SSH_MSG_CHANNEL_WINDOW_ADJUST: sent by the server to inform the client of the maximum window size (bytes) */
         93: function(self, m) {
@@ -177,22 +198,31 @@ SSHyClient.Transport.prototype = {
         94: function(self, m) {
 			// Slice the heading 9 bytes and send the remaining xterm sequence to the terminal
             term.write(m.slice(9))
+			return
         },
 		/* SSH_MSG_CHANNEL_EOF: sent by the server indicating no more data will be sent to the channel*/
         96: function(self, m) {
-			// TODO: Close the SSH channel
 			return
         },
 		/* SSH_MSG_CHANNEL_CLOSE: sent by the server to indicate the channel is now closed; the SSH connection remains open*/
         97: function(self, m) {
-            term.write("Connection to " + wsproxyURL.split('/')[3].split(':')[0] + " closed.")
-			// TODO: Close the SSH connection
+            self.disconnect()
+			return
         },
 		/* SSH_MSG_CHANNEL_REQUEST: sent by the server to request a new channel, as the client we can just ignore this*/
 		98: function(self, m){
 			return
 		}
     },
+	// Disconnect the web client from the server with a given error code (11 - SSH_DISCONNECT_BY_APPLICATION )
+	disconnect: function(reason = 11){
+		var m = new SSHyClient.Message()
+		m.add_bytes(String.fromCharCode(SSHyClient.MSG_DISCONNECT))
+		m.add_int(reason)
+		this.send_packet(m.toString())
+		ws.close()
+		term.write("\r\nConnection to " + wsproxyURL.split('/')[3].split(':')[0] + " closed.")
+	},
 
     cut_padding: function(m) {
         return m.substring(1, m.length - m[0].charCodeAt(0))
@@ -270,6 +300,7 @@ SSHyClient.Transport.prototype = {
         }
         // Set those preferred Algs
         this.preferred_kex = this.kex_info[kex](this)
+		this.preferred_mac = this.mac_info[mac](this)
     },
 
     /* 	Takes a character and size then generates a key to be used by ssh
@@ -291,21 +322,21 @@ SSHyClient.Transport.prototype = {
         // Generate the keys we need for encryption and HMAC
         this.parceler.outbound_enc_iv = this.generate_key('A', 16, SHAVersion)
         this.parceler.outbound_enc_key = this.generate_key('C', 16, SHAVersion)
-        this.parceler.outbound_mac_key = this.generate_key('E', 20, SHAVersion)
+        this.parceler.outbound_mac_key = this.generate_key('E', this.parceler.macSize, SHAVersion)
 
-        this.parceler.outbound_cipher = new SSHyClient.crypto.AES(this.parceler.outbound_enc_key,
-            SSHyClient.AES_CTR,
-            this.parceler.outbound_enc_iv,
-            new SSHyClient.crypto.counter(128, inflate_long(this.parceler.outbound_enc_iv)))
+        this.parceler.outbound_cipher = new SSHyClient.crypto.AES(	this.parceler.outbound_enc_key,
+																	SSHyClient.AES_CTR,
+																	this.parceler.outbound_enc_iv,
+																	new SSHyClient.crypto.counter(128, inflate_long(this.parceler.outbound_enc_iv)))
 
         this.parceler.inbound_enc_iv = this.generate_key('B', 16, SHAVersion)
         this.parceler.inbound_enc_key = this.generate_key('D', 16, SHAVersion)
-        this.parceler.inbound_mac_key = this.generate_key('F', 20, SHAVersion)
+        this.parceler.inbound_mac_key = this.generate_key('F', this.parceler.macSize, SHAVersion)
 
-        this.parceler.inbound_cipher = new SSHyClient.crypto.AES(this.parceler.inbound_enc_key,
-            SSHyClient.AES_CTR,
-            this.parceler.inbound_enc_iv,
-            new SSHyClient.crypto.counter(128, inflate_long(this.parceler.inbound_enc_iv)))
+        this.parceler.inbound_cipher = new SSHyClient.crypto.AES(	this.parceler.inbound_enc_key,
+																	SSHyClient.AES_CTR,
+																	this.parceler.inbound_enc_iv,
+																	new SSHyClient.crypto.counter(128, inflate_long(this.parceler.inbound_enc_iv)))
 
         // signal to the parceler that we want to encrypt and decypt
         this.parceler.encrypting = true

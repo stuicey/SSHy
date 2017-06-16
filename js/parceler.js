@@ -16,6 +16,9 @@ SSHyClient.parceler = function(web_socket, transport) {
 
     this.inbound_cipher = null
 
+	this.hmacSHAVersion	= null
+	this.macSize = null
+
     this.outbound_sequence_num = 0
     this.inbound_sequence_num = 0
     this.block_size = 8
@@ -38,7 +41,7 @@ SSHyClient.parceler.prototype = {
             var encrypted_packet = this.outbound_cipher.encrypt(packet)
 
             // we still need to add the mac hash & pack the sequence number
-            encrypted_packet += SSHyClient.hash.HMAC(this.outbound_mac_key, struct.pack('I', this.outbound_sequence_num) + packet)
+            encrypted_packet += SSHyClient.hash.HMAC(this.outbound_mac_key, struct.pack('I', this.outbound_sequence_num) + packet, this.hmacSHAVersion)
 
             // now send it as a base64 string
             this.socket.send(btoa(encrypted_packet))
@@ -82,7 +85,7 @@ SSHyClient.parceler.prototype = {
             // We can store the start of our message for later now
             var leftover = header.substring(4)
 
-            buffer = this.read_ibuffer(packet_size + 20 - leftover.length)
+            buffer = this.read_ibuffer(packet_size + this.macSize - leftover.length)
             if (!buffer) {
                 this.decrypted_header = header
                 return;
@@ -100,7 +103,7 @@ SSHyClient.parceler.prototype = {
             */
 
             var mac_payload = struct.pack('I', this.inbound_sequence_num) + struct.pack('I', packet_size) + packet
-            var our_mac = SSHyClient.hash.HMAC(this.inbound_mac_key, mac_payload)
+            var our_mac = SSHyClient.hash.HMAC(this.inbound_mac_key, mac_payload, this.hmacSHAVersion)
             if (our_mac != mac) {
                 display_error("Inbound MAC verification failed - Mismatched MAC")
                 throw "Inbound MAC verification failed - Mismatched MAC"
@@ -109,7 +112,7 @@ SSHyClient.parceler.prototype = {
             // increment the seq number
             this.inbound_sequence_num++
 
-                this.transport.handle_dec(packet)
+            this.transport.handle_dec(packet)
         }
     },
 
