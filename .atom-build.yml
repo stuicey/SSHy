@@ -1,0 +1,28 @@
+#
+# Closure build script for minimal HTML wrapper
+#
+
+cmd: "java"
+args:
+- "-jar"
+- "closure-compiler.jar"
+- "--js_output_file=js/combinedJS.min.js"
+- "js/defines.js"
+- "js/src/BigInteger.min.js"
+- "js/src/struct.min.js"
+- "js/src/utilities.min.js"
+- "js/src/aes.min.js"
+- "js/src/sha1.min.js"
+- "js/src/sha256.js"
+- "js/src/hmac.min.js"
+- "js/src/xterm.min.js"
+- "js/colorScheme.js"
+- "js/crypto.js"
+- "js/message.js"
+- "js/transport.js"
+- "js/parceler.js"
+- "js/auth_handler.js"
+- "js/dh_group1.js"
+- "js/dh_group_ex.js"
+- "js/SSHyClient.js"
+cwd: "H:/SSHy"
