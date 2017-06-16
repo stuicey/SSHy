@@ -21,7 +21,7 @@ window.onload = function() {
 window.onresize = function resize() {
 	// recalculate the termCols and rows
 	termCols = Math.floor(window.innerWidth / 10) - (isFirefox ? -2 : 0)
-	termRows = Math.floor(window.innerHeight / 19) - (isFirefox ? 1 : -2)
+	termRows = Math.floor(window.innerHeight / 19) - (isFirefox ? 1 : -1)
 
 	if (ws && transport) {
 		term.resize(termCols, termRows)
