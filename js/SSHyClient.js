@@ -33,6 +33,7 @@ function auth_failure() {
 	term.write("\n\rAccess Denied")
 	if(++failedAttempts >= 5){
 		term.write("\n\rToo many failed authentication attempts")
+		transport.disconnect()
 		return
 	}
 	term.write("\n\r" + termUsername + '@' + wsproxyURL.split('/')[3].split(':')[0] + '\'s password:')
