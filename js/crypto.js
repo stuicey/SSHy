@@ -1,8 +1,3 @@
-// returns a b byte random number
-function read_rng(b) {
-    return String.fromCharCode.apply(null, window.crypto.getRandomValues(new Uint8Array(b)))
-}
-
 SSHyClient.crypto = {}
 
 // AES wrapper for Libs/aes.min.js (SJCL)
