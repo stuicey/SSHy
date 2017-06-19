@@ -54,7 +54,7 @@ function importXresources(){
 	setColorScheme(colorScheme_custom)
 }
 
-function cycleColorSchemes(dir){
+function cycleColorSchemes(dir = true){
 	// Cycles through (c = 0 -> colorSchemes.length - 1) where dir = true is incrementing and dir = false decrements
 	setColorScheme(colorSchemes[(dir == true ? ++c : (--c < 0 ? c = colorSchemes.length - 1 : c = c)) > colorSchemes.length - 1 ? c = 0 : c])
 }
