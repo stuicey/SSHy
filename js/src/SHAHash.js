@@ -1,8 +1,50 @@
+SSHyClient.hash = {};
+
+SSHyClient.hash.SHA1 = function(a) {
+    this.data = a || "";
+    this.digest_size = 20
+};
+SSHyClient.hash.SHA1.prototype = {
+    digest: function() {
+        var a = toByteArray(this.data),
+            h = bytesToWords(a),
+            f = 8 * a.length,
+            a = [],
+            g = 1732584193,
+            c = -271733879,
+            d = -1732584194,
+            e = 271733878,
+            k = -1009589776;
+        h[f >> 5] |= 128 << 24 - f % 32;
+        h[(f + 64 >>> 9 << 4) + 15] = f;
+        for (f = 0; f < h.length; f += 16) {
+            for (var m = g, n = c, p = d, q = e, r = k, b = 0; 80 > b; b++) {
+                if (16 > b) a[b] = h[f + b];
+                else {
+                    var l = a[b - 3] ^ a[b - 8] ^ a[b - 14] ^ a[b - 16];
+                    a[b] = l << 1 | l >>> 31
+                }
+                l = (g << 5 | g >>> 27) + k + (a[b] >>> 0) + (20 > b ? (c & d | ~c & e) + 1518500249 : 40 > b ? (c ^ d ^ e) + 1859775393 : 60 > b ? (c & d | c & e | d & e) - 1894007588 : (c ^ d ^ e) - 899497514);
+                k = e;
+                e = d;
+                d = c << 30 | c >>> 2;
+                c = g;
+                g = l
+            }
+            g += m;
+            c += n;
+            d += p;
+            e += q;
+            k += r
+        }
+        return fromByteArray(wordsToBytes([g, c, d, e, k]))
+    }
+};
+
 SSHyClient.hash.SHA256 = function(a) {
 	this.data = a || ""
 	this.digest_size = 32
 }
-
 SSHyClient.hash.SHA256.prototype = {
     digest: function() {
       var hashData = toByteArray(this.data);
@@ -99,3 +141,17 @@ SSHyClient.hash.SHA256.prototype = {
       return fromByteArray(wordsToBytes(H));
     }
   }
+
+SSHyClient.hash.HMAC = function(a, g, SHAVersion) {
+	var b = digestmod = SHAVersion == 'SHA-1' ? SSHyClient.hash.SHA1 : SSHyClient.hash.SHA256,
+		d = new b,
+		e = new b;
+	64 < a.length && (a = (new b(a)).digest());
+	a += Array(64 - a.length + 1).join("\x00");
+	for (var b = toByteArray(a).slice(0), f = toByteArray(a).slice(0), c = 0; 64 > c; ++c) b[c] ^= 92, f[c] ^= 54;
+	d.data += fromByteArray(b)
+	e.data += fromByteArray(f);
+	e.data += g;
+	d.data += e.digest();
+	return d.digest()
+};
