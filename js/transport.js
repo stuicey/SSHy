@@ -195,7 +195,7 @@ SSHyClient.Transport.prototype = {
 		/* SSH_MSG_CHANNEL_DATA: text sent by the server which is displayed by writing to the terminal */
         94: function(self, m) {
 			// Slice the heading 9 bytes and send the remaining xterm sequence to the terminal
-            term.write(m.slice(9))
+            term.write(fromUtf8(m.slice(9)))
 			return
         },
 		/* SSH_MSG_CHANNEL_EOF: sent by the server indicating no more data will be sent to the channel*/
