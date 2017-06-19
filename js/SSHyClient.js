@@ -148,7 +148,7 @@ function startxtermjs() {
 			//xtermjs is kind enough to evaluate our special characters instead of having to translate every char ourself
 			command = term.evaluateKeyEscapeSequence(e).key
 		}
-		
+
 		return command == null ? null : transport.expect_key(command)
 	}
 
@@ -156,7 +156,13 @@ function startxtermjs() {
 	term.textarea.onpaste = function(ev) {
 		if (ev.clipboardData) {
 			var text = ev.clipboardData.getData('text/plain');
-
+			if(text.length > 5000){
+				text = splitSlice(text)
+				for(var i = 0; i < text.length -1; i++){
+					transport.expect_key(text[i])
+				}
+				return
+			}
 			transport.expect_key(text)
 		}
 	}
