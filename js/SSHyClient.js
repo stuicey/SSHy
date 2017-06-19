@@ -36,7 +36,7 @@ function auth_failure() {
 		transport.disconnect()
 		return
 	}
-	term.write("\n\r" + termUsername + '@' + wsproxyURL.split('/')[3].split(':')[0] + '\'s password:')
+	term.write("\n\r" + termUsername + '@' + wsproxyURL.split('/')[2].split(':')[0] + '\'s password:')
 	termPassword = ''
    }
 
@@ -55,9 +55,17 @@ function startSSHy() {
 	ws.onmessage = function(e) {
 		transport.handle(atob(e.data))
 	}
+
+	ws.onclose = function(e){
+		// Check if term exists - if not then no SSH connection was made
+		if(!term){
+			termInit()
+			term.write('WebSocket connection failed: Error in connection establishment: code ' + e.code)
+		}
+	}
 }
 
-function startxtermjs() {
+function termInit() {
 	// Define the terminal rows/cols
 	term = new Terminal({
 		cols: termCols,
@@ -65,6 +73,10 @@ function startxtermjs() {
 	})
 	// start xterm.js
 	term.open(document.getElementById('terminal'), true)
+}
+
+function startxtermjs() {
+	termInit()
 
 	// if we haven't authenticated yet we're doing an interactive login
 	if(!transport.auth.authenticated){
@@ -103,7 +115,7 @@ function startxtermjs() {
 					break
 				case 13: // enter
 					if(termPassword == undefined){
-						term.write("\n\r" + termUsername + '@' + wsproxyURL.split('/')[3].split(':')[0] + '\'s password:')
+						term.write("\n\r" + termUsername + '@' + wsproxyURL.split('/')[2].split(':')[0] + '\'s password:')
 						termPassword = ''
 					} else {
 						transport.auth.ssh_connection()
