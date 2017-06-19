@@ -269,26 +269,13 @@ SSHyClient.Transport.prototype = {
     parse_kex_reply: function(m) {
         m = new SSHyClient.Message(m)
         var random = m.get_bytes(18)
-        var kex_algorithms = m.get_string().split(',')
-        var server_keys = m.get_string().split(',')
-        var client_cipher = m.get_string().split(',')
-        var server_cipher = m.get_string().split(',')
-        var client_mac = m.get_string().split(',')
-        var server_mac = m.get_string().split(',')
 
-        function filter(client, server) {
-            client = client.split(',')
-            for (var x = 0; x < client.length; ++x) {
-                if (server.indexOf(client[x]) != -1) {
-                    return client[x];
-                }
-            }
-        }
-
-        var kex = filter(this.preferred_algorithms[0], kex_algorithms)
-        var keys = filter(this.preferred_algorithms[1], server_keys)
-        var cipher = filter(this.preferred_algorithms[2], server_cipher)
-        var mac = filter(this.preferred_algorithms[3], server_mac)
+		var kex = filter(this.preferred_algorithms[0], m.get_string().split(','))
+		var keys = filter(this.preferred_algorithms[1], m.get_string().split(','))
+		m.get_string().split(',')
+		var cipher = filter(this.preferred_algorithms[2],  m.get_string().split(','))
+        m.get_string().split(',')
+		var mac = filter(this.preferred_algorithms[3], m.get_string().split(','))
 
         if (!kex || !keys || !cipher || !mac) {
             var missing = ''
@@ -305,7 +292,7 @@ SSHyClient.Transport.prototype = {
                 missing += "MAC Algorithm"
             }
 
-            display_error("Incompatable ssh server (no compatable - " + missing + " )")
+            term.write("Incompatable SSH server (no compatable - " + missing + " )")
             throw "Chosen Algs = kex=" + kex + ", keys=" + keys + ", cipher=" + cipher + ", mac=" + mac
         }
         // Set those preferred Algs
@@ -329,28 +316,29 @@ SSHyClient.Transport.prototype = {
     },
 
     activate_encryption: function(SHAVersion) {
+        this.parceler.block_size = 16
+
         // Generate the keys we need for encryption and HMAC
-        this.parceler.outbound_enc_iv = this.generate_key('A', 16, SHAVersion)
-        this.parceler.outbound_enc_key = this.generate_key('C', 16, SHAVersion)
+        this.parceler.outbound_enc_iv = this.generate_key('A', this.parceler.block_size, SHAVersion)
+        this.parceler.outbound_enc_key = this.generate_key('C', this.parceler.block_size, SHAVersion)
         this.parceler.outbound_mac_key = this.generate_key('E', this.parceler.macSize, SHAVersion)
 
         this.parceler.outbound_cipher = new SSHyClient.crypto.AES(	this.parceler.outbound_enc_key,
 																	SSHyClient.AES_CTR,
 																	this.parceler.outbound_enc_iv,
-																	new SSHyClient.crypto.counter(128, inflate_long(this.parceler.outbound_enc_iv)))
+																	new SSHyClient.crypto.counter(this.parceler.block_size * 8, inflate_long(this.parceler.outbound_enc_iv)))
 
-        this.parceler.inbound_enc_iv = this.generate_key('B', 16, SHAVersion)
-        this.parceler.inbound_enc_key = this.generate_key('D', 16, SHAVersion)
+        this.parceler.inbound_enc_iv = this.generate_key('B', this.parceler.block_size, SHAVersion)
+        this.parceler.inbound_enc_key = this.generate_key('D', this.parceler.block_size, SHAVersion)
         this.parceler.inbound_mac_key = this.generate_key('F', this.parceler.macSize, SHAVersion)
 
         this.parceler.inbound_cipher = new SSHyClient.crypto.AES(	this.parceler.inbound_enc_key,
 																	SSHyClient.AES_CTR,
 																	this.parceler.inbound_enc_iv,
-																	new SSHyClient.crypto.counter(128, inflate_long(this.parceler.inbound_enc_iv)))
+																	new SSHyClient.crypto.counter(this.parceler.block_size * 8, inflate_long(this.parceler.inbound_enc_iv)))
 
         // signal to the parceler that we want to encrypt and decypt
         this.parceler.encrypting = true
-        this.parceler.block_size = 16
 
         this.auth.request_auth()
     },

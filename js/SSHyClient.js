@@ -30,13 +30,13 @@ window.onresize = function resize() {
 }
 // Called on unsuccessful SSH connection authentication
 function auth_failure() {
-	term.write("\n\rAccess Denied")
+	term.write("Access Denied\r\n")
 	if(++failedAttempts >= 5){
-		term.write("\n\rToo many failed authentication attempts")
+		term.write("Too many failed authentication attempts")
 		transport.disconnect()
 		return
 	}
-	term.write("\n\r" + termUsername + '@' + wsproxyURL.split('/')[2].split(':')[0] + '\'s password:')
+	term.write(termUsername + '@' + wsproxyURL.split('/')[2].split(':')[0] + '\'s password:')
 	termPassword = ''
    }
 
@@ -90,7 +90,7 @@ function startxtermjs() {
 		}
 
 		// So we don't spam single control characters
-		if (e.key.length > 1 && (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey)) {
+		if (e.key.length > 1 && (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) && e.key != "Backspace") {
 			return
 		}
 
@@ -105,7 +105,7 @@ function startxtermjs() {
 					if(termPassword == undefined){
 						if(termUsername.length > 0){
 							term.write('\b')
-							term.eraseRight(term.x, term.y)
+							term.eraseRight(term.x - 1, term.y)
 							termUsername = termUsername.slice(0,termUsername.length - 1)
 						}
 					} else {
@@ -118,6 +118,7 @@ function startxtermjs() {
 						term.write("\n\r" + termUsername + '@' + wsproxyURL.split('/')[2].split(':')[0] + '\'s password:')
 						termPassword = ''
 					} else {
+						term.write('\n\r')
 						transport.auth.ssh_connection()
 						return
 					}
@@ -133,13 +134,11 @@ function startxtermjs() {
 			return
 		}
 
-		var command = {
-			key: null
-		}
+		var command
 
 		// Decides if the keypress is an alphanumeric character or needs escaping
 		if (e.key.length == 1 && !(e.altKey || e.ctrlKey || e.metaKey)) {
-			command.key = e.key
+			command = e.key
 		} else if(e.key.length == 1 && (e.shiftKey && e.ctrlKey)){
 			// allows ctrl + shift + v for pasting
 			if(e.key != 'V'){
@@ -147,10 +146,10 @@ function startxtermjs() {
 			}
 		} else {
 			//xtermjs is kind enough to evaluate our special characters instead of having to translate every char ourself
-			command = term.evaluateKeyEscapeSequence(e)
+			command = term.evaluateKeyEscapeSequence(e).key
 		}
-
-		return command.key == null ? null : transport.expect_key(command.key)
+		
+		return command == null ? null : transport.expect_key(command)
 	}
 
 	//TODO: Find work around for firefox
