@@ -15,10 +15,14 @@ var failedAttempts = 0;
 window.onload = function() {
 	document.body.innerHTML +=	'<div id="settingsNav" class="sidenav">' +
 								'<a href="javascript:void(0)" class="closebtn" onclick="toggleNav(0)">&times;</a>' +
-								'<span style="padding: 8px 8px 8px 32px;">Terminal Colour</span>' +
+								'<span class="title">Terminal Colour</span>' +
 								'<a class="leftarrow" href="javascript:void(0)" onclick="cycleColorSchemes(0)">\<--</a>' +
 								'<span class="middle" id="currentColor">Monokai</span>' +
 								'<a class="rightarrow" href="javascript:void(0)" onclick="cycleColorSchemes(1)">--\></a>' +
+								'<span class="title" style="padding-top:20px;">Local Echo</span>' +
+								'<a class="leftarrow" href="javascript:void(0)" onclick="setLocalEcho(0)">---</a>' +
+								'<span class="middle" id="currentLEcho">Off</span>' +
+								'<a class="rightarrow" href="javascript:void(0)" onclick="setLocalEcho(1)">+++</a>' +
 								'</div>' +
 								'<span class="gear" onclick="toggleNav(250)">&#9881</span>';
 
@@ -46,6 +50,12 @@ window.onbeforeunload = function() {
 
 function toggleNav(size){
 	document.getElementById("settingsNav").style.width = size;
+}
+
+// Toggles Local Echo on and off
+function setLocalEcho(dir){
+	transport.settings.localEcho = dir;
+	document.getElementById('currentLEcho').innerHTML = transport.settings.localEcho ? "On" : "Off";
 }
 
 // Called on unsuccessful SSH connection authentication

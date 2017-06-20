@@ -2274,7 +2274,7 @@
 }
 
 /* The navigation menu links */
-.sidenav a, .sidenav span {
+.sidenav a {
     text-decoration: none;
     color: #818181;
     display: block;
@@ -2302,6 +2302,13 @@
 	display: inline-block;
 
 }
+
+.sidenav .title {
+	width: 250px;
+	text-align: center;
+	display: block;
+}
+
 .sidenav a {
 	display: inline-block;
 }
