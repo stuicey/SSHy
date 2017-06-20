@@ -16,8 +16,8 @@ SSHyClient.parceler = function(web_socket, transport) {
 
     this.inbound_cipher = null;
 
-	this.hmacSHAVersion	= null;
-	this.macSize = null;
+    this.hmacSHAVersion = null;
+    this.macSize = null;
 
     this.outbound_sequence_num = 0;
     this.inbound_sequence_num = 0;
@@ -29,7 +29,7 @@ SSHyClient.parceler = function(web_socket, transport) {
 
 SSHyClient.parceler.prototype = {
     send: function(data, initial) {
-		initial = initial === undefined ? false : true;
+        initial = initial === undefined ? false : true;
         // Much easier to just deal with a string here instead of an object
         data = data.toString();
         // We don't need to pack the initial message
@@ -69,7 +69,7 @@ SSHyClient.parceler.prototype = {
     decrypt: function() {
         // Since we cannot guarentee that we will be decyrpting zero, one or multiple packets we have to rely on this.read_ibuffer()
         var buffer = ' ';
-		var header;
+        var header;
         while (buffer !== null) {
             // First lets decrypt the first block and get the packet length
             if (!this.decrypted_header) {
@@ -112,19 +112,19 @@ SSHyClient.parceler.prototype = {
 
             // increment the seq number
             this.inbound_sequence_num++;
-			// calculate how much WINDOW_SIZE we have left
-			SSHyClient.WINDOW_SIZE -= packet_size;
+            // calculate how much WINDOW_SIZE we have left
+            SSHyClient.WINDOW_SIZE -= packet_size;
 
-			if(SSHyClient.WINDOW_SIZE <= 0){
-				this.transport.winAdjust();
-			}
+            if (SSHyClient.WINDOW_SIZE <= 0) {
+                this.transport.winAdjust();
+            }
             this.transport.handle_dec(packet);
         }
     },
 
     read_ibuffer: function(bytes) { // if we don't feed it any arguments we are only wanting one block anyway
-		bytes = bytes === undefined ? this.block_size : bytes;
-		if (this.inbound_buffer.length < bytes) {
+        bytes = bytes === undefined ? this.block_size : bytes;
+        if (this.inbound_buffer.length < bytes) {
             return null;
         }
 

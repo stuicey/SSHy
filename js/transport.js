@@ -9,12 +9,12 @@ SSHyClient.Transport = function(ws) {
     this.H = null; // A hash used for encryption key generation by the preferred_keys algorithm
 
     // Our supported Algorithms
-    this.preferred_algorithms = [	'diffie-hellman-group-exchange-sha256,diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha256,diffie-hellman-group14-sha1,diffie-hellman-group1-sha256,diffie-hellman-group1-sha1',
-							        'ssh-rsa',
-							        'aes128-ctr',
-							        'hmac-sha2-256,hmac-sha1',
-							        'none'
-							    ];
+    this.preferred_algorithms = ['diffie-hellman-group-exchange-sha256,diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha256,diffie-hellman-group14-sha1,diffie-hellman-group1-sha256,diffie-hellman-group1-sha1',
+        'ssh-rsa',
+        'aes128-ctr',
+        'hmac-sha2-256,hmac-sha1',
+        'none'
+    ];
 
     // Objects storing references to our different algorithm modules
     this.preferred_kex = null;
@@ -28,11 +28,11 @@ SSHyClient.Transport = function(ws) {
     this.parceler = new SSHyClient.parceler(ws, this);
     this.auth = new SSHyClient.auth(this.parceler);
 
-	this.need_buffer = false;
-	this.temp_buffer = '';
+    this.need_buffer = false;
+    this.temp_buffer = '';
 
-	this.settings = new SSHyClient.settings();
-	this.lastKey = null;
+    this.settings = new SSHyClient.settings();
+    this.lastKey = null;
 };
 
 SSHyClient.Transport.prototype = {
@@ -47,29 +47,29 @@ SSHyClient.Transport.prototype = {
         'diffie-hellman-group-exchange-sha1': function(self) {
             return new SSHyClient.dhGroupEx(self, 'SHA-1');
         },
-		'diffie-hellman-group1-sha256': function(self) {
-			return new SSHyClient.dhGroup1(self, 1, 'SHA-256');
-		},
-		'diffie-hellman-group14-sha256': function(self) {
-			return new SSHyClient.dhGroup1(self, 14, 'SHA-256');
-		},
-		'diffie-hellman-group-exchange-sha256': function(self) {
-			return new SSHyClient.dhGroupEx(self, 'SHA-256');
-		}
+        'diffie-hellman-group1-sha256': function(self) {
+            return new SSHyClient.dhGroup1(self, 1, 'SHA-256');
+        },
+        'diffie-hellman-group14-sha256': function(self) {
+            return new SSHyClient.dhGroup1(self, 14, 'SHA-256');
+        },
+        'diffie-hellman-group-exchange-sha256': function(self) {
+            return new SSHyClient.dhGroupEx(self, 'SHA-256');
+        }
     },
 
-	mac_info: {
-		'hmac-sha1': function(self){
-			self.parceler.hmacSHAVersion = 'SHA-1';
-			self.parceler.macSize = 20;
-			return;
-		},
-		'hmac-sha2-256': function(self){
-			self.parceler.hmacSHAVersion = 'SHA-256';
-			self.parceler.macSize = 32;
-			return;
-		}
-	},
+    mac_info: {
+        'hmac-sha1': function(self) {
+            self.parceler.hmacSHAVersion = 'SHA-1';
+            self.parceler.macSize = 20;
+            return;
+        },
+        'hmac-sha2-256': function(self) {
+            self.parceler.hmacSHAVersion = 'SHA-256';
+            self.parceler.macSize = 32;
+            return;
+        }
+    },
 
     // Handles inbound traffic over the socket
     handle: function(r) {
@@ -91,161 +91,161 @@ SSHyClient.Transport.prototype = {
             return;
         }
 
-		// very hacky quick fix for super long KEX init messages TODO: finish work in clean-up
-		if(new SSHyClient.Message(r).get_int() > r.length && !this.need_buffer){
-			this.need_buffer = true;
-		}
+        // very hacky quick fix for super long KEX init messages TODO: finish work in clean-up
+        if (new SSHyClient.Message(r).get_int() > r.length && !this.need_buffer) {
+            this.need_buffer = true;
+        }
 
-		if(this.need_buffer){
-			if(!this.temp_buffer){
-				this.temp_buffer = r;
-				return;
-			}
-			this.temp_buffer += r;
-			this.parceler.inbound_sequence_num++;
-			this.need_buffer = false;
-			this.handler_table[this.temp_buffer.substring(5,6).charCodeAt(0)](this, this.temp_buffer);
-			return;
-		}
+        if (this.need_buffer) {
+            if (!this.temp_buffer) {
+                this.temp_buffer = r;
+                return;
+            }
+            this.temp_buffer += r;
+            this.parceler.inbound_sequence_num++;
+            this.need_buffer = false;
+            this.handler_table[this.temp_buffer.substring(5, 6).charCodeAt(0)](this, this.temp_buffer);
+            return;
+        }
 
         this.parceler.inbound_sequence_num++;
 
-		// Now we have one message we should check the code and see what to do with it.
-		try {
-			this.handler_table[r.substring(5, 6).charCodeAt(0)](this, r);
-		} catch (err) {
-			console.log(err);
-			console.log("Error! code - " + r.substring(5, 6).charCodeAt(0) + " does not exist!");
-		}
+        // Now we have one message we should check the code and see what to do with it.
+        try {
+            this.handler_table[r.substring(5, 6).charCodeAt(0)](this, r);
+        } catch (err) {
+            console.log(err);
+            console.log("Error! code - " + r.substring(5, 6).charCodeAt(0) + " does not exist!");
+        }
     },
 
-	/*
-		A table storing various function calls corresponding to the Message ID numbers defined [https://www.ietf.org/rfc/rfc4250.txt]
-		called like :
-			`handler_table[id](<object> SSHyClient.transport, <string> message)`
-	*/
+    /*
+    	A table storing various function calls corresponding to the Message ID numbers defined [https://www.ietf.org/rfc/rfc4250.txt]
+    	called like :
+    		`handler_table[id](<object> SSHyClient.transport, <string> message)`
+    */
     handler_table: {
-		/* SSH_MSG_DISCONNECT - sent by the SSH server when the connection is gracefully closed */
+        /* SSH_MSG_DISCONNECT - sent by the SSH server when the connection is gracefully closed */
         1: function(self, m) {
-			self.disconnect();
-			return;
+            self.disconnect();
+            return;
         },
-		/* SSH_MSG_IGNORE - sent by the SSH server when keys are not to be echoed */
-		2: function(self, m){
-			return;
-		},
-		/* SSH_MSG_UNIMPLEMENTED - sent by the server to indicate a function is not implemented on the remote */
-		3: function(self, m){
-			return;
-		},
-		/* SSH_MSG_SERVICE_ACCEPT: sent by the SSH server after the client request's a service (post-kex) */
+        /* SSH_MSG_IGNORE - sent by the SSH server when keys are not to be echoed */
+        2: function(self, m) {
+            return;
+        },
+        /* SSH_MSG_UNIMPLEMENTED - sent by the server to indicate a function is not implemented on the remote */
+        3: function(self, m) {
+            return;
+        },
+        /* SSH_MSG_SERVICE_ACCEPT: sent by the SSH server after the client request's a service (post-kex) */
         6: function(self, m) {
-			var service = new SSHyClient.Message(m.slice(1)).get_string();
+            var service = new SSHyClient.Message(m.slice(1)).get_string();
             // Check th type of message sent by the server and start the appropriate service
-            if ( service == "ssh-userauth") {
+            if (service == "ssh-userauth") {
                 self.auth.ssh_connection();
             }
-			return;
+            return;
         },
-		/* SSH_MSG_KEXINIT: sent by the server after algorithm negotiation - contains server's keys and hash */
+        /* SSH_MSG_KEXINIT: sent by the server after algorithm negotiation - contains server's keys and hash */
         20: function(self, m) {
             // Remote_kex_message must have no padding or length meta data so we have to strip that out
             m = new SSHyClient.Message(m).get_string();
             self.parse_kex_reply(m);
             self.remote_kex_message = self.cut_padding(m); // we need this later for calculating H
             self.preferred_kex.start();
-			return;
+            return;
         },
-		/* SSH_MSG_KEX_DH_GEX_GROUP: used for DH GroupEx when negotiating which group to use */
+        /* SSH_MSG_KEX_DH_GEX_GROUP: used for DH GroupEx when negotiating which group to use */
         31: function(self, m) {
             /* Since we're just extracting data from r in parse_reply, we don't need to do the processing to remove the padding
 			 and can just remove the first 6 bytes (length, padding length, message code) */
             self.preferred_kex.parse_reply(31, m.slice(6));
-			return;
+            return;
         },
-		/* SSH_MSG_KEX_DH_GEX_REPLY: used for DH GroupEx, sent by the server - contains server's keys and hash */
+        /* SSH_MSG_KEX_DH_GEX_REPLY: used for DH GroupEx, sent by the server - contains server's keys and hash */
         33: function(self, m) {
             self.preferred_kex.parse_reply(33, m.slice(6));
-			return;
+            return;
         },
-		/* SSH_MSG_USERAUTH_FAILURE: sent by the server when there is a complete or partial failure with user authentication */
+        /* SSH_MSG_USERAUTH_FAILURE: sent by the server when there is a complete or partial failure with user authentication */
         51: function(self, m) {
-			self.auth.awaitingAuthentication = false;
+            self.auth.awaitingAuthentication = false;
             auth_failure();
-			return;
+            return;
         },
-		/* SSH_MSG_USERAUTH_SUCCESS: sent by the server when an authentication attempt succeeds */
+        /* SSH_MSG_USERAUTH_SUCCESS: sent by the server when an authentication attempt succeeds */
         52: function(self, m) {
             self.auth.authenticated = true;
-			self.auth.awaitingAuthentication = false;
+            self.auth.awaitingAuthentication = false;
             self.auth.auth_success(true);
-			return;
+            return;
         },
-		/* SSH_MSG_GLOBAL_REQUEST: sent by the server to request information, server sends its hostkey after user-auth
-		   but RSA keys (TODO) aren't implemented so for now we can ignore this message */
+        /* SSH_MSG_GLOBAL_REQUEST: sent by the server to request information, server sends its hostkey after user-auth
+           but RSA keys (TODO) aren't implemented so for now we can ignore this message */
         80: function(self, m) {
             return;
         },
-		/* SSH_MSG_CHANNEL_OPEN_CONFIRMATION: sent by the server to inform the client that a new channel has been opened */
+        /* SSH_MSG_CHANNEL_OPEN_CONFIRMATION: sent by the server to inform the client that a new channel has been opened */
         91: function(self, m) {
             self.auth.get_pty('xterm-256color', termCols, termRows);
-			return;
+            return;
         },
-		/* SSH_MSG_CHANNEL_WINDOW_ADJUST: sent by the server to inform the client of the maximum window size (bytes) */
+        /* SSH_MSG_CHANNEL_WINDOW_ADJUST: sent by the server to inform the client of the maximum window size (bytes) */
         93: function(self, m) {
-			return;
+            return;
         },
-		/* SSH_MSG_CHANNEL_DATA: text sent by the server which is displayed by writing to the terminal */
+        /* SSH_MSG_CHANNEL_DATA: text sent by the server which is displayed by writing to the terminal */
         94: function(self, m) {
-			// Slice the heading 9 bytes and send the remaining xterm sequence to the terminal
-			var str = fromUtf8(m.slice(9));
-			if(self.settings.localEcho && self.lastKey){
-				if(str == self.lastKey){
-					self.lastKey = null;
-					return;
-				}
-				self.lastKey = null;
-				term.write('\b');
-			}
-			term.write(str);
-			return;
+            // Slice the heading 9 bytes and send the remaining xterm sequence to the terminal
+            var str = fromUtf8(m.slice(9));
+            if (self.settings.localEcho && self.lastKey) {
+                if (str == self.lastKey) {
+                    self.lastKey = null;
+                    return;
+                }
+                self.lastKey = null;
+                term.write('\b');
+            }
+            term.write(str);
+            return;
         },
-		/* SSH_MSG_CHANNEL_EOF: sent by the server indicating no more data will be sent to the channel*/
+        /* SSH_MSG_CHANNEL_EOF: sent by the server indicating no more data will be sent to the channel*/
         96: function(self, m) {
-			return;
+            return;
         },
-		/* SSH_MSG_CHANNEL_CLOSE: sent by the server to indicate the channel is now closed; the SSH connection remains open*/
+        /* SSH_MSG_CHANNEL_CLOSE: sent by the server to indicate the channel is now closed; the SSH connection remains open*/
         97: function(self, m) {
             self.disconnect();
-			return;
+            return;
         },
-		/* SSH_MSG_CHANNEL_REQUEST: sent by the server to request a new channel, as the client we can just ignore this*/
-		98: function(self, m){
-			return;
-		}
+        /* SSH_MSG_CHANNEL_REQUEST: sent by the server to request a new channel, as the client we can just ignore this*/
+        98: function(self, m) {
+            return;
+        }
     },
 
-	// Increase Window Size
-	winAdjust: function(){
-		var m = new SSHyClient.Message();
-		m.add_bytes(String.fromCharCode(SSHyClient.MSG_CHANNEL_WINDOW_ADJUST));
-		m.add_int(0);
-		m.add_int(40674);
+    // Increase Window Size
+    winAdjust: function() {
+        var m = new SSHyClient.Message();
+        m.add_bytes(String.fromCharCode(SSHyClient.MSG_CHANNEL_WINDOW_ADJUST));
+        m.add_int(0);
+        m.add_int(40674);
 
-		this.send_packet(m.toString());
-		SSHyClient.WINDOW_SIZE = 40674;
-	},
+        this.send_packet(m.toString());
+        SSHyClient.WINDOW_SIZE = 40674;
+    },
 
-	// Disconnect the web client from the server with a given error code (11 - SSH_DISCONNECT_BY_APPLICATION )
-	disconnect: function(reason){
-		reason = reason === undefined ? 11 : reason;
-		var m = new SSHyClient.Message();
-		m.add_bytes(String.fromCharCode(SSHyClient.MSG_DISCONNECT));
-		m.add_int(reason);
-		this.send_packet(m.toString());
-		ws.close();
-		term.write("\r\nConnection to " + wsproxyURL.split('/')[3].split(':')[0] + " closed.");
-	},
+    // Disconnect the web client from the server with a given error code (11 - SSH_DISCONNECT_BY_APPLICATION )
+    disconnect: function(reason) {
+        reason = reason === undefined ? 11 : reason;
+        var m = new SSHyClient.Message();
+        m.add_bytes(String.fromCharCode(SSHyClient.MSG_DISCONNECT));
+        m.add_int(reason);
+        this.send_packet(m.toString());
+        ws.close();
+        term.write("\r\nConnection to " + wsproxyURL.split('/')[3].split(':')[0] + " closed.");
+    },
 
     cut_padding: function(m) {
         return m.substring(1, m.length - m[0].charCodeAt(0));
@@ -283,12 +283,12 @@ SSHyClient.Transport.prototype = {
         m = new SSHyClient.Message(m);
         var random = m.get_bytes(18);
 
-		var kex = filter(this.preferred_algorithms[0], m.get_string().split(','));
-		var keys = filter(this.preferred_algorithms[1], m.get_string().split(','));
-		m.get_string().split(',');
-		var cipher = filter(this.preferred_algorithms[2],  m.get_string().split(','));
+        var kex = filter(this.preferred_algorithms[0], m.get_string().split(','));
+        var keys = filter(this.preferred_algorithms[1], m.get_string().split(','));
         m.get_string().split(',');
-		var mac = filter(this.preferred_algorithms[3], m.get_string().split(','));
+        var cipher = filter(this.preferred_algorithms[2], m.get_string().split(','));
+        m.get_string().split(',');
+        var mac = filter(this.preferred_algorithms[3], m.get_string().split(','));
 
         if (!kex || !keys || !cipher || !mac) {
             var missing = '';
@@ -310,7 +310,7 @@ SSHyClient.Transport.prototype = {
         }
         // Set those preferred Algs
         this.preferred_kex = this.kex_info[kex](this);
-		this.preferred_mac = this.mac_info[mac](this);
+        this.preferred_mac = this.mac_info[mac](this);
     },
 
     /* 	Takes a character and size then generates a key to be used by ssh
@@ -325,7 +325,7 @@ SSHyClient.Transport.prototype = {
         m.add_bytes(char);
         m.add_bytes(this.session_id);
 
-        return SHAVersion == 'SHA-1' ? new SSHyClient.hash.SHA1(m.toString()).digest().substring(0,size) : new SSHyClient.hash.SHA256(m.toString()).digest().substring(0,size);
+        return SHAVersion == 'SHA-1' ? new SSHyClient.hash.SHA1(m.toString()).digest().substring(0, size) : new SSHyClient.hash.SHA256(m.toString()).digest().substring(0, size);
     },
 
     activate_encryption: function(SHAVersion) {
@@ -336,19 +336,19 @@ SSHyClient.Transport.prototype = {
         this.parceler.outbound_enc_key = this.generate_key('C', this.parceler.block_size, SHAVersion);
         this.parceler.outbound_mac_key = this.generate_key('E', this.parceler.macSize, SHAVersion);
 
-        this.parceler.outbound_cipher = new SSHyClient.crypto.AES(	this.parceler.outbound_enc_key,
-																	SSHyClient.AES_CTR,
-																	this.parceler.outbound_enc_iv,
-																	new SSHyClient.crypto.counter(this.parceler.block_size * 8, inflate_long(this.parceler.outbound_enc_iv)));
+        this.parceler.outbound_cipher = new SSHyClient.crypto.AES(this.parceler.outbound_enc_key,
+            SSHyClient.AES_CTR,
+            this.parceler.outbound_enc_iv,
+            new SSHyClient.crypto.counter(this.parceler.block_size * 8, inflate_long(this.parceler.outbound_enc_iv)));
 
         this.parceler.inbound_enc_iv = this.generate_key('B', this.parceler.block_size, SHAVersion);
         this.parceler.inbound_enc_key = this.generate_key('D', this.parceler.block_size, SHAVersion);
         this.parceler.inbound_mac_key = this.generate_key('F', this.parceler.macSize, SHAVersion);
 
-        this.parceler.inbound_cipher = new SSHyClient.crypto.AES(	this.parceler.inbound_enc_key,
-																	SSHyClient.AES_CTR,
-																	this.parceler.inbound_enc_iv,
-																	new SSHyClient.crypto.counter(this.parceler.block_size * 8, inflate_long(this.parceler.inbound_enc_iv)));
+        this.parceler.inbound_cipher = new SSHyClient.crypto.AES(this.parceler.inbound_enc_key,
+            SSHyClient.AES_CTR,
+            this.parceler.inbound_enc_iv,
+            new SSHyClient.crypto.counter(this.parceler.block_size * 8, inflate_long(this.parceler.inbound_enc_iv)));
 
         // signal to the parceler that we want to encrypt and decypt
         this.parceler.encrypting = true;

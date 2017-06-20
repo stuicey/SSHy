@@ -1,6 +1,6 @@
 SSHyClient.dhGroupEx = function(transport, SHAVersion) {
     this.transport = transport;
-	this.SHAVersion = SHAVersion;
+    this.SHAVersion = SHAVersion;
     this.p = null;
     this.q = null;
     this.g = null;
@@ -106,7 +106,7 @@ SSHyClient.dhGroupEx.prototype = {
 
         // TODO: Verify host key and Signature
         this.transport.K = K;
-		this.transport.session_id = this.transport.H = this.SHAVersion == 'SHA-1' ? new SSHyClient.hash.SHA1(m.toString()).digest() : new SSHyClient.hash.SHA256(m.toString()).digest();
+        this.transport.session_id = this.transport.H = this.SHAVersion == 'SHA-1' ? new SSHyClient.hash.SHA1(m.toString()).digest() : new SSHyClient.hash.SHA256(m.toString()).digest();
         this.transport.send_new_keys(this.SHAVersion);
     }
 };

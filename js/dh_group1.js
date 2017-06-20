@@ -1,6 +1,6 @@
 SSHyClient.dhGroup1 = function(transport, group, SHAVersion) {
     this.transport = transport;
-	this.SHAVersion = SHAVersion;
+    this.SHAVersion = SHAVersion;
     this.x = new BigInteger("0", 10); // random number
     this.e = new BigInteger("0", 10); // client generated modPow
     this.f = new BigInteger("0", 10); // server generated modPow

@@ -25,8 +25,8 @@ SSHyClient.crypto.AES.prototype = {
     },
 
     decrypt: function(ciphertext) {
-		var plaintext;
-		ciphertext = toByteArray(ciphertext);
+        var plaintext;
+        ciphertext = toByteArray(ciphertext);
         // do different stuff for CTR & CBC mode
         if (this.mode == SSHyClient.AES_CBC) {
             plaintext = this.cipher.decrypt(ciphertext, this.iv);

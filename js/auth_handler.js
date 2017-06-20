@@ -3,7 +3,7 @@ SSHyClient.auth = function(parceler) {
     this.username = null;
     this.password = null;
     this.authenticated = null;
-	this.awaitingAuthentication = false;
+    this.awaitingAuthentication = false;
 };
 
 SSHyClient.auth.prototype = {
@@ -16,30 +16,30 @@ SSHyClient.auth.prototype = {
     },
     // Sends the username and password provided by index.html
     ssh_connection: function() {
-		if(isWrapper && term){
-	        var p = new SSHyClient.Message();
-	        p.add_bytes(String.fromCharCode(SSHyClient.MSG_USERAUTH_REQUEST));
-	        p.add_string(termUsername);
-	        p.add_string("ssh-connection");
-	        p.add_string("password");
-	        p.add_boolean(false);
-	        p.add_string(termPassword);
+        if (isWrapper && term) {
+            var p = new SSHyClient.Message();
+            p.add_bytes(String.fromCharCode(SSHyClient.MSG_USERAUTH_REQUEST));
+            p.add_string(termUsername);
+            p.add_string("ssh-connection");
+            p.add_string("password");
+            p.add_boolean(false);
+            p.add_string(termPassword);
 
-	        this.parceler.send(p);
-			this.awaitingAuthentication = true;
-		} else {
-			// If no termUser or termPass has been set then we are likely using the wrapper
-			startxtermjs();
-		}
+            this.parceler.send(p);
+            this.awaitingAuthentication = true;
+        } else {
+            // If no termUser or termPass has been set then we are likely using the wrapper
+            startxtermjs();
+        }
     },
     // Called on successful or partially successful SSH connection authentications
     auth_success: function(success) {
         if (success) {
-			// Change the window title
-			document.title = termUsername + '@' + wsproxyURL.split('/')[3].split(':')[0];
-			// Purge the username and password
-			termUsername = '';
-			termPassword = undefined;
+            // Change the window title
+            document.title = termUsername + '@' + wsproxyURL.split('/')[3].split(':')[0];
+            // Purge the username and password
+            termUsername = '';
+            termPassword = undefined;
             // We've been authenticated, lets open a channel
             this.open_channel('session');
         }
@@ -47,7 +47,7 @@ SSHyClient.auth.prototype = {
     },
     // Opens a channel - generally called right after authenticating with the SSH server
     open_channel: function(type, onsuccess) {
-		onsuccess = onsuccess === undefined ? null : onsuccess;
+        onsuccess = onsuccess === undefined ? null : onsuccess;
         var m = new SSHyClient.Message();
         m.add_bytes(String.fromCharCode(SSHyClient.MSG_CHANNEL_OPEN));
         m.add_string(type);
@@ -102,10 +102,10 @@ SSHyClient.auth.prototype = {
 
         this.parceler.send(m);
         // Start xterm.js
-		if(termPassword === undefined){
-			term.write('\n\r');
-			return;
-		}
+        if (termPassword === undefined) {
+            term.write('\n\r');
+            return;
+        }
         startxtermjs();
     },
     // encapsulates a character or command and sends it to the SSH server
