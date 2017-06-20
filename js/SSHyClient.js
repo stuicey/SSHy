@@ -156,6 +156,11 @@ function startxtermjs() {
 			command = term.evaluateKeyEscapeSequence(e).key
 		}
 
+		if(transport.settings.localEcho){
+			// Decide if we're going to locally' echo this key or not
+			transport.settings.parseKey(e)
+		}
+		// Regardless of local echo we still want a reply to confirm / update terminal
 		return command == null ? null : transport.expect_key(command)
 	}
 

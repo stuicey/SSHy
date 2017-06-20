@@ -23,4 +23,5 @@ args:
 - "js/dh_group1.js"
 - "js/dh_group_ex.js"
 - "js/SSHyClient.js"
+- "js/settings.js"
 cwd: "H:/SSHy"

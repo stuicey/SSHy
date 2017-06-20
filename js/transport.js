@@ -9,12 +9,12 @@ SSHyClient.Transport = function(ws) {
     this.H = null // A hash used for encryption key generation by the preferred_keys algorithm
 
     // Our supported Algorithms
-    this.preferred_algorithms = ['diffie-hellman-group-exchange-sha256,diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha256,diffie-hellman-group14-sha1,diffie-hellman-group1-sha256,diffie-hellman-group1-sha1',
-        'ssh-rsa',
-        'aes128-ctr',
-        'hmac-sha2-256,hmac-sha1',
-        'none'
-    ]
+    this.preferred_algorithms = [	'diffie-hellman-group-exchange-sha256,diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha256,diffie-hellman-group14-sha1,diffie-hellman-group1-sha256,diffie-hellman-group1-sha1',
+							        'ssh-rsa',
+							        'aes128-ctr',
+							        'hmac-sha2-256,hmac-sha1',
+							        'none'
+							    ]
 
     // Objects storing references to our different algorithm modules
     this.preferred_kex = null
@@ -30,6 +30,9 @@ SSHyClient.Transport = function(ws) {
 
 	this.need_buffer = false
 	this.temp_buffer = ''
+
+	this.settings = new SSHyClient.settings()
+	this.lastKey = null
 }
 
 SSHyClient.Transport.prototype = {
@@ -195,7 +198,16 @@ SSHyClient.Transport.prototype = {
 		/* SSH_MSG_CHANNEL_DATA: text sent by the server which is displayed by writing to the terminal */
         94: function(self, m) {
 			// Slice the heading 9 bytes and send the remaining xterm sequence to the terminal
-            term.write(fromUtf8(m.slice(9)))
+			var str = fromUtf8(m.slice(9))
+			if(self.settings.localEcho && self.lastKey){
+				if(str == self.lastKey){
+					self.lastKey = null
+					return
+				}
+				self.lastKey = null
+				term.write('\b')
+			}
+			term.write(str)
 			return
         },
 		/* SSH_MSG_CHANNEL_EOF: sent by the server indicating no more data will be sent to the channel*/
