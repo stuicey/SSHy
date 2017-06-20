@@ -246,6 +246,14 @@ SSHyClient.Transport.prototype = {
         ws.close();
         term.write("\r\nConnection to " + wsproxyURL.split('/')[3].split(':')[0] + " closed.");
     },
+	// Sends a null packet to the SSH server to keep the connection alive
+	keepAlive: function(){
+		var m = new SSHyClient.Message();
+		m.add_bytes(String.fromCharCode(SSHyClient.MSG_IGNORE));
+		m.add_string('');
+
+		transport.send_packet(m.toString());
+	},
 
     cut_padding: function(m) {
         return m.substring(1, m.length - m[0].charCodeAt(0));

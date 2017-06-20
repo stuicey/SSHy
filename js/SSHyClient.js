@@ -12,6 +12,8 @@ var termPassword;
 
 var failedAttempts = 0;
 
+var keepAliveInterval;
+
 window.onload = function() {
     setColorScheme(colorScheme_ashes);
     startSSHy();
@@ -34,6 +36,17 @@ window.onbeforeunload = function() {
         transport.disconnect();
     }
 };
+
+// Starts an interval'd timer for keepAlive()
+function toggleKeepAlive(time){
+	time = time === undefined ? 1000 : time * 1000;
+	if(keepAliveInterval){
+		clearInterval(keepAliveInterval);
+		keepAliveInterval = null;
+	} else {
+		keepAliveInterval = setInterval(transport.keepAlive, time);
+	}
+}
 
 // Called on unsuccessful SSH connection authentication
 function auth_failure() {
