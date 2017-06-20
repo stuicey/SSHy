@@ -3,6 +3,8 @@ SSHyClient.settings = function() {
     this.localEcho = 0; // 0 - off; 1 - on; 3 - auto
 
     this.blockedKeys = [':'];
+
+	this.keepAliveInterval = undefined;
 };
 
 SSHyClient.settings.prototype = {
@@ -17,5 +19,18 @@ SSHyClient.settings.prototype = {
         }
         transport.lastKey = e.key;
         term.write(e.key);
-    }
+    },
+
+	setKeepAlive: function(time) {
+		time = time === undefined ? 0 : time * 1000;
+		if(time === 0 || this.keepAliveInterval !== undefined){
+			clearInterval(this.keepAliveInterval);
+			this.keepAliveInterval = undefined;
+			if(time){
+				this.keepAliveInterval = setInterval(transport.keepAlive, time);
+			}
+		} else {
+			this.keepAliveInterval = setInterval(transport.keepAlive, time);
+		}
+	}
 };
