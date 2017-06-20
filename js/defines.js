@@ -1,5 +1,3 @@
-function SSHyClient() {}
-
 SSHyClient = {
     // Global Defines
 	MSG_DISCONNECT: 1,
@@ -43,4 +41,4 @@ SSHyClient = {
 
     AES_CBC: 2,
     AES_CTR: 6
-}
+};

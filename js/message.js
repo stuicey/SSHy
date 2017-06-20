@@ -9,10 +9,10 @@
 */
 
 SSHyClient.Message = function(content) {
-    this.position = 0
+    this.position = 0;
 
-    this.packet = content == null ? new String : new String(content)
-}
+    this.packet = content === undefined ? String() : String(content);
+};
 
 SSHyClient.Message.prototype = {
     toString: function() {
@@ -29,40 +29,40 @@ SSHyClient.Message.prototype = {
     },
 
     get_int: function() {
-        return struct.unpack('I', this.get_bytes(4))[0]
+        return struct.unpack('I', this.get_bytes(4))[0];
     },
 
     get_string: function() {
-        return this.get_bytes(this.get_int())
+        return this.get_bytes(this.get_int());
     },
 
     get_mpint: function() {
-        return inflate_long(this.get_string())
+        return inflate_long(this.get_string());
     },
 
     add_bytes: function(d) {
-        this.packet += d
+        this.packet += d;
         return this;
     },
 
     add_boolean: function(b) {
-        this.add_bytes(b == true ? '\x01' : '\x00')
-        return this
+        this.add_bytes(b === true ? '\x01' : '\x00');
+        return this;
     },
 
     add_int: function(i) {
-        this.packet += struct.pack('I', i)
-        return this
+        this.packet += struct.pack('I', i);
+        return this;
     },
 
     add_mpint: function(d) {
-        this.add_string(deflate_long(d))
-        return this
+        this.add_string(deflate_long(d));
+        return this;
     },
 
     add_string: function(d) {
-        this.add_int(d.length)
-        this.packet += d
-        return this
+        this.add_int(d.length);
+        this.packet += d;
+        return this;
     }
-}
+};
