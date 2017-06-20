@@ -28,6 +28,13 @@ window.onresize = function resize() {
 		transport.auth.resize_pty(termCols, termRows)
 	}
 }
+// Run every time the page is refreshed / closed to disconnect from the SSH server
+window.onbeforeunload = function() {
+	if(ws || transport){
+		transport.disconnect()
+	}
+}
+
 // Called on unsuccessful SSH connection authentication
 function auth_failure() {
 	term.write("Access Denied\r\n")
