@@ -13,8 +13,17 @@ var termPassword;
 var failedAttempts = 0;
 
 window.onload = function() {
-    setColorScheme(colorScheme_ashes);
-    startSSHy();
+	document.body.innerHTML +=	'<div id="settingsNav" class="sidenav">' +
+								'<a href="javascript:void(0)" class="closebtn" onclick="toggleNav(0)">&times;</a>' +
+								'<span style="padding: 8px 8px 8px 32px;">Terminal Colour</span>' +
+								'<a class="leftarrow" href="javascript:void(0)" onclick="cycleColorSchemes(0)">\<--</a>' +
+								'<span class="middle" id="currentColor">Monokai</span>' +
+								'<a class="rightarrow" href="javascript:void(0)" onclick="cycleColorSchemes(1)">--\></a>' +
+								'</div>' +
+								'<span class="gear" onclick="toggleNav(250)">&#9881</span>';
+
+	setColorScheme(colorScheme_ashes);
+	startSSHy();
 };
 
 // Run every time the webpage is resized
@@ -34,6 +43,10 @@ window.onbeforeunload = function() {
         transport.disconnect();
     }
 };
+
+function toggleNav(size){
+	document.getElementById("settingsNav").style.width = size;
+}
 
 // Called on unsuccessful SSH connection authentication
 function auth_failure() {

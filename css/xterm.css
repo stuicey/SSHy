@@ -43,7 +43,7 @@
  ::-webkit-scrollbar {
  	display: none;
  }
- 
+
 .terminal {
     background-color: #000;
     color: #fff;
@@ -2254,4 +2254,95 @@
 
 .terminal .xterm-bg-color-255 {
     background-color: #eeeeee;
+}
+
+.sidenav {
+    height: 100%; /* 100% Full-height */
+    width: 0px; /* 0 width - change this with JavaScript */
+    position: fixed; /* Stay in place */
+    z-index: 3; /* Stay on top */
+    top: 0;
+    right: -1px;
+    background-color: #202020; /* Grey*/
+	border-left: 1px solid #444;
+    overflow-x: hidden; /* Disable horizontal scroll */
+    padding-top: 60px; /* Place content 60px from the top */
+    transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+	font-family: courier-new, courier, monospace;
+	font-size: 20px;
+	color: #818181;
+}
+
+/* The navigation menu links */
+.sidenav a, .sidenav span {
+    text-decoration: none;
+    color: #818181;
+    display: block;
+    transition: 0.3s;
+	padding: 8px 8px 8px 32px;
+}
+
+.sidenav .leftarrow {
+	float: left;
+	font-size: 12px;
+	padding: 2px 0px 0px 25px;
+}
+
+.sidenav .rightarrow {
+	float: right;
+	font-size: 12px;
+	padding: 2px 25px 0px 0px;
+}
+
+.sidenav .middle {
+	padding: 0px;
+	text-align: center;
+	width: 150px;
+	font-size: 18px;
+	display: inline-block;
+
+}
+.sidenav a {
+	display: inline-block;
+}
+
+/* When you mouse over the navigation links, change their color */
+.sidenav a:hover, .offcanvas a:focus{
+    color: #f1f1f1;
+}
+
+/* Position and style the close button (top right corner) */
+.sidenav .closebtn {
+    position: absolute;
+    top: -5px;
+    right: 5px;
+    font-size: 36px;
+    margin-left: 50px;
+}
+
+/* Style page content - use this if you want to push the page content to the right when you open the side navigation */
+#main {
+    transition: margin-left .5s;
+    padding: 20px;
+}
+
+/* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
+@media screen and (max-height: 450px) {
+    .sidenav {padding-top: 15px;}
+    .sidenav a {font-size: 18px;}
+}
+
+span.gear{
+	position: absolute;
+	top: 0px;
+	z-index: 1;
+	right: 5px;
+	color: #ddd;
+	font-size: 28px;
+	opacity: 0.5;
+	transition: 1s;
+}
+span.gear:hover {
+	text-shadow: 0 0 2px #fff;
+	opacity: 1;
 }

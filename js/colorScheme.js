@@ -4,8 +4,9 @@ var colorScheme_monokai = ["#272822", "#48483e", "#dc2566", "#8fc029", "#d4c96e"
 var colorScheme_ashes = ["#1c2023", "#1c2023", "#c7ae95", "#95c7ae", "#aec795", "#ae95c7", "#c795ae", "#95aec7", "#c7ccd1", "#747c84", "#c7ae95", "#95c7ae", "#aec795", "#ae95c7", "#c795ae", "#95aec7", "#f3f4f5", "#c7ccd1", "#c7ccd1"];
 
 var colorSchemes = ['', colorScheme_solarized, colorScheme_monokai, colorScheme_ashes];
+var colorSchemesNames = ['Tango', 'Solarized', 'Monokai', 'Ashes'];
 
-var c = 0; // Stores the current index of the theme loaded in colorSchemes
+var c = 3; // Stores the current index of the theme loaded in colorSchemes
 
 // format (hex) - [bg,0,1,2,3 ... 14,15, cur, fg]
 function setColorScheme(colors) {
@@ -19,6 +20,7 @@ function setColorScheme(colors) {
         // Tango is the default color scheme so nothing more is needed
         if (!colors) {
             colorScheme_tango = true;
+			getColorSchemeName(true);
             return;
         }
     }
@@ -35,8 +37,26 @@ function setColorScheme(colors) {
     }
 
     colorScheme_tango = false;
+
+	getColorSchemeName(colors);
 }
 
+function getColorSchemeName(colors){
+	var colorName;
+	if(colors === true){
+		colorName = 'Tango';
+	}
+
+	for(var i = 1; i < colorSchemes.length; i++){
+		if(colors === colorSchemes[i]){
+			colorName = colorSchemesNames[i];
+		}
+	}
+
+	colorName = colorName === undefined ? 'Custom' : colorName;
+
+	document.getElementById('currentColor').innerHTML = colorName;
+}
 function importXresources() {
     var file = document.getElementById('Xresources').value;
     var lines = file.split("\n");
