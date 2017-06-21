@@ -3,10 +3,10 @@ var colorScheme_solarized = ["#002b36", "#002b36", "#dc322f", "#859900", "#b5890
 var colorScheme_monokai = ["#272822", "#48483e", "#dc2566", "#8fc029", "#d4c96e", "#55bcce", "#9358fe", "#56b7a5", "#acada1", "#76715e", "#fa2772", "#a7e22e", "#e7db75", "#66d9ee", "#ae82ff", "#66efd5", "#cfd0c2", "#f1ebeb", "#f1ebeb"];
 var colorScheme_ashes = ["#1c2023", "#1c2023", "#c7ae95", "#95c7ae", "#aec795", "#ae95c7", "#c795ae", "#95aec7", "#c7ccd1", "#747c84", "#c7ae95", "#95c7ae", "#aec795", "#ae95c7", "#c795ae", "#95aec7", "#f3f4f5", "#c7ccd1", "#c7ccd1"];
 
-var colorSchemes = ['', colorScheme_solarized, colorScheme_monokai, colorScheme_ashes];
+var colorSchemes = [true, colorScheme_solarized, colorScheme_monokai, colorScheme_ashes];
 var colorSchemesNames = ['Tango', 'Solarized', 'Monokai', 'Ashes'];
 
-var c = 3; // Stores the current index of the theme loaded in colorSchemes
+var c = 0; // Stores the current index of the theme loaded in colorSchemes
 
 // format (hex) - [bg,0,1,2,3 ... 14,15, cur, fg]
 function setColorScheme(colors) {
@@ -43,23 +43,19 @@ function setColorScheme(colors) {
 
 function getColorSchemeName(colors){
 	var colorName;
-	if(colors === true){
-		colorName = 'Tango';
-	}
-
-	for(var i = 1; i < colorSchemes.length; i++){
+	for(var i = 0; i < colorSchemes.length; i++){
 		if(colors === colorSchemes[i]){
 			colorName = colorSchemesNames[i];
+			c = i;		// Sets 'c' equal to the index of the colorSchemes
+			break;
 		}
 	}
-
 	colorName = colorName === undefined ? 'Custom' : colorName;
 
 	document.getElementById('currentColor').innerHTML = colorName;
 }
 function importXresources() {
-    var file = document.getElementById('Xresources').value;
-    var lines = file.split("\n");
+    var lines = document.getElementById('Xresources').value.split("\n");
     // natural sort the Xresources list to bg, 1 - 15, cur, fg colours & slice the leading 18 lines (!blue ect)
     lines = lines.sort(new Intl.Collator(undefined, {
         numeric: true,
@@ -69,7 +65,7 @@ function importXresources() {
     colorScheme_custom = [];
 
     for (var i = 0; i < lines.length; i++) {
-        // Only lines containing '#' are added
+        // Only lines containing '#' are added as they're likely a colour
         if (lines[i].indexOf('#') != -1) {
             colorScheme_custom.push("#" + lines[i].split("#")[1]);
         }
@@ -79,7 +75,10 @@ function importXresources() {
 }
 
 function cycleColorSchemes(dir) {
-    dir = dir === undefined ? true : false;
-    // Cycles through (c = 0 -> colorSchemes.length - 1) where dir = true is incrementing and dir = false decrements
-    setColorScheme(colorSchemes[(dir === true ? ++c : (--c < 0 ? c = colorSchemes.length - 1 : c = c)) > colorSchemes.length - 1 ? c = 0 : c]);
+    // Cycles through (c = 0 -> colorSchemes.length - 1) where dir = 1 is incrementing and dir = false decrements
+	c = dir === 0 ? --c : ++c;
+	if(c > colorSchemes.length - 1 || c < 0){
+		c = dir === 1 ? 0 : colorSchemes.length - 1;
+	}
+	setColorScheme(colorSchemes[c]);
 }
