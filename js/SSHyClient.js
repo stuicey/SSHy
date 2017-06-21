@@ -13,16 +13,27 @@ var termPassword;
 var failedAttempts = 0;
 
 window.onload = function() {
+	// Appending the document body with script to keep wrapper as small as possible for cgi builds
 	document.body.innerHTML +=	'<div id="settingsNav" class="sidenav">' +
 								'<a href="javascript:void(0)" class="closebtn" onclick="toggleNav(0)">&times;</a>' +
-								'<span class="title">Terminal Colour</span>' +
+								'<span class="title large">Terminal Options</span><hr>' +
+								'<span class="title">Colours</span>' +
 								'<a class="leftarrow" href="javascript:void(0)" onclick="cycleColorSchemes(0)">\<--</a>' +
 								'<span class="middle" id="currentColor">Monokai</span>' +
 								'<a class="rightarrow" href="javascript:void(0)" onclick="cycleColorSchemes(1)">--\></a>' +
+								'<div class="fileUpload btn btn-primary">' +
+								'<span class="tooltiptext">Format: Xresources</span>' +
+								'<span class="middle" style="width:220px;">Upload</span>' +
+								'<input type="file" id="Xresources" class="upload" onchange="importXresources()"/></div>' +
 								'<span class="title" style="padding-top:20px;">Local Echo</span>' +
 								'<a class="leftarrow" href="javascript:void(0)" onclick="setLocalEcho(0)">---</a>' +
 								'<span class="middle" id="currentLEcho">Off</span>' +
 								'<a class="rightarrow" href="javascript:void(0)" onclick="setLocalEcho(1)">+++</a>' +
+								'<span class="title" style="padding-top:20px;">Keep Alive</span>' +
+								'<div class="fileUpload btn btn-primary">' +
+								'<span class="tooltiptext">0 to disable</span>' +
+								'<input type="text" id="keepAlive" onchange="transport.settings.setKeepAlive(this.value);" value="0">' +
+								'<span style="font-size:16px;"> seconds</span></div>' +
 								'</div>' +
 								'<span class="gear" onclick="toggleNav(250)">&#9881</span>';
 
@@ -57,6 +68,7 @@ function setLocalEcho(dir){
 	transport.settings.localEcho = dir;
 	document.getElementById('currentLEcho').innerHTML = transport.settings.localEcho ? "On" : "Off";
 }
+
 
 // Called on unsuccessful SSH connection authentication
 function auth_failure() {

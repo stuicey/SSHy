@@ -9,7 +9,7 @@ var colorSchemesNames = ['Tango', 'Solarized', 'Monokai', 'Ashes'];
 var c = 0; // Stores the current index of the theme loaded in colorSchemes
 
 // format (hex) - [bg,0,1,2,3 ... 14,15, cur, fg]
-function setColorScheme(colors) {
+function setColorScheme(colors, colorName) {
     var term_style = document.styleSheets[0];
     var i;
     // Remove active colour scheme if there is a custom one.
@@ -38,16 +38,17 @@ function setColorScheme(colors) {
 
     colorScheme_tango = false;
 
-	getColorSchemeName(colors);
+	getColorSchemeName(colors, colorName);
 }
 
-function getColorSchemeName(colors){
-	var colorName;
-	for(var i = 0; i < colorSchemes.length; i++){
-		if(colors === colorSchemes[i]){
-			colorName = colorSchemesNames[i];
-			c = i;		// Sets 'c' equal to the index of the colorSchemes
-			break;
+function getColorSchemeName(colors, colorName){
+	if(!colorName){
+		for(var i = 0; i < colorSchemes.length; i++){
+			if(colors === colorSchemes[i]){
+				colorName = colorSchemesNames[i];
+				c = i;		// Sets 'c' equal to the index of the colorSchemes
+				break;
+			}
 		}
 	}
 	colorName = colorName === undefined ? 'Custom' : colorName;
@@ -55,23 +56,36 @@ function getColorSchemeName(colors){
 	document.getElementById('currentColor').innerHTML = colorName;
 }
 function importXresources() {
-    var lines = document.getElementById('Xresources').value.split("\n");
-    // natural sort the Xresources list to bg, 1 - 15, cur, fg colours & slice the leading 18 lines (!blue ect)
-    lines = lines.sort(new Intl.Collator(undefined, {
-        numeric: true,
-        sensitivity: 'base'
-    }).compare);
+	var reader = new FileReader();
+	var element = document.getElementById('Xresources').files[0];
+	reader.readAsText(element);
+	reader.onload = function() {
+		var file = reader.result;
+	    var lines = file.split("\n");
+	    // natural sort the Xresources list to bg, 1 - 15, cur, fg colours & slice the leading 18 lines (!blue ect)
+	    lines = lines.sort(new Intl.Collator(undefined, {
+	        numeric: true,
+	        sensitivity: 'base'
+	    }).compare);
 
-    colorScheme_custom = [];
+	    colorScheme_custom = [];
 
-    for (var i = 0; i < lines.length; i++) {
-        // Only lines containing '#' are added as they're likely a colour
-        if (lines[i].indexOf('#') != -1) {
-            colorScheme_custom.push("#" + lines[i].split("#")[1]);
-        }
-    }
+	    for (var i = 0; i < lines.length; i++) {
+	        // Only lines containing '#' are added as they're likely a colour
+	        if (lines[i].indexOf('#') != -1) {
+	            colorScheme_custom.push("#" + lines[i].split("#")[1]);
+	        }
+	    }
 
-    setColorScheme(colorScheme_custom);
+		// Make sure the new color scheme has the required amount of colours
+		if(colorScheme_custom.length !== 19){
+			return alert('Uploaded file could not be parsed correctly.');
+		}
+
+		console.log(colorScheme_custom);
+
+	    setColorScheme(colorScheme_custom, element.name === '.Xresources' ? undefined : element.name);
+	};
 }
 
 function cycleColorSchemes(dir) {

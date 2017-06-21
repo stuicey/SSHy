@@ -2304,13 +2304,24 @@
 }
 
 .sidenav .title {
-	width: 250px;
+	width: 240px;
 	text-align: center;
 	display: block;
 }
 
+.sidenav .title.large {
+	font-size: 22px;
+	font-weight: bold;
+}
+
 .sidenav a {
 	display: inline-block;
+}
+
+.sidenav hr {
+	background-color:#424242;
+	height:1px;
+	border:0px
 }
 
 /* When you mouse over the navigation links, change their color */
@@ -2352,4 +2363,56 @@ span.gear{
 span.gear:hover {
 	text-shadow: 0 0 2px #fff;
 	opacity: 1;
+}
+
+.fileUpload {
+    position: relative;
+    overflow: visible;
+    margin: 10px;
+}
+.fileUpload input.upload {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 0;
+    padding: 0;
+    font-size: 20px;
+    cursor: pointer;
+    opacity: 0;
+    filter: alpha(opacity=0);
+}
+
+span.tooltiptext {
+    width: 175px;
+    background-color: #333;
+    height: 10px;
+    text-align: center;
+    padding: 0px 0px 10px 0px;
+    margin-left: 25px;
+    font-size: 15px;
+    border-radius: 6px;
+    position: absolute;
+    top: 25px;
+    opacity: 0;
+    transition: opacity 0.5s linear;
+}
+
+.fileUpload:hover .tooltiptext {
+    opacity: 1;
+}
+
+input[type="text"] {
+    border: none;
+    border-bottom: solid 2px #888;
+    margin-left: 50px;
+    width: 40px;
+    transition: border 0.3s;
+    background: none;
+    color: #818181;
+    text-align: center;
+    outline: none;
+}
+
+.fileUpload:hover input[type="text"] {
+  border-bottom: solid 2px #aaa;
 }
