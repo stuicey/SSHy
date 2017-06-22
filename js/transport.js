@@ -199,6 +199,7 @@ SSHyClient.Transport.prototype = {
         94: function(self, m) {
             // Slice the heading 9 bytes and send the remaining xterm sequence to the terminal
             var str = fromUtf8(m.slice(9));
+			self.settings.parseLocalEcho(str);
             if (self.settings.localEcho && self.lastKey) {
                 if (str == self.lastKey) {
                     self.lastKey = null;

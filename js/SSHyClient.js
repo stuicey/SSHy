@@ -24,8 +24,8 @@ window.onload = function() {
 								'<span class="middle" id="currentFontSize">16px</span>' +
 								'<a class="rightarrow" href="javascript:void(0)" onclick="modFontSize(1)">--\></a>' +
 								'<span class="title" style="padding-top:40px;">Local Echo</span>' +
-								'<a class="leftarrow" href="javascript:void(0)" onclick="setLocalEcho(0)">---</a>' +
-								'<span class="middle" id="currentLEcho">Off</span>' +
+								'<a class="leftarrow" href="javascript:void(0)" onclick="setLocalEcho(-1)">---</a>' +
+								'<span class="middle" id="currentLEcho">Auto</span>' +
 								'<a class="rightarrow" href="javascript:void(0)" onclick="setLocalEcho(1)">+++</a>' +
 								'<span class="title" style="padding-top:40px">Colours</span>' +
 								'<a class="leftarrow" href="javascript:void(0)" onclick="cycleColorSchemes(0)">\<--</a>' +
@@ -94,10 +94,11 @@ function toggleNav(size){
 
 // Toggles Local Echo on and off
 function setLocalEcho(dir){
-	transport.settings.localEcho = dir;
-	document.getElementById('currentLEcho').innerHTML = transport.settings.localEcho ? "On" : "Off";
-}
+	// Clamp the setting between 0 and 2
+	transport.settings.localEcho = Math.min(Math.max(transport.settings.localEcho += dir, 0), 2);
 
+	document.getElementById('currentLEcho').innerHTML = ["Force Off", "Auto", "Force On"][transport.settings.localEcho];
+}
 
 // Called on unsuccessful SSH connection authentication
 function auth_failure() {
