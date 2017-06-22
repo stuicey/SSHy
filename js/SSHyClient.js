@@ -43,7 +43,7 @@ window.onload = function() {
 								'</div>' +
 								'<span id="gear" class="gear" style="visibility:visible;" onclick="toggleNav(250)">&#9881</span>';
 
-	setColorScheme(colorScheme_ashes);
+	setColorScheme(colorScheme_material);
 	startSSHy();
 };
 
