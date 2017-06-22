@@ -173,6 +173,11 @@ function startxtermjs() {
                 return;
             }
 
+			// so we can't input stuff like 'ArrowUp'
+			if(e.key.length > 1 && (e.keyCode != 13 && e.keyCode != 8)){
+				return;
+			}
+
             switch (e.keyCode) {
                 case 8: // backspace
                     if (termPassword === undefined) {
