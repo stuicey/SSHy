@@ -33,6 +33,8 @@ SSHyClient.Transport = function(ws) {
 
     this.settings = new SSHyClient.settings();
     this.lastKey = null;
+
+	this.closing = false;
 };
 
 SSHyClient.Transport.prototype = {
@@ -239,6 +241,7 @@ SSHyClient.Transport.prototype = {
 
     // Disconnect the web client from the server with a given error code (11 - SSH_DISCONNECT_BY_APPLICATION )
     disconnect: function(reason) {
+		this.closing = true;
         reason = reason === undefined ? 11 : reason;
         var m = new SSHyClient.Message();
         m.add_bytes(String.fromCharCode(SSHyClient.MSG_DISCONNECT));

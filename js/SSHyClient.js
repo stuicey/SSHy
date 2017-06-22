@@ -129,11 +129,13 @@ function startSSHy() {
     };
 
     ws.onclose = function(e) {
-        // Check if term exists - if not then no SSH connection was made
-        if (!term) {
+		if(term && !transport.closing){
+			term.write('\n\n\rWebsocket connection to ' + wsproxyURL.split('/')[2].split(':')[0] + ' was unexpectedly closed.');
+		} else {
+			// Check if term exists - if not then no SSH connection was made
             termInit();
             term.write('WebSocket connection failed: Error in connection establishment: code ' + e.code);
-        }
+		}
     };
 }
 
