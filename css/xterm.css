@@ -2271,6 +2271,11 @@
 	font-family: courier-new, courier, monospace;
 	font-size: 20px;
 	color: #818181;
+	opacity: 0.4;
+}
+
+.sidenav:hover {
+	opacity: 1;
 }
 
 /* The navigation menu links */
@@ -2332,8 +2337,8 @@
 /* Position and style the close button (top right corner) */
 .sidenav .closebtn {
     position: absolute;
-    top: -5px;
-    right: 5px;
+    top: -8px;
+    right: 0px;
     font-size: 36px;
     margin-left: 50px;
 }

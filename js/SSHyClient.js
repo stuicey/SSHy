@@ -4,8 +4,10 @@ var ws, transport, term = null;
 var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 var isWrapper = true;
 
-var termCols = Math.floor(window.innerWidth / 10) - (isFirefox ? -2 : 0);
-var termRows = Math.floor(window.innerHeight / 19) - (isFirefox ? 1 : -2);
+var termRows, termCols = 0;
+// Need to define these since we need the terminal to open before we can calculate the values
+var fontWidth = 10;
+var fontHeight = 18;
 
 var termUsername = '';
 var termPassword;
@@ -17,41 +19,48 @@ window.onload = function() {
 	document.body.innerHTML +=	'<div id="settingsNav" class="sidenav">' +
 								'<a href="javascript:void(0)" class="closebtn" onclick="toggleNav(0)">&times;</a>' +
 								'<span class="title large">Terminal Options</span><hr>' +
-								'<span class="title">Colours</span>' +
+								'<span class="title" style="padding-top:20px">Font Size</span>' +
+								'<a class="leftarrow" href="javascript:void(0)" onclick="modFontSize(-1)">\<--</a>' +
+								'<span class="middle" id="currentFontSize">16px</span>' +
+								'<a class="rightarrow" href="javascript:void(0)" onclick="modFontSize(1)">--\></a>' +
+								'<span class="title" style="padding-top:40px;">Local Echo</span>' +
+								'<a class="leftarrow" href="javascript:void(0)" onclick="setLocalEcho(0)">---</a>' +
+								'<span class="middle" id="currentLEcho">Off</span>' +
+								'<a class="rightarrow" href="javascript:void(0)" onclick="setLocalEcho(1)">+++</a>' +
+								'<span class="title" style="padding-top:40px">Colours</span>' +
 								'<a class="leftarrow" href="javascript:void(0)" onclick="cycleColorSchemes(0)">\<--</a>' +
 								'<span class="middle" id="currentColor">Monokai</span>' +
 								'<a class="rightarrow" href="javascript:void(0)" onclick="cycleColorSchemes(1)">--\></a>' +
 								'<div class="fileUpload btn btn-primary">' +
 								'<span class="tooltiptext">Format: Xresources</span>' +
 								'<span class="middle" style="width:220px;">Upload</span>' +
-								'<input type="file" id="Xresources" class="upload" onchange="importXresources()"/></div>' +
-								'<span class="title" style="padding-top:20px;">Local Echo</span>' +
-								'<a class="leftarrow" href="javascript:void(0)" onclick="setLocalEcho(0)">---</a>' +
-								'<span class="middle" id="currentLEcho">Off</span>' +
-								'<a class="rightarrow" href="javascript:void(0)" onclick="setLocalEcho(1)">+++</a>' +
+								'<input type="file" title=" " id="Xresources" class="upload" onchange="importXresources()"/></div>' +
 								'<span class="title" style="padding-top:20px;">Keep Alive</span>' +
 								'<div class="fileUpload btn btn-primary">' +
 								'<span class="tooltiptext">0 to disable</span>' +
-								'<input type="text" id="keepAlive" onchange="transport.settings.setKeepAlive(this.value);" value="0">' +
+								'<input type="text" id="keepAlive" onchange="transport.settings.setKeepAlive(this.value);" placeholder="0">' +
 								'<span style="font-size:16px;"> seconds</span></div>' +
 								'</div>' +
-								'<span class="gear" onclick="toggleNav(250)">&#9881</span>';
+								'<span id="gear" class="gear" style="visibility:visible;" onclick="toggleNav(250)">&#9881</span>';
 
 	setColorScheme(colorScheme_ashes);
 	startSSHy();
 };
 
 // Run every time the webpage is resized
-window.onresize = function resize() {
-    // recalculate the termCols and rows
-    termCols = Math.floor(window.innerWidth / 10) - (isFirefox ? -2 : 0);
-    termRows = Math.floor(window.innerHeight / 19) - (isFirefox ? 1 : -1);
+window.onresize = resize();
 
-    if (ws && transport) {
+function resize() {
+    // recalculate the termCols and rows
+    termCols = Math.floor((window.innerWidth - 10) / fontWidth) - (isFirefox ? -2 : 0);
+    termRows = Math.floor((window.innerHeight - 10) / fontHeight) - (isFirefox ? 1 : 1);
+
+    if (ws && transport && term) {
         term.resize(termCols, termRows);
         transport.auth.resize_pty(termCols, termRows);
     }
-};
+}
+
 // Run every time the page is refreshed / closed to disconnect from the SSH server
 window.onbeforeunload = function() {
     if (ws || transport) {
@@ -59,8 +68,28 @@ window.onbeforeunload = function() {
     }
 };
 
+function modFontSize(sign){
+	transport.settings.fontSize += sign;
+	document.getElementsByClassName("xterm-rows")[0].style.lineHeight = transport.settings.fontSize + 'px';
+	document.getElementById("terminal").style.fontSize = transport.settings.fontSize + 'px';
+
+	var element = document.getElementsByClassName('terminal-cursor')[0].getBoundingClientRect();
+	// We should be using terminal-cursor always but sometimes it isn't available (top/htop ect)
+	if(!element){
+		element = document.getElementsByClassName('xterm-color-2')[0].getBoundingClientRect();
+	}
+	fontWidth = transport.settings.fontSize > 14 ? Math.ceil(element.width) : Math.floor(element.width);
+	fontHeight = Math.floor(element.height);
+
+	document.getElementById("currentFontSize").innerHTML = transport.settings.fontSize + 'px';
+
+	resize();
+}
+
 function toggleNav(size){
 	document.getElementById("settingsNav").style.width = size;
+	var element = document.getElementById("gear").style;
+	element.visibility = element.visibility === "hidden" ? "visible" : "hidden";
 }
 
 // Toggles Local Echo on and off
@@ -108,6 +137,8 @@ function startSSHy() {
 }
 
 function termInit() {
+	// Calculate the term rows/cols
+	resize();
     // Define the terminal rows/cols
     term = new Terminal({
         cols: termCols,

@@ -5,6 +5,8 @@ SSHyClient.settings = function() {
     this.blockedKeys = [':'];
 
 	this.keepAliveInterval = undefined;
+
+	this.fontSize = 16;
 };
 
 SSHyClient.settings.prototype = {
