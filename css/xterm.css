@@ -2263,7 +2263,7 @@
     z-index: 3; /* Stay on top */
     top: 0;
     right: -1px;
-    background-color: #202020; /* Grey*/
+    background-color: #252a2b;
 	border-left: 1px solid #444;
     overflow-x: hidden; /* Disable horizontal scroll */
     padding-top: 60px; /* Place content 60px from the top */

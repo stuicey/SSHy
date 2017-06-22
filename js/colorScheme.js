@@ -18,22 +18,25 @@ function setColorScheme(colors, colorName) {
     var i;
     // Remove active colour scheme if there is a custom one.
     if (!colorScheme_tango) {
-        for (i = 0; i < 33; i++) {
+        for (i = 0; i < 34; i++) {
             term_style.removeRule(13);
         }
-        // Tango is the default color scheme so nothing more is needed
-        if (!colors) {
-            colorScheme_tango = true;
-			getColorSchemeName(true);
-            return;
-        }
     }
+
+	// Tango is the default color scheme so nothing more is needed
+	if (colors === true) {
+		colorScheme_tango = true;
+		getColorSchemeName(true);
+		return;
+	}
 
     term_style.insertRule('.terminal .terminal-cursor {background-color: ' + colors[17] + '; color: ' + colors[0] + ' !important;}', 13);
     term_style.insertRule('.terminal:not(.focus) .terminal-cursor {outline: 1px solid ' + colors[17] + ' !important;}', 13);
     term_style.insertRule('.terminal .xterm-viewport {background-color: ' + colors[0] + ' !important;}', 13);
     term_style.insertRule('html, body {background-color: ' + colors[0] + ' !important;}', 13);
     term_style.insertRule('.terminal {color: ' + colors[18] + ' !important;}', 13);
+	// Changes the sidenav color
+    term_style.insertRule('.sidenav {background-color: ' + modColorPercent(colors[0], -0.2) + ' !important;}', 13);
 
     for (i = 1; i < 16; i++) {
         term_style.insertRule('.terminal .xterm-color-' + (i - 1) + ' {color: ' + colors[i] + ' !important;}', 13);
@@ -44,6 +47,7 @@ function setColorScheme(colors, colorName) {
 
 	getColorSchemeName(colors, colorName);
 }
+
 
 function getColorSchemeName(colors, colorName){
 	if(!colorName){
