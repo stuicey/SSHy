@@ -272,6 +272,7 @@ function startxtermjs() {
             // allows ctrl + shift + v for pasting
             if (e.key != 'V') {
                 e.preventDefault();
+				return;
             }
         } else {
             //xtermjs is kind enough to evaluate our special characters instead of having to translate every char ourself
