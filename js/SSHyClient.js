@@ -47,19 +47,9 @@ window.onload = function() {
 	startSSHy();
 };
 
+
 // Run every time the webpage is resized
-window.onresize = resize();
-
-function resize() {
-    // recalculate the termCols and rows
-    termCols = Math.floor((window.innerWidth - 10) / fontWidth) - (isFirefox ? -2 : 0);
-    termRows = Math.floor((window.innerHeight - 10) / fontHeight) - (isFirefox ? 1 : 1);
-
-    if (ws && transport && term) {
-        term.resize(termCols, termRows);
-        transport.auth.resize_pty(termCols, termRows);
-    }
-}
+window.onresize = function(){ resize() };
 
 // Run every time the page is refreshed / closed to disconnect from the SSH server
 window.onbeforeunload = function() {
@@ -68,16 +58,34 @@ window.onbeforeunload = function() {
     }
 };
 
+function resize() {
+    // recalculate the termCols and rows
+    termCols = Math.floor((window.innerWidth - 10) / fontWidth) - (isFirefox ? -2 : 0);
+    termRows = Math.floor((window.innerHeight - 10) / fontHeight) - (isFirefox ? 1 : 1);
+
+    if (ws && transport && term) {
+		term.resize(termCols, termRows);
+        transport.auth.resize_pty(termCols, termRows);
+		// For some reason lineHeight isn't correctly calculated by xterm.js
+		var element =  document.getElementsByClassName("xterm-rows");
+		if(element){
+			element[0].style.lineHeight = null;
+		}
+    }
+}
+
 function modFontSize(sign){
 	transport.settings.fontSize += sign;
-	document.getElementsByClassName("xterm-rows")[0].style.lineHeight = transport.settings.fontSize + 'px';
 	document.getElementById("terminal").style.fontSize = transport.settings.fontSize + 'px';
 
-	var element = document.getElementsByClassName('terminal-cursor')[0].getBoundingClientRect();
+	var element;
 	// We should be using terminal-cursor always but sometimes it isn't available (top/htop ect)
-	if(!element){
+	try{
+		element = document.getElementsByClassName('terminal-cursor')[0].getBoundingClientRect();
+	} catch (err){
 		element = document.getElementsByClassName('xterm-color-2')[0].getBoundingClientRect();
 	}
+
 	fontWidth = transport.settings.fontSize > 14 ? Math.ceil(element.width) : Math.floor(element.width);
 	fontHeight = Math.floor(element.height);
 
