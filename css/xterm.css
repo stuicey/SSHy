@@ -486,18 +486,28 @@ span.tooltiptext {
     opacity: 1;
 }
 
-input[type="text"] {
+input[type="number"] {
     border: none;
     border-bottom: solid 2px #888;
-    margin-left: 50px;
+    margin-left: 15px;
     width: 40px;
     transition: border 0.3s;
     background: none;
     color: #818181;
     text-align: center;
     outline: none;
+	-moz-appearance:textfield;
 }
 
-.fileUpload:hover input[type="text"] {
+input[type="number"].large {
+	margin-left: 50px;
+}
+
+.fileUpload:hover input[type="number"] {
   border-bottom: solid 2px #aaa;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
 }

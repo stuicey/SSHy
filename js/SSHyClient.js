@@ -23,7 +23,9 @@ window.onload = function() {
 								'<a class="leftarrow" href="javascript:void(0)" onclick="modFontSize(-1)">\<--</a>' +
 								'<span class="middle" id="currentFontSize">16px</span>' +
 								'<a class="rightarrow" href="javascript:void(0)" onclick="modFontSize(1)">--\></a>' +
-								'<span class="title" style="padding-top:40px;">Local Echo</span>' +
+								'<span class="title" style="padding-top:40px">Terminal Size</span>' +
+								'<span class="leftarrow">Cols:<input type="number" id="termCols" oninput="modTerm(0, this.value)"></span><span class="rightarrow">Rows:<input type="number" id="termRows" oninput="modTerm(1, this.value)"></span>' +
+								'<span class="title" style="padding-top:60px;">Local Echo</span>' +
 								'<a class="leftarrow" href="javascript:void(0)" onclick="setLocalEcho(-1)">\<--</a>' +
 								'<span class="middle" id="currentLEcho">Auto</span>' +
 								'<a class="rightarrow" href="javascript:void(0)" onclick="setLocalEcho(1)">--\></a>' +
@@ -38,7 +40,7 @@ window.onload = function() {
 								'<span class="title" style="padding-top:20px;">Keep Alive</span>' +
 								'<div class="fileUpload btn btn-primary">' +
 								'<span class="tooltiptext">0 to disable</span>' +
-								'<input type="text" id="keepAlive" onchange="transport.settings.setKeepAlive(this.value);" placeholder="0">' +
+								'<input type="number" class="large" id="keepAlive" onchange="transport.settings.setKeepAlive(this.value);" placeholder="0">' +
 								'<span style="font-size:16px;"> seconds</span></div>' +
 								'</div>' +
 								'<span id="gear" class="gear" style="visibility:visible;" onclick="toggleNav(250)">&#9881</span>';
@@ -64,13 +66,7 @@ function resize() {
     termRows = Math.floor((window.innerHeight - 10) / fontHeight) - (isFirefox ? 1 : 1);
 
     if (ws && transport && term) {
-		term.resize(termCols, termRows);
-        transport.auth.resize_pty(termCols, termRows);
-		// For some reason lineHeight isn't correctly calculated by xterm.js
-		var element =  document.getElementsByClassName("xterm-rows");
-		if(element){
-			element[0].style.lineHeight = null;
-		}
+		changeTermSize()
     }
 }
 
@@ -92,6 +88,33 @@ function modFontSize(sign){
 	document.getElementById("currentFontSize").innerHTML = transport.settings.fontSize + 'px';
 
 	resize();
+}
+
+// Sets the terminal size where id= 0-> cols ; 1-> rows
+function modTerm(id, newAmount){
+	if(!id){
+		termCols = newAmount;
+	} else {
+		termRows = newAmount;
+	}
+
+	changeTermSize(true)
+}
+
+// Sends the new size to the SSH server & changes local terminal size
+function changeTermSize(skip){
+	term.resize(termCols, termRows);
+	transport.auth.resize_pty(termCols, termRows);
+	// For some reason lineHeight isn't correctly calculated by xterm.js
+	var element =  document.getElementsByClassName("xterm-rows");
+	if(element){
+		element[0].style.lineHeight = null;
+	}
+
+	if(skip === undefined){
+		document.getElementById('termCols').value = termCols
+		document.getElementById('termRows').value = termRows
+	}
 }
 
 function toggleNav(size){
@@ -157,6 +180,9 @@ function termInit() {
     });
     // start xterm.js
     term.open(document.getElementById('terminal'), true);
+	// set the terminal size on settings menu
+	document.getElementById('termCols').value = termCols
+	document.getElementById('termRows').value = termRows
 }
 
 function startxtermjs() {
