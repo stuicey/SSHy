@@ -32,7 +32,7 @@ SSHyClient.Transport = function(ws) {
     this.temp_buffer = '';
 
     this.settings = new SSHyClient.settings();
-    this.lastKey = null;
+    this.lastKey = '';
 
 	this.closing = false;
 };
@@ -203,11 +203,11 @@ SSHyClient.Transport.prototype = {
             var str = fromUtf8(m.slice(9));
 			self.settings.parseLocalEcho(str);
             if (self.settings.localEcho && self.lastKey) {
-                if (str == self.lastKey) {
-                    self.lastKey = null;
+                if (str == self.lastKey.substring(0,1)) {
+                    self.lastKey = self.lastKey.slice(1);
                     return;
                 }
-                self.lastKey = null;
+                self.lastKey = self.lastKey.slice(1);
                 term.write('\b');
             }
             term.write(str);

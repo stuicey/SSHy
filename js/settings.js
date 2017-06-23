@@ -41,8 +41,11 @@ SSHyClient.settings.prototype = {
         if (e.key.length > 1 || this.blockedKeys.includes(e.key) || (e.altKey || e.ctrlKey || e.metaKey)) {
             return;
         }
-        transport.lastKey = e.key;
-        term.write(e.key);
+		// Incase someone is typing very fast; to perserve servers formatting.
+		if(!transport.lastKey){
+			term.write(e.key);
+		}
+        transport.lastKey += e.key;
     },
 
 	setKeepAlive: function(time) {
