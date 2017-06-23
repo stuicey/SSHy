@@ -26,7 +26,8 @@ SSHyClient.settings.prototype = {
 					this.autoEchoTimeout = performance.now();
 				}
 			} else {
-				if(r.indexOf(this.fsHintEnter) != -1){
+				// check for 'password' incase we are inputting a password && to speed things up don't check huge strings
+				if(r.indexOf(this.fsHintEnter) != -1 || (r.length < 64 && r.toLowerCase().indexOf('password') != -1)){
 					this.autoEchoState = 0;
 					document.getElementById('autoEchoState').innerHTML = "State: Disabled";
 					this.autoEchoTimeout = performance.now();

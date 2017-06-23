@@ -53,7 +53,7 @@ window.onload = function() {
 
 
 // Run every time the webpage is resized
-window.onresize = function(){ resize() };
+window.onresize = function(){ resize(); };
 
 // Run every time the page is refreshed / closed to disconnect from the SSH server
 window.onbeforeunload = function() {
