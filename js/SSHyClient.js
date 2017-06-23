@@ -171,7 +171,7 @@ function startSSHy() {
     };
 
     ws.onclose = function(e) {
-		if(term && !transport.closing){
+		if(term || !transport.closing){
 			term.write('\n\n\rWebsocket connection to ' + wsproxyURL.split('/')[2].split(':')[0] + ' was unexpectedly closed.');
 		} else {
 			// Check if term exists - if not then no SSH connection was made
