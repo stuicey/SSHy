@@ -455,6 +455,12 @@ span.gear:hover {
     overflow: visible;
     margin: 10px;
 }
+
+.fileUpload.nomargin{
+	margin: 0px 0px 0px 45px;
+	position: absolute;
+}
+
 .fileUpload input.upload {
     position: absolute;
     top: 0;
@@ -484,6 +490,10 @@ span.tooltiptext {
 
 .fileUpload:hover .tooltiptext {
     opacity: 1;
+}
+
+.fileUpload.nomargin .tooltiptext{
+	margin-left: -8px;
 }
 
 input[type="number"] {

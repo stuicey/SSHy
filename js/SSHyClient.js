@@ -27,9 +27,11 @@ window.onload = function() {
 								'<span class="leftarrow">Cols:<input type="number" id="termCols" oninput="modTerm(0, this.value)"></span><span class="rightarrow">Rows:<input type="number" id="termRows" oninput="modTerm(1, this.value)"></span>' +
 								'<span class="title" style="padding-top:60px;">Local Echo</span>' +
 								'<a class="leftarrow" href="javascript:void(0)" onclick="setLocalEcho(-1)">\<--</a>' +
-								'<span class="middle" id="currentLEcho">Auto</span>' +
 								'<a class="rightarrow" href="javascript:void(0)" onclick="setLocalEcho(1)">--\></a>' +
-								'<span class="title" style="padding-top:40px">Colours</span>' +
+								'<div class="fileUpload btn btn-primary nomargin">' +
+								'<span class="tooltiptext" style="visibility:visible;" id="autoEchoState">State: Enabled</span>' +
+								'<span class="middle" id="currentLEcho">Auto</span></div>' +
+								'<span class="title" style="padding-top:50px">Colours</span>' +
 								'<a class="leftarrow" href="javascript:void(0)" onclick="cycleColorSchemes(0)">\<--</a>' +
 								'<span class="middle" id="currentColor">Monokai</span>' +
 								'<a class="rightarrow" href="javascript:void(0)" onclick="cycleColorSchemes(1)">--\></a>' +
@@ -129,6 +131,15 @@ function setLocalEcho(dir){
 	transport.settings.localEcho = Math.min(Math.max(transport.settings.localEcho += dir, 0), 2);
 
 	document.getElementById('currentLEcho').innerHTML = ["Force Off", "Auto", "Force On"][transport.settings.localEcho];
+
+	// If we're using auto echo mode, change the auto state tooltiptext
+	var element = document.getElementById('autoEchoState');
+	if(transport.settings.localEcho === 1){
+		element.style.visibility = 'visible';
+		element.innerHTML = "State: " + (transport.settings.autoEchoState === 0 ? 'Disabled' : 'Enabled');
+	} else {
+		element.style.visibility = 'hidden';
+	}
 }
 
 // Called on unsuccessful SSH connection authentication

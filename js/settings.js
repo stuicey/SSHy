@@ -21,11 +21,14 @@ SSHyClient.settings.prototype = {
 				// Search for '@' aswell so we catch on 'user@hostname' aswell
 				if(r.indexOf(this.fsHintLeave) != -1 && r.indexOf('@') != -1 ){
 					this.autoEchoState = 1;
+					// Change the Settings UI
+					document.getElementById('autoEchoState').innerHTML = "State: Enabled";
 					this.autoEchoTimeout = performance.now();
 				}
 			} else {
 				if(r.indexOf(this.fsHintEnter) != -1){
 					this.autoEchoState = 0;
+					document.getElementById('autoEchoState').innerHTML = "State: Disabled";
 					this.autoEchoTimeout = performance.now();
 				}
 			}
