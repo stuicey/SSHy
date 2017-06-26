@@ -1,8 +1,8 @@
 SSHyClient.settings = function() {
     // Local echo reduces latency on regular key presses to aruond 0.04s compared to ~0.2s without it
     this.localEcho = 1; // 0 - off; 1 - auto; 2 - on
-	this.fsHintEnter = fromByteArray([27, 91, 63, 49]);
-	this.fsHintLeave = fromByteArray([27, 91, 51, 50]);
+	this.fsHintEnter = "\x1b\x5b\x3f\x31";
+	this.fsHintLeave = "\x1b\x5b\x33\x32";
 	this.autoEchoState = 1;		// 0 = no echoing ; 1 = echoing
 	this.autoEchoTimeout = 0;
 
