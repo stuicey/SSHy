@@ -19,19 +19,19 @@ window.onload = function() {
 								<span class="title large">Terminal Options</span>
 								<hr>
 								<span class="title" style="padding-top:20px">Font Size</span>
-								<a class="leftarrow" href="javascript:void(0)" onclick="modFontSize(-1)">\<--</a>
+								<a class="leftarrow" href="javascript:void(0)" onclick="transport.settings.modFontSize(-1)">\<--</a>
 								<span class="middle" id="currentFontSize">16px</span>
-								<a class="rightarrow" href="javascript:void(0)" onclick="modFontSize(1)">--\></a>
+								<a class="rightarrow" href="javascript:void(0)" onclick="transport.settings.modFontSize(1)">--\></a>
 								<span class="title" style="padding-top:40px">Terminal Size</span>
 								<span class="leftarrow">Cols:
-									<input type="number" id="termCols" oninput="modTerm(0, this.value)">
+									<input type="number" id="termCols" oninput="transport.settings.modTerm(0, this.value)">
 								</span>
 								<span class="rightarrow">Rows:
-									<input type="number" id="termRows" oninput="modTerm(1, this.value)">
+									<input type="number" id="termRows" oninput="transport.settings.modTerm(1, this.value)">
 								</span>
 								<span class="title" style="padding-top:60px;">Local Echo</span>
-								<a class="leftarrow" href="javascript:void(0)" onclick="setLocalEcho(-1)">\<--</a>
-								<a class="rightarrow" href="javascript:void(0)" onclick="setLocalEcho(1)">--\></a>
+								<a class="leftarrow" href="javascript:void(0)" onclick="transport.settings.etLocalEcho(-1)">\<--</a>
+								<a class="rightarrow" href="javascript:void(0)" onclick="transport.settings.setLocalEcho(1)">--\></a>
 								<div class="fileUpload btn btn-primary nomargin">
 									<span class="tooltiptext" style="visibility:visible;" id="autoEchoState">State: Enabled</span>
 									<span class="middle" id="currentLEcho">Auto</span>
@@ -74,78 +74,14 @@ function resize() {
     termRows = Math.floor((window.innerHeight - 10) / fontHeight) - (isFirefox ? 1 : 1);
 
     if (ws && transport && term) {
-		changeTermSize();
+		transport.settings.changeTermSize();
     }
-}
-
-function modFontSize(sign){
-	transport.settings.fontSize += sign;
-	document.getElementById("terminal").style.fontSize = transport.settings.fontSize + 'px';
-
-	var element;
-	// We should be using terminal-cursor always but sometimes it isn't available (top/htop ect)
-	try{
-		element = document.getElementsByClassName('terminal-cursor')[0].getBoundingClientRect();
-	} catch (err){
-		element = document.getElementsByClassName('xterm-color-2')[0].getBoundingClientRect();
-	}
-
-	fontWidth = transport.settings.fontSize > 14 ? Math.ceil(element.width) : Math.floor(element.width);
-	fontHeight = Math.floor(element.height);
-
-	document.getElementById("currentFontSize").innerHTML = transport.settings.fontSize + 'px';
-
-	resize();
-}
-
-// Sets the terminal size where id= 0-> cols ; 1-> rows
-function modTerm(id, newAmount){
-	if(!id){
-		termCols = newAmount;
-	} else {
-		termRows = newAmount;
-	}
-
-	changeTermSize(true);
-}
-
-// Sends the new size to the SSH server & changes local terminal size
-function changeTermSize(skip){
-	term.resize(termCols, termRows);
-	transport.auth.resize_pty(termCols, termRows);
-	// For some reason lineHeight isn't correctly calculated by xterm.js
-	var element =  document.getElementsByClassName("xterm-rows");
-	if(element){
-		element[0].style.lineHeight = null;
-	}
-
-	if(skip === undefined){
-		document.getElementById('termCols').value = termCols;
-		document.getElementById('termRows').value = termRows;
-	}
 }
 
 function toggleNav(size){
 	document.getElementById("settingsNav").style.width = size;
 	var element = document.getElementById("gear").style;
 	element.visibility = element.visibility === "hidden" ? "visible" : "hidden";
-}
-
-// Toggles Local Echo on and off
-function setLocalEcho(dir){
-	// Clamp the setting between 0 and 2
-	transport.settings.localEcho = Math.min(Math.max(transport.settings.localEcho += dir, 0), 2);
-
-	document.getElementById('currentLEcho').innerHTML = ["Force Off", "Auto", "Force On"][transport.settings.localEcho];
-
-	// If we're using auto echo mode, change the auto state tooltiptext
-	var element = document.getElementById('autoEchoState');
-	if(transport.settings.localEcho === 1){
-		element.style.visibility = 'visible';
-		element.innerHTML = "State: " + (transport.settings.autoEchoState === 0 ? 'Disabled' : 'Enabled');
-	} else {
-		element.style.visibility = 'hidden';
-	}
 }
 
 // Called on unsuccessful SSH connection authentication

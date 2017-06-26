@@ -46,6 +46,23 @@ colorSchemes: {
 		}
 	},
 
+	// Toggles Local Echo on and off
+	setLocalEcho: function(dir){
+		// Clamp the setting between 0 and 2
+		this.localEcho = Math.min(Math.max(this.localEcho += dir, 0), 2);
+
+		document.getElementById('currentLEcho').innerHTML = ["Force Off", "Auto", "Force On"][this.localEcho];
+
+		// If we're using auto echo mode, change the auto state tooltiptext
+		var element = document.getElementById('autoEchoState');
+		if(this.localEcho === 1){
+			element.style.visibility = 'visible';
+			element.innerHTML = "State: " + (this.autoEchoState === 0 ? 'Disabled' : 'Enabled');
+		} else {
+			element.style.visibility = 'hidden';
+		}
+	},
+
     // Parses a given message (r) for signs to enable or disable local echo
     parseLocalEcho: function(r) {
 		if(this.localEcho === 1 && (performance.now() - this.autoEchoTimeout) > 100){
@@ -190,6 +207,52 @@ colorSchemes: {
 		}
 
 		this.setColorScheme(this.colorSchemes[names[this.colorCounter]]());
-	}
+	},
 
+	modFontSize: function(sign){
+		this.fontSize += sign;
+		document.getElementById("terminal").style.fontSize = this.fontSize + 'px';
+
+		var element;
+		// We should be using terminal-cursor always but sometimes it isn't available (top/htop ect)
+		try{
+			element = document.getElementsByClassName('terminal-cursor')[0].getBoundingClientRect();
+		} catch (err){
+			element = document.getElementsByClassName('xterm-color-2')[0].getBoundingClientRect();
+		}
+
+		fontWidth = this.fontSize > 14 ? Math.ceil(element.width) : Math.floor(element.width);
+		fontHeight = Math.floor(element.height);
+
+		document.getElementById("currentFontSize").innerHTML = transport.settings.fontSize + 'px';
+
+		resize();
+	},
+
+	// Sets the terminal size where id= 0-> cols ; 1-> rows
+	modTerm: function(id, newAmount){
+		if(!id){
+			termCols = newAmount;
+		} else {
+			termRows = newAmount;
+		}
+
+		this.changeTermSize(true);
+	},
+
+	// Sends the new size to the SSH server & changes local terminal size
+	changeTermSize: function(skip){
+		term.resize(termCols, termRows);
+		transport.auth.resize_pty(termCols, termRows);
+		// For some reason lineHeight isn't correctly calculated by xterm.js
+		var element =  document.getElementsByClassName("xterm-rows");
+		if(element){
+			element[0].style.lineHeight = null;
+		}
+
+		if(skip === undefined){
+			document.getElementById('termCols').value = termCols;
+			document.getElementById('termRows').value = termRows;
+		}
+	}
 };
