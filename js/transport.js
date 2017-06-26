@@ -41,22 +41,22 @@ SSHyClient.Transport.prototype = {
 
     kex_info: {
         'diffie-hellman-group1-sha1': function(self) {
-            return new SSHyClient.dhGroup1(self, 1, 'SHA-1');
+            return new SSHyClient.kex.DiffieHellman(self, 1, 'SHA-1');
         },
         'diffie-hellman-group14-sha1': function(self) {
-            return new SSHyClient.dhGroup1(self, 14, 'SHA-1');
+            return new SSHyClient.kex.DiffieHellman(self, 14, 'SHA-1');
         },
         'diffie-hellman-group-exchange-sha1': function(self) {
-            return new SSHyClient.dhGroupEx(self, 'SHA-1');
+            return new SSHyClient.kex.DiffieHellman(self, undefined, 'SHA-1');
         },
         'diffie-hellman-group1-sha256': function(self) {
-            return new SSHyClient.dhGroup1(self, 1, 'SHA-256');
+            return new SSHyClient.kex.DiffieHellman(self, 1, 'SHA-256');
         },
         'diffie-hellman-group14-sha256': function(self) {
-            return new SSHyClient.dhGroup1(self, 14, 'SHA-256');
+            return new SSHyClient.kex.DiffieHellman(self, 14, 'SHA-256');
         },
         'diffie-hellman-group-exchange-sha256': function(self) {
-            return new SSHyClient.dhGroupEx(self, 'SHA-256');
+            return new SSHyClient.kex.DiffieHellman(self, undefined, 'SHA-256');
         }
     },
 
