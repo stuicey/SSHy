@@ -4,7 +4,7 @@ var ws, transport, term = null;
 var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 var isWrapper = true;
 
-var termRows, termCols = 0;
+var failedAttempts, termRows, termCols = 0;
 // Need to define these since we need the terminal to open before we can calculate the values
 var fontWidth = 10;
 var fontHeight = 18;
@@ -12,40 +12,47 @@ var fontHeight = 18;
 var termUsername = '';
 var termPassword;
 
-var failedAttempts = 0;
-
 window.onload = function() {
 	// Appending the document body with script to keep wrapper as small as possible for cgi builds
-	document.body.innerHTML +=	'<div id="settingsNav" class="sidenav">' +
-								'<a href="javascript:void(0)" class="closebtn" onclick="toggleNav(0)">&times;</a>' +
-								'<span class="title large">Terminal Options</span><hr>' +
-								'<span class="title" style="padding-top:20px">Font Size</span>' +
-								'<a class="leftarrow" href="javascript:void(0)" onclick="modFontSize(-1)">\<--</a>' +
-								'<span class="middle" id="currentFontSize">16px</span>' +
-								'<a class="rightarrow" href="javascript:void(0)" onclick="modFontSize(1)">--\></a>' +
-								'<span class="title" style="padding-top:40px">Terminal Size</span>' +
-								'<span class="leftarrow">Cols:<input type="number" id="termCols" oninput="modTerm(0, this.value)"></span><span class="rightarrow">Rows:<input type="number" id="termRows" oninput="modTerm(1, this.value)"></span>' +
-								'<span class="title" style="padding-top:60px;">Local Echo</span>' +
-								'<a class="leftarrow" href="javascript:void(0)" onclick="setLocalEcho(-1)">\<--</a>' +
-								'<a class="rightarrow" href="javascript:void(0)" onclick="setLocalEcho(1)">--\></a>' +
-								'<div class="fileUpload btn btn-primary nomargin">' +
-								'<span class="tooltiptext" style="visibility:visible;" id="autoEchoState">State: Enabled</span>' +
-								'<span class="middle" id="currentLEcho">Auto</span></div>' +
-								'<span class="title" style="padding-top:50px">Colours</span>' +
-								'<a class="leftarrow" href="javascript:void(0)" onclick="cycleColorSchemes(0)">\<--</a>' +
-								'<span class="middle" id="currentColor">Monokai</span>' +
-								'<a class="rightarrow" href="javascript:void(0)" onclick="cycleColorSchemes(1)">--\></a>' +
-								'<div class="fileUpload btn btn-primary">' +
-								'<span class="tooltiptext">Format: Xresources</span>' +
-								'<span class="middle" style="width:220px;">Upload</span>' +
-								'<input type="file" title=" " id="Xresources" class="upload" onchange="importXresources()"/></div>' +
-								'<span class="title" style="padding-top:20px;">Keep Alive</span>' +
-								'<div class="fileUpload btn btn-primary">' +
-								'<span class="tooltiptext">0 to disable</span>' +
-								'<input type="number" class="large" id="keepAlive" onchange="transport.settings.setKeepAlive(this.value);" placeholder="0">' +
-								'<span style="font-size:16px;"> seconds</span></div>' +
-								'</div>' +
-								'<span id="gear" class="gear" style="visibility:visible;" onclick="toggleNav(250)">&#9881</span>';
+	document.body.innerHTML += `<div id="settingsNav" class="sidenav">
+								<a href="javascript:void(0)" class="closebtn" onclick="toggleNav(0)">&times;</a>
+								<span class="title large">Terminal Options</span>
+								<hr>
+								<span class="title" style="padding-top:20px">Font Size</span>
+								<a class="leftarrow" href="javascript:void(0)" onclick="modFontSize(-1)">\<--</a>
+								<span class="middle" id="currentFontSize">16px</span>
+								<a class="rightarrow" href="javascript:void(0)" onclick="modFontSize(1)">--\></a>
+								<span class="title" style="padding-top:40px">Terminal Size</span>
+								<span class="leftarrow">Cols:
+									<input type="number" id="termCols" oninput="modTerm(0, this.value)">
+								</span>
+								<span class="rightarrow">Rows:
+									<input type="number" id="termRows" oninput="modTerm(1, this.value)">
+								</span>
+								<span class="title" style="padding-top:60px;">Local Echo</span>
+								<a class="leftarrow" href="javascript:void(0)" onclick="setLocalEcho(-1)">\<--</a>
+								<a class="rightarrow" href="javascript:void(0)" onclick="setLocalEcho(1)">--\></a>
+								<div class="fileUpload btn btn-primary nomargin">
+									<span class="tooltiptext" style="visibility:visible;" id="autoEchoState">State: Enabled</span>
+									<span class="middle" id="currentLEcho">Auto</span>
+								</div>
+								<span class="title" style="padding-top:50px">Colours</span>
+								<a class="leftarrow" href="javascript:void(0)" onclick="cycleColorSchemes(0)">\<--</a>
+								<span class="middle" id="currentColor">Monokai</span>
+								<a class="rightarrow" href="javascript:void(0)" onclick="cycleColorSchemes(1)">--\></a>
+								<div class="fileUpload btn btn-primary">
+									<span class="tooltiptext">Format: Xresources</span>
+									<span class="middle" style="width:220px;">Upload</span>
+									<input type="file" title=" " id="Xresources" class="upload" onchange="importXresources()" />
+								</div>
+								<span class="title" style="padding-top:20px;">Keep Alive</span>
+								<div class="fileUpload btn btn-primary">
+									<span class="tooltiptext">0 to disable</span>
+									<input type="number" class="large" id="keepAlive" onchange="transport.settings.setKeepAlive(this.value);" placeholder="0">
+									<span style="font-size:16px;"> seconds</span>
+								</div>
+							</div>
+							<span id="gear" class="gear" style="visibility:visible;" onclick="toggleNav(250)">&#9881</span>`;
 
 	setColorScheme(colorScheme_material);
 	startSSHy();
@@ -68,7 +75,7 @@ function resize() {
     termRows = Math.floor((window.innerHeight - 10) / fontHeight) - (isFirefox ? 1 : 1);
 
     if (ws && transport && term) {
-		changeTermSize()
+		changeTermSize();
     }
 }
 
@@ -100,7 +107,7 @@ function modTerm(id, newAmount){
 		termRows = newAmount;
 	}
 
-	changeTermSize(true)
+	changeTermSize(true);
 }
 
 // Sends the new size to the SSH server & changes local terminal size
@@ -114,8 +121,8 @@ function changeTermSize(skip){
 	}
 
 	if(skip === undefined){
-		document.getElementById('termCols').value = termCols
-		document.getElementById('termRows').value = termRows
+		document.getElementById('termCols').value = termCols;
+		document.getElementById('termRows').value = termRows;
 	}
 }
 
@@ -173,7 +180,7 @@ function startSSHy() {
     ws.onclose = function(e) {
 		if(term){
 			if(transport.closing){
-				return
+				return;
 			}
 			term.write('\n\n\rWebsocket connection to ' + wsproxyURL.split('/')[2].split(':')[0] + ' was unexpectedly closed.');
 		} else {
@@ -195,8 +202,8 @@ function termInit() {
     // start xterm.js
     term.open(document.getElementById('terminal'), true);
 	// set the terminal size on settings menu
-	document.getElementById('termCols').value = termCols
-	document.getElementById('termRows').value = termRows
+	document.getElementById('termCols').value = termCols;
+	document.getElementById('termRows').value = termRows;
 }
 
 function startxtermjs() {
