@@ -37,13 +37,13 @@ window.onload = function() {
 									<span class="middle" id="currentLEcho">Auto</span>
 								</div>
 								<span class="title" style="padding-top:50px">Colours</span>
-								<a class="leftarrow" href="javascript:void(0)" onclick="cycleColorSchemes(0)">\<--</a>
+								<a class="leftarrow" href="javascript:void(0)" onclick="transport.settings.cycleColorSchemes(0)">\<--</a>
 								<span class="middle" id="currentColor">Monokai</span>
-								<a class="rightarrow" href="javascript:void(0)" onclick="cycleColorSchemes(1)">--\></a>
+								<a class="rightarrow" href="javascript:void(0)" onclick="transport.settings.cycleColorSchemes(1)">--\></a>
 								<div class="fileUpload btn btn-primary">
 									<span class="tooltiptext">Format: Xresources</span>
 									<span class="middle" style="width:220px;">Upload</span>
-									<input type="file" title=" " id="Xresources" class="upload" onchange="importXresources()" />
+									<input type="file" title=" " id="Xresources" class="upload" onchange="transport.settings.importXresources()" />
 								</div>
 								<span class="title" style="padding-top:20px;">Keep Alive</span>
 								<div class="fileUpload btn btn-primary">
@@ -54,7 +54,6 @@ window.onload = function() {
 							</div>
 							<span id="gear" class="gear" style="visibility:visible;" onclick="toggleNav(250)">&#9881</span>`;
 
-	setColorScheme(colorScheme_material);
 	startSSHy();
 };
 
