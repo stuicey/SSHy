@@ -1,7 +1,5 @@
 SSHyClient.auth = function(parceler) {
     this.parceler = parceler; // We shouldn't need anything from the transport handler
-    this.username = null;
-    this.password = null;
     this.authenticated = null;
     this.awaitingAuthentication = false;
 };
@@ -17,15 +15,15 @@ SSHyClient.auth.prototype = {
     // Sends the username and password provided by index.html
     ssh_connection: function() {
         if (isWrapper && term) {
-            var p = new SSHyClient.Message();
-            p.add_bytes(String.fromCharCode(SSHyClient.MSG_USERAUTH_REQUEST));
-            p.add_string(termUsername);
-            p.add_string("ssh-connection");
-            p.add_string("password");
-            p.add_boolean(false);
-            p.add_string(termPassword);
+            var m = new SSHyClient.Message();
+            m.add_bytes(String.fromCharCode(SSHyClient.MSG_USERAUTH_REQUEST));
+            m.add_string(termUsername);
+            m.add_string("ssh-connection");
+            m.add_string("password");
+            m.add_boolean(false);
+            m.add_string(termPassword);
 
-            this.parceler.send(p);
+            this.parceler.send(m);
             this.awaitingAuthentication = true;
         } else {
             // If no termUser or termPass has been set then we are likely using the wrapper
@@ -64,9 +62,9 @@ SSHyClient.auth.prototype = {
         m.add_int(0);
         m.add_string('pty-req');
         m.add_boolean(false); // we don't want any enviroment vars to be returned
-        m.add_string(term || 'xterm');
-        m.add_int(width || 80);
-        m.add_int(height || 24);
+        m.add_string(term);
+        m.add_int(width);
+        m.add_int(height);
         // pixel data, which is overwritten by the above height and width
         m.add_int(0);
         m.add_int(0);
@@ -85,8 +83,8 @@ SSHyClient.auth.prototype = {
         m.add_int(0);
         m.add_string('window-change');
         m.add_boolean(false);
-        m.add_int(width || 80);
-        m.add_int(height || 24);
+        m.add_int(width);
+        m.add_int(height);
         m.add_int(0);
         m.add_int(0);
         this.parceler.send(m);
@@ -107,15 +105,5 @@ SSHyClient.auth.prototype = {
             return;
         }
         startxtermjs();
-    },
-    // encapsulates a character or command and sends it to the SSH server
-    send_command: function(command) {
-        var m = new SSHyClient.Message();
-        m.add_bytes(String.fromCharCode(SSHyClient.MSG_CHANNEL_DATA));
-        m.add_int(0);
-        m.add_string(command.toString());
-
-        this.parceler.send(m);
     }
-
 };

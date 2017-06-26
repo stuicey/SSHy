@@ -4,23 +4,14 @@ SSHyClient.parceler = function(web_socket, transport) {
     this.encrypting = false;
 
     // Encryption & Mac variables
-    this.outbound_enc_iv = null;
-    this.outbound_enc_key = null;
-    this.outbound_mac_key = null;
+    this.outbound_enc_iv = this.outbound_enc_key = this.outbound_mac_key = this.outbound_cipher= null;
 
-    this.outbound_cipher = null;
-
-    this.inbound_iv = null;
-    this.inbound_enc_key = null;
-    this.inbound_mac_key = null;
-
-    this.inbound_cipher = null;
+    this.inbound_iv = this.inbound_enc_key = this.inbound_mac_key = this.inbound_cipher = null;
 
     this.hmacSHAVersion = null;
     this.macSize = null;
 
-    this.outbound_sequence_num = 0;
-    this.inbound_sequence_num = 0;
+    this.outbound_sequence_num = this.inbound_sequence_num = 0;
     this.block_size = 8;
 
     this.decrypted_header = '';
@@ -106,7 +97,7 @@ SSHyClient.parceler.prototype = {
             var mac_payload = struct.pack('I', this.inbound_sequence_num) + struct.pack('I', packet_size) + packet;
             var our_mac = SSHyClient.hash.HMAC(this.inbound_mac_key, mac_payload, this.hmacSHAVersion);
             if (our_mac != mac) {
-                display_error("Inbound MAC verification failed - Mismatched MAC");
+                term.write("\r\nInbound MAC verification failed - Mismatched MAC");
                 throw "Inbound MAC verification failed - Mismatched MAC";
             }
 

@@ -285,10 +285,12 @@ SSHyClient.Transport.prototype = {
         m.add_string('');
         m.add_boolean(false); // Kex guessing
         m.add_int(0);
-        //save a copy for calculating H later
-        this.local_kex_message = m.toString();
 
-        this.send_packet(m.toString());
+		m = m.toString();
+        //save a copy for calculating H later
+        this.local_kex_message = m;
+
+        this.send_packet(m);
     },
 
     parse_kex_reply: function(m) {
@@ -297,9 +299,9 @@ SSHyClient.Transport.prototype = {
 
         var kex = filter(this.preferred_algorithms[0], m.get_string().split(','));
         var keys = filter(this.preferred_algorithms[1], m.get_string().split(','));
-        m.get_string().split(',');
+        m.get_string();
         var cipher = filter(this.preferred_algorithms[2], m.get_string().split(','));
-        m.get_string().split(',');
+        m.get_string();
         var mac = filter(this.preferred_algorithms[3], m.get_string().split(','));
 
         if (!kex || !keys || !cipher || !mac) {
@@ -382,7 +384,13 @@ SSHyClient.Transport.prototype = {
     },
 
     expect_key: function(command) {
-        this.auth.send_command(command);
+		// encapsulates a character or command and sends it to the SSH server
+		var m = new SSHyClient.Message();
+		m.add_bytes(String.fromCharCode(SSHyClient.MSG_CHANNEL_DATA));
+		m.add_int(0);
+		m.add_string(command.toString());
+
+		this.parceler.send(m);
     },
 
     send_new_keys: function(SHAVersion) {
