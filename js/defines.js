@@ -46,7 +46,4 @@ SSHyClient = {
 	fishFsHintLeave: "\x1b\x5b\x33\x32",
 	/* Bash Binding */
 	bashFsHintLeave: "\x1b\x5d\x30\x3b"
-
-
-
 };
