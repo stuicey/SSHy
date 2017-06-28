@@ -30,7 +30,7 @@ window.onload = function() {
 									<input type="number" id="termRows" oninput="transport.settings.modTerm(1, this.value)">
 								</span>
 								<span class="title" style="padding-top:60px;">Local Echo</span>
-								<a class="leftarrow" href="javascript:void(0)" onclick="transport.settings.etLocalEcho(-1)">\<--</a>
+								<a class="leftarrow" href="javascript:void(0)" onclick="transport.settings.setLocalEcho(-1)">\<--</a>
 								<a class="rightarrow" href="javascript:void(0)" onclick="transport.settings.setLocalEcho(1)">--\></a>
 								<div class="fileUpload btn btn-primary nomargin">
 									<span class="tooltiptext" style="visibility:visible;" id="autoEchoState">State: Enabled</span>
