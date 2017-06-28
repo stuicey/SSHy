@@ -19,6 +19,7 @@ SSHyClient.parceler = function(web_socket, transport) {
 };
 
 SSHyClient.parceler.prototype = {
+	// Send / Encrypt messages to the websocket proxy
     send: function(data, initial) {
         initial = initial === undefined ? false : true;
         // Much easier to just deal with a string here instead of an object
@@ -28,11 +29,13 @@ SSHyClient.parceler.prototype = {
             this.socket.send(btoa(data));
             return;
         } else if (this.encrypting) {
+			// Encapsulate the data with padding and length
             var packet = this.pack_message(data);
 
+			// Encrypt the encapsulated packet
             var encrypted_packet = this.outbound_cipher.encrypt(packet);
 
-            // we still need to add the mac hash & pack the sequence number
+            // Add the mac hash & pack the sequence number
             encrypted_packet += SSHyClient.hash.HMAC(this.outbound_mac_key, struct.pack('I', this.outbound_sequence_num) + packet, this.hmacSHAVersion);
 
             // now send it as a base64 string
@@ -56,7 +59,7 @@ SSHyClient.parceler.prototype = {
 
         return packet;
     },
-
+	// Decrypt messages from the SSH server
     decrypt: function() {
         // Since we cannot guarentee that we will be decyrpting zero, one or multiple packets we have to rely on this.read_ibuffer()
         var buffer = ' ';
@@ -64,6 +67,7 @@ SSHyClient.parceler.prototype = {
         while (buffer !== null) {
             // First lets decrypt the first block and get the packet length
             if (!this.decrypted_header) {
+				// Read [this.block_size] from the inbound buffer
                 header = this.read_ibuffer();
                 if (!header) { // just for safety
                     return;
@@ -73,20 +77,23 @@ SSHyClient.parceler.prototype = {
                 header = this.decrypted_header;
                 this.decrypted_header = '';
             }
-
+			// Unpack the packet size from the decrypted header
             var packet_size = struct.unpack('I', header.substring(0, 4))[0];
             // We can store the start of our message for later now
             var leftover = header.substring(4);
 
+			// Attempt to read [packet_size] from inbound buffer; returns null on failure
             buffer = this.read_ibuffer(packet_size + this.macSize - leftover.length);
             if (!buffer) {
+				// Couldn't read [packet_size] so store the decrypted_header
                 this.decrypted_header = header;
                 return;
             }
-
+			// Get the packet body and mac length from the buffer
             var packet = buffer.substring(0, packet_size - leftover.length);
             var mac = buffer.substring(packet_size - leftover.length);
 
+			// Decrypt the packet and prepend our leftover header
             packet = leftover + this.inbound_cipher.decrypt(packet);
 
             /*
@@ -97,22 +104,27 @@ SSHyClient.parceler.prototype = {
             var mac_payload = struct.pack('I', this.inbound_sequence_num) + struct.pack('I', packet_size) + packet;
             var our_mac = SSHyClient.hash.HMAC(this.inbound_mac_key, mac_payload, this.hmacSHAVersion);
             if (our_mac != mac) {
+				// Oops something went wrong, lets close the connection
                 term.write("\r\nInbound MAC verification failed - Mismatched MAC");
+				this.transport.disconect();
                 throw "Inbound MAC verification failed - Mismatched MAC";
             }
 
-            // increment the seq number
+            // Increment the sequence number
             this.inbound_sequence_num++;
+
             // calculate how much WINDOW_SIZE we have left
             SSHyClient.WINDOW_SIZE -= packet_size;
 
+			// If we've run out of window size then readjust it
             if (SSHyClient.WINDOW_SIZE <= 0) {
                 this.transport.winAdjust();
             }
+			// Send the decoded packet to the transport handler
             this.transport.handle_dec(packet);
         }
     },
-
+	// Read [bytes] from the inbound buffer
     read_ibuffer: function(bytes) { // if we don't feed it any arguments we are only wanting one block anyway
         bytes = bytes === undefined ? this.block_size : bytes;
         if (this.inbound_buffer.length < bytes) {
@@ -120,6 +132,7 @@ SSHyClient.parceler.prototype = {
         }
 
         var out = this.inbound_buffer.substring(0, bytes);
+		// Remove the bytes we're taking from the buffer
         this.inbound_buffer = this.inbound_buffer.substring(bytes);
         return out;
     }

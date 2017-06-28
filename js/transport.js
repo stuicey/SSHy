@@ -230,7 +230,7 @@ SSHyClient.Transport.prototype = {
         }
     },
 
-    // Increase Window Size
+    // Resets the window size back to the initial size
     winAdjust: function() {
         var m = new SSHyClient.Message();
         m.add_bytes(String.fromCharCode(SSHyClient.MSG_CHANNEL_WINDOW_ADJUST));
@@ -240,7 +240,6 @@ SSHyClient.Transport.prototype = {
         this.send_packet(m.toString());
         SSHyClient.WINDOW_SIZE = 40674;
     },
-
     // Disconnect the web client from the server with a given error code (11 - SSH_DISCONNECT_BY_APPLICATION )
     disconnect: function(reason) {
 		this.closing = true;
@@ -254,21 +253,25 @@ SSHyClient.Transport.prototype = {
     },
 	// Sends a null packet to the SSH server to keep the connection alive
 	keepAlive: function(){
+		// Make sure the websocket is still open
+		if(!this.ws){
+			return;
+		}
 		var m = new SSHyClient.Message();
 		m.add_bytes(String.fromCharCode(SSHyClient.MSG_IGNORE));
 		m.add_string('');
 
 		transport.send_packet(m.toString());
 	},
-
+	// Cuts the padding 00's off the end of a message by reading the padding length
     cut_padding: function(m) {
         return m.substring(1, m.length - m[0].charCodeAt(0));
     },
-
+	// Sends the raw packet to the parceler to be encapsulated and sent via websocket
     send_packet: function(m) {
         this.parceler.send(m);
     },
-
+	// Initiates the key exchange process by sending our supported algorithms & ciphers
     send_kex_init: function() {
         var m = new SSHyClient.Message();
         m.add_bytes(String.fromCharCode(SSHyClient.MSG_KEX_INIT));
@@ -294,11 +297,13 @@ SSHyClient.Transport.prototype = {
 
         this.send_packet(m);
     },
-
+	// Parses the server's kex init and selects best fit algorithms & ciphers
     parse_kex_reply: function(m) {
         m = new SSHyClient.Message(m);
-        var random = m.get_bytes(18);
+		// Cuts the 16 byte random cookie and message flags from the beginning
+		m.get_bytes(18);
 
+		// Gets the supported algorithms, ignoring repeated keys/cipher algorithms
         var kex = filter(this.preferred_algorithms[0], m.get_string().split(','));
         var keys = filter(this.preferred_algorithms[1], m.get_string().split(','));
         m.get_string();
@@ -306,6 +311,7 @@ SSHyClient.Transport.prototype = {
         m.get_string();
         var mac = filter(this.preferred_algorithms[3], m.get_string().split(','));
 
+		// Sanity checking to make sure nessesary algorithms have been negotiated
         if (!kex || !keys || !cipher || !mac) {
             var missing = '';
             if (!kex) {
@@ -334,32 +340,32 @@ SSHyClient.Transport.prototype = {
     	C = Encryption Key 	client -> server
     	E = Integrity Key 	client -> server
     */
-    generate_key: function(char, size, SHAVersion) {
+    generate_key: function(char, size) {
         var m = new SSHyClient.Message();
         m.add_mpint(this.K);
         m.add_bytes(this.H);
         m.add_bytes(char);
         m.add_bytes(this.session_id);
 
-        return SHAVersion == 'SHA-1' ? new SSHyClient.hash.SHA1(m.toString()).digest().substring(0, size) : new SSHyClient.hash.SHA256(m.toString()).digest().substring(0, size);
+        return this.preferred_kex.SHAVersion == 'SHA-1' ? new SSHyClient.hash.SHA1(m.toString()).digest().substring(0, size) : new SSHyClient.hash.SHA256(m.toString()).digest().substring(0, size);
     },
-
-    activate_encryption: function(SHAVersion) {
+	// Sets up the keys and ciphers that the parceler will use
+    activate_encryption: function() {
         this.parceler.block_size = 16;
 
         // Generate the keys we need for encryption and HMAC
-        this.parceler.outbound_enc_iv = this.generate_key('A', this.parceler.block_size, SHAVersion);
-        this.parceler.outbound_enc_key = this.generate_key('C', this.parceler.block_size, SHAVersion);
-        this.parceler.outbound_mac_key = this.generate_key('E', this.parceler.macSize, SHAVersion);
+        this.parceler.outbound_enc_iv = this.generate_key('A', this.parceler.block_size, this.preferred_kex.SHAVersion);
+        this.parceler.outbound_enc_key = this.generate_key('C', this.parceler.block_size, this.preferred_kex.SHAVersion);
+        this.parceler.outbound_mac_key = this.generate_key('E', this.parceler.macSize, this.preferred_kex.SHAVersion);
 
         this.parceler.outbound_cipher = new SSHyClient.crypto.AES(this.parceler.outbound_enc_key,
             SSHyClient.AES_CTR,
             this.parceler.outbound_enc_iv,
             new SSHyClient.crypto.counter(this.parceler.block_size * 8, inflate_long(this.parceler.outbound_enc_iv)));
 
-        this.parceler.inbound_enc_iv = this.generate_key('B', this.parceler.block_size, SHAVersion);
-        this.parceler.inbound_enc_key = this.generate_key('D', this.parceler.block_size, SHAVersion);
-        this.parceler.inbound_mac_key = this.generate_key('F', this.parceler.macSize, SHAVersion);
+        this.parceler.inbound_enc_iv = this.generate_key('B', this.parceler.block_size, this.preferred_kex.SHAVersion);
+        this.parceler.inbound_enc_key = this.generate_key('D', this.parceler.block_size, this.preferred_kex.SHAVersion);
+        this.parceler.inbound_mac_key = this.generate_key('F', this.parceler.macSize, this.preferred_kex.SHAVersion);
 
         this.parceler.inbound_cipher = new SSHyClient.crypto.AES(this.parceler.inbound_enc_key,
             SSHyClient.AES_CTR,
@@ -371,7 +377,7 @@ SSHyClient.Transport.prototype = {
 
         this.auth.request_auth();
     },
-
+	// Takes an arbitrary packet and processes it to be looked up by the handler_table
     handle_dec: function(m) {
         // Cut the padding off
         m = this.cut_padding(m);
@@ -384,8 +390,12 @@ SSHyClient.Transport.prototype = {
             console.log("Error! code - " + m.substring(0, 1).charCodeAt(0) + " does not exist!");
         }
     },
-
+	// Takes a char or string and sends it to the SSH server
     expect_key: function(command) {
+		// Make sure a non-null command is being sent
+		if(!command){
+			return;
+		}
 		// encapsulates a character or command and sends it to the SSH server
 		var m = new SSHyClient.Message();
 		m.add_bytes(String.fromCharCode(SSHyClient.MSG_CHANNEL_DATA));
@@ -394,7 +404,7 @@ SSHyClient.Transport.prototype = {
 
 		this.parceler.send(m);
     },
-
+	// Sends the new keys message signaling we're using the generated keys from now on
     send_new_keys: function(SHAVersion) {
         var m = new SSHyClient.Message();
         m.add_bytes(String.fromCharCode(SSHyClient.MSG_NEW_KEYS));

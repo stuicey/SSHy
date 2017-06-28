@@ -67,9 +67,8 @@ window.onbeforeunload = function() {
         transport.disconnect();
     }
 };
-
+// Recalculates the terminal Columns / Rows and sends new size to SSH server + xtermjs
 function resize() {
-    // recalculate the termCols and rows
     termCols = Math.floor((window.innerWidth - 10) / fontWidth) - (isFirefox ? -2 : 0);
     termRows = Math.floor((window.innerHeight - 10) / fontHeight) - (isFirefox ? 1 : 1);
 
@@ -77,7 +76,7 @@ function resize() {
 		transport.settings.changeTermSize();
     }
 }
-
+// Toggles the settings navigator
 function toggleNav(size){
 	document.getElementById("settingsNav").style.width = size;
 	var element = document.getElementById("gear").style;
@@ -87,6 +86,7 @@ function toggleNav(size){
 // Called on unsuccessful SSH connection authentication
 function auth_failure() {
     term.write("Access Denied\r\n");
+	// if we've failed authentication more than 5 times than disconect and warn the user
     if (++failedAttempts >= 5) {
         term.write("Too many failed authentication attempts");
         transport.disconnect();
@@ -107,11 +107,12 @@ function startSSHy() {
     ws.onopen = function(e) {
         transport = new SSHyClient.Transport(ws);
     };
-
+	// Send all recieved messages to SSHyClient.Transport.handle()
     ws.onmessage = function(e) {
+		// convert the recieved data from base64 to a string
         transport.handle(atob(e.data));
     };
-
+	// Whenever the websocket is closed make sure to display an error if appropriate
     ws.onclose = function(e) {
 		if(term){
 			if(transport.closing){
@@ -125,7 +126,7 @@ function startSSHy() {
 		}
     };
 }
-
+// Initialises xtermjs
 function termInit() {
 	// Calculate the term rows/cols
 	resize();
@@ -140,7 +141,7 @@ function termInit() {
 	document.getElementById('termCols').value = termCols;
 	document.getElementById('termRows').value = termRows;
 }
-
+// Binds custom listener functions to xtermjs's Terminal object
 function startxtermjs() {
     termInit();
 
@@ -161,7 +162,7 @@ function startxtermjs() {
         }
 
         if (!transport.auth.authenticated) {
-            // putty doesn't allow control characters during authentication
+            // Other clients doesn't allow control characters during authentication
             if (e.altKey || e.ctrlKey || e.metaKey) {
                 return;
             }
@@ -170,7 +171,8 @@ function startxtermjs() {
 			if(e.key.length > 1 && (e.keyCode != 13 && e.keyCode != 8)){
 				return;
 			}
-
+			/* while termPassword is undefined, add all input to termUsername
+			   when it becomes defined then change targets to termPassword */
             switch (e.keyCode) {
                 case 8: // backspace
                     if (termPassword === undefined) {
@@ -205,6 +207,7 @@ function startxtermjs() {
             return;
         }
 
+		// We've already authenticated so now any keypress is a command for the SSH server
         var command;
 
         // Decides if the keypress is an alphanumeric character or needs escaping
@@ -225,11 +228,15 @@ function startxtermjs() {
             // Decide if we're going to locally' echo this key or not
             transport.settings.parseKey(e);
         }
-        // Regardless of local echo we still want a reply to confirm / update terminal
+        /* Regardless of local echo we still want a reply to confirm / update terminal
+		   could be controversial? but putty does this too (each key press shows up twice)
+		   Instead we're checking the our locally echoed key and replacing it if the
+		   recieved key !== locally echoed key */
         return command === null ? null : transport.expect_key(command);
     };
 
-    //TODO: Find work around for firefox
+    /* TODO: Find work around for firefox, currently even google hasn't found a
+	   solution to get pasting working for firefox in google docs */
     term.textarea.onpaste = function(ev) {
         if (ev.clipboardData) {
             var text = ev.clipboardData.getData('text/plain');

@@ -92,7 +92,7 @@ SSHyClient.kex.DiffieHellman.prototype = {
 		// TODO: Verify host key and Signature
 		this.transport.K = K;
 		this.transport.session_id = this.transport.H = this.SHAVersion == 'SHA-1' ? new SSHyClient.hash.SHA1(m.toString()).digest() : new SSHyClient.hash.SHA256(m.toString()).digest();
-		this.transport.send_new_keys(this.SHAVersion);
+		this.transport.send_new_keys();
 	},
 
 	// generates our secret x
