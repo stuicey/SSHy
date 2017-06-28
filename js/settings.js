@@ -1,8 +1,11 @@
 SSHyClient.settings = function() {
     // Local echo reduces latency on regular key presses to aruond 0.04s compared to ~0.2s without it
     this.localEcho = 1; // 0 - off; 1 - auto; 2 - on
+
+	/* Default the bindings to bash */
 	this.fsHintEnter = "\x1b\x5b\x3f\x31";
-	this.fsHintLeave = "\x1b\x5b\x33\x32";
+	this.fsHintLeave = SSHyClient.bashFsHintLeave;
+
 	this.autoEchoState = 1;		// 0 = no echoing ; 1 = echoing
 	this.autoEchoTimeout = 0;
 
@@ -16,6 +19,8 @@ SSHyClient.settings = function() {
 	this.colorCounter = 0; // Stores the current index of the theme loaded in colorSchemes
 
 	this.setColorScheme(this.colorSchemes.Material()); // Sets the default colorScheme to material
+
+	this.shellString = '';
 };
 
 SSHyClient.settings.prototype = {
@@ -46,6 +51,30 @@ colorSchemes: {
 		}
 	},
 
+	// Takes a single character and identifies shell type
+	testShell: function(r){
+		// Check that we're adding the start of a string
+		if(r.substring(0,2).indexOf(']') === -1 && (this.shellString.length === 0 || this.shellString.length > ']0;fish'.length)){
+			this.shellString = '';
+			return;
+		}
+
+		this.shellString += r;
+
+		// Check for fish
+		if(this.shellString.indexOf(']0;fish') !== -1){
+			this.shellString = '';
+			this.fsHintLeave = SSHyClient.fishFsHintLeave;
+			return;
+		}
+
+		// Catch all for bash
+		if(this.shellString.indexOf('@') !== -1){
+			this.shellString = '';
+			this.fsHintLeave = SSHyClient.bashFsHintLeave;
+			return;
+		}
+	},
 	// Toggles Local Echo on and off
 	setLocalEcho: function(dir){
 		// Clamp the setting between 0 and 2

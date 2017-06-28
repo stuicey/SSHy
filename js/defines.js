@@ -40,5 +40,13 @@ SSHyClient = {
     MAX_PACKET_SIZE: 16384,
 
     AES_CBC: 2,
-    AES_CTR: 6
+    AES_CTR: 6,
+
+	/* Fish Binding */
+	fishFsHintLeave: "\x1b\x5b\x33\x32",
+	/* Bash Binding */
+	bashFsHintLeave: "\x1b\x5d\x30\x3b"
+
+
+
 };
