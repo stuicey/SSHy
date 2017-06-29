@@ -193,9 +193,9 @@ SSHyClient.settings.prototype = {
 		if(!colorName){
 			colors = colors.toString();
 			// loop through colorSchemes and check for colors === colorSchemes[key]
-			for(var i = 0; i < names.length; i++){
+			for(var i = 0; i < this.colorNames.length; i++){
 				if(colors == this.colorSchemes[this.colorNames[i]]().toString()){
-					colorName = names[i];
+					colorName = this.colorNames[i];
 					this.colorCounter = i;		// Sets counter equal to the index of the colorSchemes
 					break;
 				}
@@ -243,8 +243,8 @@ SSHyClient.settings.prototype = {
 	cycleColorSchemes: function(dir) {
 	    // Cycles through (0 -> colorSchemes.length - 1) where dir = 1 is incrementing and dir = false decrements
 		this.colorCounter = dir === 0 ? --this.colorCounter : ++this.colorCounter;
-		if(this.colorCounter > names.length - 1 || this.colorCounter  < 0){
-			this.colorCounter = dir === 1 ? 0 : names.length - 1;
+		if(this.colorCounter > this.colorNames.length - 1 || this.colorCounter  < 0){
+			this.colorCounter = dir === 1 ? 0 : this.colorNames.length - 1;
 		}
 		// Set color scheme to (colorList [ colorNames [ counter ]])
 		this.setColorScheme(this.colorSchemes[this.colorNames[this.colorCounter]]());
