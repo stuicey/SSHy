@@ -16,6 +16,8 @@ SSHyClient.parceler = function(web_socket, transport) {
 
     this.decrypted_header = '';
     this.inbound_buffer = '';
+
+	this.windowSize = SSHyClient.WINDOW_SIZE;
 };
 
 SSHyClient.parceler.prototype = {
@@ -113,11 +115,11 @@ SSHyClient.parceler.prototype = {
             // Increment the sequence number
             this.inbound_sequence_num++;
 
-            // calculate how much WINDOW_SIZE we have left
-            SSHyClient.WINDOW_SIZE -= packet_size;
+            // calculate how much window size we have left
+            this.windowSize -= packet_size;
 
 			// If we've run out of window size then readjust it
-            if (SSHyClient.WINDOW_SIZE <= 0) {
+            if (this.windowSize <= 0) {
                 this.transport.winAdjust();
             }
 			// Send the decoded packet to the transport handler

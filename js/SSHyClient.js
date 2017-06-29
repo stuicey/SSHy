@@ -9,7 +9,7 @@ var failedAttempts, termRows, termCols = 0;
 var fontWidth = 10;
 var fontHeight = 18;
 
-var termUsername = '';
+var hostname, termUsername = '';
 var termPassword;
 
 window.onload = function() {
@@ -92,7 +92,7 @@ function auth_failure() {
         transport.disconnect();
         return;
     }
-    term.write(termUsername + '@' + wsproxyURL.split('/')[2].split(':')[0] + '\'s password:');
+    term.write(termUsername + '@' + hostname + '\'s password:');
     termPassword = '';
 }
 
@@ -100,6 +100,9 @@ function auth_failure() {
 function startSSHy() {
     // Initialise the window title
     document.title = "SSHy Client";
+
+	// Get the hostname of the wsproxyURL
+	hostname = wsproxyURL.split('/')[2].split(':')[0];
     // Opens the websocket!
     ws = new WebSocket(wsproxyURL, 'base64');
 
@@ -118,7 +121,7 @@ function startSSHy() {
 			if(transport.closing){
 				return;
 			}
-			term.write('\n\n\rWebsocket connection to ' + wsproxyURL.split('/')[2].split(':')[0] + ' was unexpectedly closed.');
+			term.write('\n\n\rWebsocket connection to ' + hostname + ' was unexpectedly closed.');
 		} else {
 			// Check if term exists - if not then no SSH connection was made
             termInit();
@@ -188,7 +191,7 @@ function startxtermjs() {
                     break;
                 case 13: // enter
                     if (termPassword === undefined) {
-                        term.write("\n\r" + termUsername + '@' + wsproxyURL.split('/')[2].split(':')[0] + '\'s password:');
+                        term.write("\n\r" + termUsername + '@' + hostname + '\'s password:');
                         termPassword = '';
                     } else {
                         term.write('\n\r');

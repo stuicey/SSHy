@@ -34,7 +34,7 @@ SSHyClient.auth.prototype = {
     auth_success: function(success) {
         if (success) {
             // Change the window title
-            document.title = termUsername + '@' + wsproxyURL.split('/')[3].split(':')[0];
+            document.title = termUsername + '@' + hostname;
             // Purge the username and password
             termUsername = '';
             termPassword = undefined;

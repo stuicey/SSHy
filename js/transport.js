@@ -235,10 +235,10 @@ SSHyClient.Transport.prototype = {
         var m = new SSHyClient.Message();
         m.add_bytes(String.fromCharCode(SSHyClient.MSG_CHANNEL_WINDOW_ADJUST));
         m.add_int(0);
-        m.add_int(40674);
+        m.add_int(SSHyClient.WINDOW_SIZE);
 
         this.send_packet(m.toString());
-        SSHyClient.WINDOW_SIZE = 40674;
+        this.parceler.windowSize = SSHyClient.WINDOW_SIZE;
     },
     // Disconnect the web client from the server with a given error code (11 - SSH_DISCONNECT_BY_APPLICATION )
     disconnect: function(reason) {
@@ -249,7 +249,7 @@ SSHyClient.Transport.prototype = {
         m.add_int(reason);
         this.send_packet(m.toString());
         ws.close();
-        term.write("\r\nConnection to " + wsproxyURL.split('/')[3].split(':')[0] + " closed.");
+        term.write("\r\nConnection to " + hostname + " closed.");
     },
 	// Sends a null packet to the SSH server to keep the connection alive
 	keepAlive: function(){
