@@ -243,14 +243,19 @@ function startxtermjs() {
     term.textarea.onpaste = function(ev) {
         if (ev.clipboardData) {
             var text = ev.clipboardData.getData('text/plain');
-            if (text.length > 5000) {
-                text = splitSlice(text);
-                for (var i = 0; i < text.length - 1; i++) {
-                    transport.expect_key(text[i]);
-                }
-                return;
-            }
-            transport.expect_key(text);
-        }
+			// Just don't allow more than 1 million characters to be pasted.
+			if(text.length < 1000000){
+		        if (text.length > 5000) {
+		            text = splitSlice(text);
+		            for (var i = 0; i < text.length - 1; i++) {
+		                transport.expect_key(text[i]);
+		            }
+		            return;
+		        }
+		        transport.expect_key(text);
+		    } else { 
+				alert('Error: Pasting very strings is not permitted.');
+			}
+		}
     };
 }
