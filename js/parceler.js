@@ -8,14 +8,12 @@ SSHyClient.parceler = function(web_socket, transport) {
 
     this.inbound_iv = this.inbound_enc_key = this.inbound_mac_key = this.inbound_cipher = null;
 
-    this.hmacSHAVersion = null;
-    this.macSize = null;
+    this.hmacSHAVersion = this.macSize = null;
 
     this.outbound_sequence_num = this.inbound_sequence_num = 0;
     this.block_size = 8;
 
-    this.decrypted_header = '';
-    this.inbound_buffer = '';
+    this.decrypted_header = this.inbound_buffer = '';
 
 	this.windowSize = SSHyClient.WINDOW_SIZE;
 };
@@ -56,7 +54,7 @@ SSHyClient.parceler.prototype = {
         // Adds the message length, padding length and data together
         var packet = struct.pack('I', data.length + padding + 1) + struct.pack('B', padding) + data;
 
-        // RFC says we should use random bytes but we should only need if  we are encrypting. Otherwise it is a waste of time
+        // RFC says we should use random bytes but we should only need if we are encrypting. Otherwise it is a waste of time
         packet += this.encrypting ? read_rng(padding) : new Array(padding + 1).join('\x00');
 
         return packet;

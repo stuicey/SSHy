@@ -2,6 +2,10 @@ SSHyClient.auth = function(parceler) {
     this.parceler = parceler; // We shouldn't need anything from the transport handler
     this.authenticated = null;
     this.awaitingAuthentication = false;
+	this.hostname = wsproxyURL ? wsproxyURL.split('/')[2].split(':')[0] : '';
+	this.termUsername = '';
+	this.termPassword = undefined;
+	this.failedAttempts = 0;
 };
 
 SSHyClient.auth.prototype = {
@@ -14,14 +18,14 @@ SSHyClient.auth.prototype = {
     },
     // Sends the username and password provided by index.html
     ssh_connection: function() {
-        if (isWrapper && term) {
+        if (!this.authenticated && term) {
             var m = new SSHyClient.Message();
             m.add_bytes(String.fromCharCode(SSHyClient.MSG_USERAUTH_REQUEST));
-            m.add_string(termUsername);
+            m.add_string(this.termUsername);
             m.add_string("ssh-connection");
             m.add_string("password");
             m.add_boolean(false);
-            m.add_string(termPassword);
+            m.add_string(this.termPassword);
 
             this.parceler.send(m);
             this.awaitingAuthentication = true;
@@ -34,10 +38,10 @@ SSHyClient.auth.prototype = {
     auth_success: function(success) {
         if (success) {
             // Change the window title
-            document.title = termUsername + '@' + hostname;
+            document.title = this.termUsername + '@' + this.hostname;
             // Purge the username and password
-            termUsername = '';
-            termPassword = undefined;
+            this.termUsername = '';
+            this.termPassword = undefined;
             // We've been authenticated, lets open a channel
             this.open_channel('session');
         }
@@ -49,7 +53,7 @@ SSHyClient.auth.prototype = {
         var m = new SSHyClient.Message();
         m.add_bytes(String.fromCharCode(SSHyClient.MSG_CHANNEL_OPEN));
         m.add_string(type);
-        m.add_int(1);
+        m += SSHyClient.cacheOneInt;
         m.add_int(SSHyClient.WINDOW_SIZE);
         m.add_int(SSHyClient.MAX_PACKET_SIZE);
 
@@ -59,15 +63,14 @@ SSHyClient.auth.prototype = {
     get_pty: function(term, width, height) {
         var m = new SSHyClient.Message();
         m.add_bytes(String.fromCharCode(SSHyClient.MSG_CHANNEL_REQUEST));
-        m.add_int(0);
+        m += SSHyClient.cacheZeroInt;
         m.add_string('pty-req');
         m.add_boolean(false); // we don't want any enviroment vars to be returned
         m.add_string(term);
         m.add_int(width);
         m.add_int(height);
         // pixel data, which is overwritten by the above height and width
-        m.add_int(0);
-        m.add_int(0);
+        m += SSHyClient.cacheZeroInt.repeat(2);
         // not going to use any special terminal modes currently
         m.add_string('');
 
@@ -80,13 +83,12 @@ SSHyClient.auth.prototype = {
     resize_pty: function(width, height) {
         var m = new SSHyClient.Message();
         m.add_bytes(String.fromCharCode(SSHyClient.MSG_CHANNEL_REQUEST));
-        m.add_int(0);
+        m += SSHyClient.cacheZeroInt;
         m.add_string('window-change');
         m.add_boolean(false);
         m.add_int(width);
         m.add_int(height);
-        m.add_int(0);
-        m.add_int(0);
+        m += SSHyClient.cacheZeroInt.repeat(2);
         this.parceler.send(m);
     },
     // Invokes the interactive terminal using the pseudo-terminal channel
@@ -94,16 +96,28 @@ SSHyClient.auth.prototype = {
         // Craft the shell invocation packet
         var m = new SSHyClient.Message();
         m.add_bytes(String.fromCharCode(SSHyClient.MSG_CHANNEL_REQUEST));
-        m.add_int(0);
+        m += SSHyClient.cacheZeroInt;
         m.add_string('shell');
         m.add_boolean(false);
 
         this.parceler.send(m);
         // Start xterm.js
-        if (termPassword === undefined) {
+        if (this.termPassword === undefined) {
             term.write('\n\r');
             return;
         }
         startxtermjs();
-    }
+    },
+	// Called on unsuccessful SSH connection authentication
+	authFailure: function() {
+	    term.write("Access Denied\r\n");
+		// if we've failed authentication more than 5 times than disconect and warn the user
+	    if (++this.failedAttempts >= 5) {
+	        term.write("Too many failed authentication attempts");
+	        transport.disconnect();
+	        return;
+	    }
+	    term.write(this.termUsername + '@' + this.hostname + '\'s password:');
+	    this.termPassword = '';
+	}
 };

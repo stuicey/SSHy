@@ -9,7 +9,7 @@ SSHyClient.settings = function() {
 	this.autoEchoState = true;		// false = no echoing ; true = echoing
 	this.autoEchoTimeout = 0;		// stores the time of last autoecho change
 
-    this.blockedKeys = [':'];		// while localecho(on) don't echo these keys
+    this.blockedKeys = [':'];		// while localecho(force-on) don't echo these keys
 
 	this.keepAliveInterval = undefined;  // stores the setInterval() reference
 
@@ -98,10 +98,10 @@ SSHyClient.settings.prototype = {
     parseLocalEcho: function(r) {
 		// if we're using auto mode AND at least 0.1s has passed since last change
 		if(this.localEcho === 1 && (performance.now() - this.autoEchoTimeout) > 100){
+			// We only need to examine the beginning of most messages so just take the first 64 bytes to improve performance
+			r = r.substring(0,64);
 			if(!this.autoEchoState){
 				// Search for '@' aswell so we catch on 'user@hostname' aswell
-				/* TODO: Test performance overhead of slice([x=16?])'ing the first couple characters
-				   instead of checking the whole response? */
 				if(r.indexOf(this.fsHintLeave) != -1 && r.indexOf('@') != -1 ){
 					this.autoEchoState = true;
 					// Change the Settings UI
@@ -109,8 +109,8 @@ SSHyClient.settings.prototype = {
 					this.autoEchoTimeout = performance.now();
 				}
 			} else {
-				// check for 'password' incase we are inputting a password && to speed things up don't check huge strings
-				if(r.indexOf(this.fsHintEnter) != -1 || r.substring(0,64).toLowerCase().indexOf('password') != -1){
+				// check for 'password' incase we are inputting a password
+				if(r.indexOf(this.fsHintEnter) != -1 || r.toLowerCase().indexOf('password') != -1){
 					this.autoEchoState = false;
 					document.getElementById('autoEchoState').innerHTML = "State: Disabled";
 					this.autoEchoTimeout = performance.now();
@@ -125,11 +125,11 @@ SSHyClient.settings.prototype = {
 		if(this.localEcho === 1 && this.autoEchoState === false){
 			return;
 		}
-		// Make sure the key isn't a special one eg 'ArrowUp', a blocked one or a control character
+		// Make sure the key isn't a special one eg 'ArrowUp', a blocked key or a control character
         if (e.key.length > 1 || this.blockedKeys.includes(e.key) || (e.altKey || e.ctrlKey || e.metaKey)) {
             return;
         }
-		// Incase someone is typing very fast don't echo; to perserve servers formatting.
+		// Incase someone is typing very fast don't echo to perserve servers formatting.
 		if(!transport.lastKey){
 			term.write(e.key);
 		}
