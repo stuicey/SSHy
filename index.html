@@ -7,29 +7,26 @@
 
 	<script type="text/javascript">
 		var wsproxyURL = "ws://localhost:5999/"
-		var ws, transport, term = null
+		var ws, transport, term = null;
 
-		// Since firefox renders at a different resolution to the rest we can identify it and apply special rules
+		// Since firefox renders at a different resolution to chromium based browsers we should identify it and apply special rules
 		var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
-		var termCols = Math.floor(window.innerWidth / 10) - (isFirefox ? -2 : 0)
-		var	termRows = Math.floor(window.innerHeight / 19) - (isFirefox ? 1 : -2)
-
-		var termUsername = ''
-		var termPassword = ''
+		var termRows, termCols = 0;
+		// Need to define these since we need the terminal to open before we can calculate the values
+		var fontWidth = 10;
+		var fontHeight = 18;
 	</script>
 
-	<link rel="stylesheet" href="css/fonts.css" />
-	<link rel="stylesheet" href="css/main.css" />
-	<link rel="stylesheet" href="css/sidenav.css" />
 	<link rel="stylesheet" href="css/xterm.css" />
+	<link rel="stylesheet" href="css/main.css" />
+	<link rel="stylesheet" href="css/fonts.css" />
 
 	<!-- Core defines -->
 	<script type="text/javascript" src="js/defines.js"></script>
 
 	<!-- Cryptography & Terminal Libraries -->
 	<script type="text/javascript" src="js/combinedLibs.min.js"></script>
-	<script type="text/javascript" src="js/colorScheme.js"></script>
 
 	<!-- SShy Scripts -->
 	<script src="js/crypto.js"></script>
@@ -37,31 +34,35 @@
 	<script src="js/transport.js"></script>
 	<script src="js/parceler.js"></script>
 	<script src="js/auth_handler.js"></script>
-	<script src="js/dh_group1.js"></script>
-	<script src="js/dh_group_ex.js"></script>
+	<script src="js/settings.js"></script>
+	<script src="js/dHKex.js"></script>
 
 	<script type="text/javascript">
 		window.onload = function() {
 			document.getElementById('login_cred').style.display = "block";
-			setColorScheme(colorScheme_ashes)
 		};
 
 		// Run every time the webpage is resized
-		window.onresize = function resize() {
-			// recalculate the termCols and rows
-			termCols = Math.floor(window.innerWidth / 10) - (isFirefox ? -2 : 0)
-			termRows = Math.floor(window.innerHeight / 19) - (isFirefox ? 1 : -2)
+		window.onresize = function() {
+			resize();
+		}
+		// Recalculates the terminal Columns / Rows and sends new size to SSH server + xtermjs
+		function resize() {
+			// Try keep a 5px padding all around the terminal
+			termCols = Math.floor((window.innerWidth - 10) / fontWidth) - (isFirefox ? -2 : 0);
+			termRows = Math.floor((window.innerHeight - 10) / fontHeight) - (isFirefox ? 1 : 1);
 
-			if (ws && transport) {
-				term.resize(termCols, termRows)
-				transport.auth.resize_pty(termCols, termRows)
+			if (ws && transport && term) {
+				// Inform the SSH server and xtermjs of the new col / rows
+				transport.settings.changeTermSize();
 			}
 		}
-
-		function toggleNav(size){
-			document.getElementById("settingsNav").style.width = size
+		// Toggles the settings navigator
+		function toggleNav(size) {
+			document.getElementById("settingsNav").style.width = size + 'px';
+			var element = document.getElementById("gear").style;
+			element.visibility = element.visibility === "hidden" ? "visible" : "hidden";
 		}
-
 		// Rudimentary checks that an IP address is external and is a valid hostname or IP address
 		function validate(id, text) {
 			if (!text) {
@@ -132,28 +133,11 @@
 			document.getElementById('failure').innerText = err
 			document.getElementById('failure').style.display = "block"
 		}
-		 // Called on unsuccessful SSH connection authentication
-		function auth_failure() {
-		        // set the username and password fields red
-		        validate('username', "")
-		        validate('password', "")
-		        // Display an error along with the red fields
-		        display_error("Invalid username or password")
-
-		        // clear the password field
-		        document.getElementById('password').value = ''
-		    }
-
 		// Starts the SSH client in scripts/transport.js
 		function startSSHy() {
 			var html_ipaddress = document.getElementById('ipaddress').value
-			termUsername = document.getElementById('username').value
-			termPassword = document.getElementById('password').value
-
-			if (!html_ipaddress) {
-				document.getElementById('ipaddress').value = html_ipaddress = "138.68.148.147"
-				document.getElementById('username').value = termUsername = "dunessh"
-			}
+			var termUsername = document.getElementById('username').value
+			var termPassword = document.getElementById('password').value
 
 			// find the port number
 			if (html_ipaddress.includes(':')) {
@@ -180,88 +164,171 @@
 			document.getElementById('connect').value = 'Connecting...'
 			document.getElementById('load-container').style.display = "block"
 
+			// Initialise the window title
+			document.title = "SSHy Client";
 			// Opens the websocket!
-			ws = new WebSocket(wsproxyURL + html_ipaddress + ':' + html_port, 'base64')
+			ws = new WebSocket(wsproxyURL + html_ipaddress + ':' + html_port , 'base64');
+
 			// Sets up websocket listeners
 			ws.onopen = function(e) {
-				transport = new SSHyClient.Transport(ws)
-			}
-
-			ws.onclose = function(e) {
-				if (ws.readyState > 1) {
-					display_error("Could not resolve hostname: " + html_ipaddress + ":" + html_port)
-					validate('ipaddress', '')
-				}
-			}
-
+				transport = new SSHyClient.Transport(ws);
+				transport.auth.termUsername = termUsername;
+				transport.auth.termPassword = termPassword;
+				transport.auth.hostname = html_ipaddress;
+			};
+			// Send all recieved messages to SSHyClient.Transport.handle()
 			ws.onmessage = function(e) {
-				transport.handle(atob(e.data))
+				// Convert the recieved data from base64 to a string
+				transport.handle(atob(e.data));
+			};
+			// Whenever the websocket is closed make sure to display an error if appropriate
+			ws.onclose = function(e) {
+				if (term) {
+					// Don't display an error if SSH transport has already detected a graceful exit
+					if (transport.closing) {
+						return;
+					}
+					term.write('\n\n\rWebsocket connection to ' + transport.auth.hostname + ' was unexpectedly closed.');
+					// If there is no keepAliveInterval then inform users they can use it
+					if (!transport.settings.keepAliveInterval) {
+						term.write('\n\n\rThis was likely caused by he remote SSH server timing out the session due to inactivity.\r\n- Session Keep Alive interval can be set in the settings to prevent this behaviour.');
+					}
+				} else {
+					// Since no terminal exists we need to initialse one before being able to write the error
+					termInit();
+					term.write('WebSocket connection failed: Error in connection establishment: code ' + e.code);
+				}
 			}
 		}
 
-		function startxtermjs() {
-			// clear the modal elements on screen
-			document.getElementById('load-container').style.display = "none";
-			document.getElementById('login_cred').style.display = "none";
+		// Initialises xtermjs
+		function termInit() {
+			// Calculate the term rows/cols
+			resize();
 			// Define the terminal rows/cols
 			term = new Terminal({
 				cols: termCols,
 				rows: termRows
-			})
+			});
 			// start xterm.js
-			term.open(document.getElementById('terminal'), true)
+			term.open(document.getElementById('terminal'), true);
+			// set the terminal size on settings menu
+			document.getElementById('termCols').value = termCols;
+			document.getElementById('termRows').value = termRows;
+			// clear the modal elements on screen
+			document.getElementById('load-container').style.display = "none";
+			document.getElementById('login_cred').style.display = "none";
+		}
+		// Binds custom listener functions to xtermjs's Terminal object
+		function startxtermjs() {
+			termInit();
 
 			// sets up some listeners for the terminal (keydown, paste)
 			term.textarea.onkeydown = function(e) {
-				if (!ws || !transport) { // check for websocket..
-					return
+				// Sanity Checks
+				if (!ws || !transport || transport.auth.failedAttempts >= 5 || transport.auth.awaitingAuthentication) {
+					return;
 				}
 
 				// So we don't spam single control characters
-				if (e.key.length > 1 && (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey)) {
-					return
+				if (e.key.length > 1 && (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) && e.key != "Backspace") {
+					return;
 				}
-				var command = {
-					key: null
-				}
+
+				// We've already authenticated so now any keypress is a command for the SSH server
+				var command;
 
 				// Decides if the keypress is an alphanumeric character or needs escaping
 				if (e.key.length == 1 && !(e.altKey || e.ctrlKey || e.metaKey)) {
-					command.key = e.key
-				} else if(e.key.length == 1 && (e.shiftKey && e.ctrlKey)){
+					command = e.key;
+				} else if (e.key.length == 1 && (e.shiftKey && e.ctrlKey)) {
 					// allows ctrl + shift + v for pasting
-					if(e.key != 'V'){
-						e.preventDefault()
+					if (e.key != 'V') {
+						e.preventDefault();
+						return;
 					}
 				} else {
 					//xtermjs is kind enough to evaluate our special characters instead of having to translate every char ourself
-					command = term.evaluateKeyEscapeSequence(e)
+					command = term.evaluateKeyEscapeSequence(e).key;
 				}
 
-				return command.key == null ? null : transport.expect_key(command.key)
-			}
+				// Decide if we're going to locally' echo this key or not
+				if (transport.settings.localEcho) {
+					transport.settings.parseKey(e);
+				}
+				/* Regardless of local echo we still want a reply to confirm / update terminal
+				   could be controversial? but putty does this too (each key press shows up twice)
+				   Instead we're checking the our locally echoed key and replacing it if the
+				   recieved key !== locally echoed key */
+				return command === null ? null : transport.expect_key(command);
+			};
 
-			//TODO: Find work around for firefox
+			/* TODO: Find work around for firefox, xtermjs claims to handle this but for some reason it doesn't work */
 			term.textarea.onpaste = function(ev) {
 				if (ev.clipboardData) {
+					// Get the user's data from the clipboard
 					var text = ev.clipboardData.getData('text/plain');
-
-					transport.expect_key(text)
-
+					// Just don't allow more than 1 million characters to be pasted.
+					if (text.length < 1000000) {
+						if (text.length > 5000) {
+							// If its a long string then chunk it down to reduce load on SSHyClient.parceler
+							text = splitSlice(text);
+							for (var i = 0; i < text.length - 1; i++) {
+								transport.expect_key(text[i]);
+							}
+							return;
+						}
+						transport.expect_key(text);
+					} else {
+						alert('Error: Pasting large strings is not permitted.');
+					}
 				}
-			}
+			};
 		}
 	</script>
 </head>
 
 <body>
 	<div id="terminal"></div>
-	<div id="settingsNav" class="sidenav">
-		<a href="javascript:void(0)" class="closebtn" onclick="toggleNav('0px')">&times;</a>
-		<a href="javascript:void(0)" onclick="cycleColorSchemes(1)">Cycle ColorScheme</a>
+	<div id="settingsNav" class="sidenav" style="width:0;">
+		<a href="javascript:void(0)" class="closebtn" onclick="toggleNav(0)">&times;</a>
+		<span class="title large">Terminal Options</span>
+		<hr>
+		<span class="title" style="padding-top:20px">Font Size</span>
+		<a class="leftarrow" href="javascript:void(0)" onclick="transport.settings.modFontSize(-1)">\<--</a>
+		<span class="middle" id="currentFontSize">16px</span>
+		<a class="rightarrow" href="javascript:void(0)" onclick="transport.settings.modFontSize(1)">--\></a>
+		<span class="title" style="padding-top:40px">Terminal Size</span>
+		<span class="leftarrow">Cols:
+			<input type="number" id="termCols" oninput="transport.settings.modTerm(0, this.value)">
+		</span>
+		<span class="rightarrow">Rows:
+			<input type="number" id="termRows" oninput="transport.settings.modTerm(1, this.value)">
+		</span>
+		<span class="title" style="padding-top:60px;">Local Echo</span>
+		<a class="leftarrow" href="javascript:void(0)" onclick="transport.settings.setLocalEcho(-1)">\<--</a>
+		<a class="rightarrow" href="javascript:void(0)" onclick="transport.settings.setLocalEcho(1)">--\></a>
+		<div class="fileUpload btn btn-primary nomargin">
+			<span class="tooltiptext" style="visibility:visible;" id="autoEchoState">State: Enabled</span>
+			<span class="middle" id="currentLEcho">Auto</span>
+		</div>
+		<span class="title" style="padding-top:50px">Colours</span>
+		<a class="leftarrow" href="javascript:void(0)" onclick="transport.settings.cycleColorSchemes(0)">\<--</a>
+		<span class="middle" id="currentColor">Monokai</span>
+		<a class="rightarrow" href="javascript:void(0)" onclick="transport.settings.cycleColorSchemes(1)">--\></a>
+		<div class="fileUpload btn btn-primary">
+			<span class="tooltiptext">Format: Xresources</span>
+			<span class="middle" style="width:220px;">Upload</span>
+			<input type="file" title=" " id="Xresources" class="upload" onchange="transport.settings.importXresources()" />
+		</div>
+		<span class="title" style="padding-top:20px;">Keep Alive</span>
+		<div class="fileUpload btn btn-primary">
+			<span class="tooltiptext">0 to disable</span>
+			<input type="number" class="large" id="keepAlive" onchange="transport.settings.setKeepAlive(this.value);" placeholder="0">
+			<span style="font-size:16px;"> seconds</span>
+		</div>
 	</div>
-
-	<span class="icon-cogs" onclick="toggleNav('250px')"></span>
+	<span id="gear" class="gear" style="visibility:visible;" onclick="toggleNav(250)">&#9881</span>
 
 	<div id="login_cred" class="modal">
 		<div class="modal-content">

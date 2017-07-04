@@ -263,7 +263,7 @@ SSHyClient.settings.prototype = {
 		}
 
 		// Recalculate the font width/height based on 'element'
-		fontWidth = this.fontSize > 14 ? Math.ceil(element.width) : Math.floor(element.width);
+		fontWidth = this.fontSize > 14 ? Math.ceil(element.width) : Math.floor(element.width) - 5;
 		fontHeight = Math.floor(element.height);
 
 		document.getElementById("currentFontSize").innerHTML = transport.settings.fontSize + 'px';

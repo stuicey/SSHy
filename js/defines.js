@@ -42,8 +42,6 @@ SSHyClient = {
     AES_CBC: 2,
     AES_CTR: 6,
 
-	cacheZeroInt: "\x00\x00\x00\x00",
-	cacheOneInt: "\x00\x00\x00\x01",
 	/* Fish Binding */
 	fishFsHintLeave: "\x1b\x5b\x33\x32",
 	/* Bash Binding */

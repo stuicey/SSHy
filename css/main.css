@@ -1,9 +1,3 @@
-html, body {
-	height: 100%;
-    background: #000;
-    overflow: hidden;
-	color: #fff;
-}
 .loading {
     display: none;
     position: fixed;

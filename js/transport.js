@@ -246,7 +246,7 @@ SSHyClient.Transport.prototype = {
     winAdjust: function() {
         var m = new SSHyClient.Message();
         m.add_bytes(String.fromCharCode(SSHyClient.MSG_CHANNEL_WINDOW_ADJUST));
-        m += SSHyClient.cacheZeroInt;
+        m.add_int(0);
         m.add_int(SSHyClient.WINDOW_SIZE);
 
         this.send_packet(m.toString());
@@ -300,7 +300,7 @@ SSHyClient.Transport.prototype = {
 		}
 
         m.add_boolean(false); // Kex guessing
-        m += SSHyClient.cacheZeroInt;
+        m.add_int(0);
 
 		m = m.toString();
         //save a copy for calculating H later
@@ -410,7 +410,7 @@ SSHyClient.Transport.prototype = {
 		// encapsulates a character or command and sends it to the SSH server
 		var m = new SSHyClient.Message();
 		m.add_bytes(String.fromCharCode(SSHyClient.MSG_CHANNEL_DATA));
-		m += SSHyClient.cacheZeroInt;
+		m.add_int(0);
 		m.add_string(command.toString());
 
 		this.parceler.send(m);

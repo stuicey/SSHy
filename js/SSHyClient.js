@@ -170,17 +170,17 @@ function startxtermjs() {
 				return;
 			}
 			/* while termPassword is undefined, add all input to termUsername
-			   when it becomes defined then change targets to termPassword */
+			   when it becomes defined then change targets to transport.auth.termPassword */
             switch (e.keyCode) {
                 case 8: // backspace
                     if (transport.auth.termPassword === undefined) {
                         if (termUsername.length > 0) {
                             term.write('\b');
                             term.eraseRight(term.x - 1, term.y);
-                            transport.auth.termUsername = termUsername.slice(0, termUsername.length - 1);
+                            transport.auth.termUsername = transport.auth.termUsername.slice(0, transport.auth.termUsername.length - 1);
                         }
                     } else {
-                        transport.auth.termPassword = termPassword.slice(0, termPassword.length - 1);
+                        transport.auth.termPassword = transport.auth.termPassword.slice(0, transport.auth.termPassword.length - 1);
                     }
                     break;
                 case 13: // enter
