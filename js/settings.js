@@ -18,7 +18,7 @@ SSHyClient.settings = function() {
 	this.colorTango = true;	// if we've got Tango enabled or not (no css changes needed)
 	this.colorCounter = 0; // Stores the current index of the theme loaded in colorSchemes
 	this.colorNames = Object.keys(this.colorSchemes); // Stores an array of colorNames
-	
+
 	this.shellString = '';  // Used to buffer shell identifications ie ']0;fish' or 'user@host$'
 };
 
@@ -262,7 +262,7 @@ SSHyClient.settings.prototype = {
 		}
 
 		// Recalculate the font width/height based on 'element'
-		fontWidth = this.fontSize > 14 ? Math.ceil(element.width) : Math.floor(element.width) - 5;
+		fontWidth = element.width + 0.15;
 		fontHeight = Math.floor(element.height);
 
 		document.getElementById("currentFontSize").innerHTML = transport.settings.fontSize + 'px';
