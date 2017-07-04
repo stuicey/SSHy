@@ -84,13 +84,13 @@
 	box-shadow: 0px 0px 2px #242424;
 }
 
-input {
+input[type="text"], input[type="password"] {
   padding: 4px;
   border: none;
   border-bottom: solid 2px #c9c9c9;
   transition: border 0.3s;
 }
-input:focus, input.focus {
+input[type="text"]:focus, input[type="password"]:focus {
   border-bottom: solid 2px #969696;
 }
 

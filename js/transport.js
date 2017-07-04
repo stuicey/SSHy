@@ -1,4 +1,4 @@
-SSHyClient.Transport = function(ws) {
+SSHyClient.Transport = function(ws, settings) {
     this.local_version = 'SSH-2.0-SSHyClient';
     this.remote_version = '';
 
@@ -22,7 +22,7 @@ SSHyClient.Transport = function(ws) {
 	// Other SSHyClient module classes
     this.parceler = new SSHyClient.parceler(ws, this);
     this.auth = new SSHyClient.auth(this.parceler);
-	this.settings = new SSHyClient.settings();
+	this.settings = settings === undefined ? new SSHyClient.settings() : settings;
 
     this.need_buffer = false;
     this.temp_buffer = '';

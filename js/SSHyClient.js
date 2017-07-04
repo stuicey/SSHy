@@ -137,6 +137,8 @@ function termInit() {
 	// set the terminal size on settings menu
 	document.getElementById('termCols').value = termCols;
 	document.getElementById('termRows').value = termRows;
+	// Sets the default colorScheme to material
+	transport.settings.setColorScheme(transport.settings.colorSchemes.Material());
 }
 // Binds custom listener functions to xtermjs's Terminal object
 function startxtermjs() {

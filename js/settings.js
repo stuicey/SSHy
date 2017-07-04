@@ -18,8 +18,7 @@ SSHyClient.settings = function() {
 	this.colorTango = true;	// if we've got Tango enabled or not (no css changes needed)
 	this.colorCounter = 0; // Stores the current index of the theme loaded in colorSchemes
 	this.colorNames = Object.keys(this.colorSchemes); // Stores an array of colorNames
-	this.setColorScheme(this.colorSchemes.Material()); // Sets the default colorScheme to material
-
+	
 	this.shellString = '';  // Used to buffer shell identifications ie ']0;fish' or 'user@host$'
 };
 

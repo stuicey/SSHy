@@ -16,6 +16,8 @@
 		// Need to define these since we need the terminal to open before we can calculate the values
 		var fontWidth = 10;
 		var fontHeight = 18;
+		// Temp variable to store the settings, moved to SSHyClient.transport()
+		var settings = null;
 	</script>
 
 	<link rel="stylesheet" href="css/xterm.css" />
@@ -40,6 +42,9 @@
 	<script type="text/javascript">
 		window.onload = function() {
 			document.getElementById('login_cred').style.display = "block";
+			// Sets the default colorScheme to material
+			settings = new SSHyClient.settings();
+			settings.setColorScheme(settings.colorSchemes["Material"]());
 		};
 
 		// Run every time the webpage is resized
@@ -171,7 +176,7 @@
 
 			// Sets up websocket listeners
 			ws.onopen = function(e) {
-				transport = new SSHyClient.Transport(ws);
+				transport = new SSHyClient.Transport(ws, settings);
 				transport.auth.termUsername = termUsername;
 				transport.auth.termPassword = termPassword;
 				transport.auth.hostname = html_ipaddress;
@@ -295,36 +300,36 @@
 		<span class="title large">Terminal Options</span>
 		<hr>
 		<span class="title" style="padding-top:20px">Font Size</span>
-		<a class="leftarrow" href="javascript:void(0)" onclick="transport.settings.modFontSize(-1)">\<--</a>
+		<a class="leftarrow" href="javascript:void(0)" onclick="settings.modFontSize(-1)"><--</a>
 		<span class="middle" id="currentFontSize">16px</span>
-		<a class="rightarrow" href="javascript:void(0)" onclick="transport.settings.modFontSize(1)">--\></a>
+		<a class="rightarrow" href="javascript:void(0)" onclick="settings.modFontSize(1)">--></a>
 		<span class="title" style="padding-top:40px">Terminal Size</span>
 		<span class="leftarrow">Cols:
-			<input type="number" id="termCols" oninput="transport.settings.modTerm(0, this.value)">
+			<input type="number" id="termCols" oninput="settings.modTerm(0, this.value)">
 		</span>
 		<span class="rightarrow">Rows:
-			<input type="number" id="termRows" oninput="transport.settings.modTerm(1, this.value)">
+			<input type="number" id="termRows" oninput="settings.modTerm(1, this.value)">
 		</span>
 		<span class="title" style="padding-top:60px;">Local Echo</span>
-		<a class="leftarrow" href="javascript:void(0)" onclick="transport.settings.setLocalEcho(-1)">\<--</a>
-		<a class="rightarrow" href="javascript:void(0)" onclick="transport.settings.setLocalEcho(1)">--\></a>
+		<a class="leftarrow" href="javascript:void(0)" onclick="settings.setLocalEcho(-1)"><--</a>
+		<a class="rightarrow" href="javascript:void(0)" onclick="settings.setLocalEcho(1)">--></a>
 		<div class="fileUpload btn btn-primary nomargin">
 			<span class="tooltiptext" style="visibility:visible;" id="autoEchoState">State: Enabled</span>
 			<span class="middle" id="currentLEcho">Auto</span>
 		</div>
 		<span class="title" style="padding-top:50px">Colours</span>
-		<a class="leftarrow" href="javascript:void(0)" onclick="transport.settings.cycleColorSchemes(0)">\<--</a>
+		<a class="leftarrow" href="javascript:void(0)" onclick="settings.cycleColorSchemes(0)"><--</a>
 		<span class="middle" id="currentColor">Monokai</span>
-		<a class="rightarrow" href="javascript:void(0)" onclick="transport.settings.cycleColorSchemes(1)">--\></a>
+		<a class="rightarrow" href="javascript:void(0)" onclick="settings.cycleColorSchemes(1)">--></a>
 		<div class="fileUpload btn btn-primary">
 			<span class="tooltiptext">Format: Xresources</span>
 			<span class="middle" style="width:220px;">Upload</span>
-			<input type="file" title=" " id="Xresources" class="upload" onchange="transport.settings.importXresources()" />
+			<input type="file" title=" " id="Xresources" class="upload" onchange="settings.importXresources()" />
 		</div>
 		<span class="title" style="padding-top:20px;">Keep Alive</span>
 		<div class="fileUpload btn btn-primary">
 			<span class="tooltiptext">0 to disable</span>
-			<input type="number" class="large" id="keepAlive" onchange="transport.settings.setKeepAlive(this.value);" placeholder="0">
+			<input type="number" class="large" id="keepAlive" onchange="settings.setKeepAlive(this.value);" placeholder="0">
 			<span style="font-size:16px;"> seconds</span>
 		</div>
 	</div>
