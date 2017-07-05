@@ -44,297 +44,319 @@
  	display: none;
  }
 
-.terminal {
-    background-color: #000;
-    color: #fff;
-    font-family: courier-new, courier, monospace;
-    font-feature-settings: "liga" 0;
-    position: relative;
-}
+ .terminal {
+     background-color: #000;
+     color: #fff;
+     font-family: courier-new, courier, monospace;
+     font-feature-settings: "liga" 0;
+     position: relative;
+     user-select: none;
+     -ms-user-select: none;
+     -webkit-user-select: none;
+ }
 
-.terminal.focus,
-.terminal:focus {
-    outline: none;
-}
+ .terminal.focus,
+ .terminal:focus {
+     outline: none;
+ }
 
-.terminal .xterm-helpers {
-    position: absolute;
-    top: 0;
-}
+ .terminal .xterm-helpers {
+     position: absolute;
+     top: 0;
+ }
 
-.terminal .xterm-helper-textarea {
-    /*
-     * HACK: to fix IE's blinking cursor
-     * Move textarea out of the screen to the far left, so that the cursor is not visible.
-     */
-    position: absolute;
-    opacity: 0;
-    left: -9999em;
-    top: 0;
-    width: 0;
-    height: 0;
-    z-index: -10;
-    /** Prevent wrapping so the IME appears against the textarea at the correct position */
-    white-space: nowrap;
-    overflow: hidden;
-    resize: none;
-}
+ .terminal .xterm-helper-textarea {
+     /*
+      * HACK: to fix IE's blinking cursor
+      * Move textarea out of the screen to the far left, so that the cursor is not visible.
+      */
+     position: absolute;
+     opacity: 0;
+     left: -9999em;
+     top: 0;
+     width: 0;
+     height: 0;
+     z-index: -10;
+     /** Prevent wrapping so the IME appears against the textarea at the correct position */
+     white-space: nowrap;
+     overflow: hidden;
+     resize: none;
+ }
 
-.terminal a {
-    color: inherit;
-    text-decoration: none;
-}
+ .terminal a {
+     color: inherit;
+     text-decoration: none;
+ }
 
-.terminal a:hover {
-    cursor: pointer;
-    text-decoration: underline;
-}
+ .terminal a:hover {
+     cursor: pointer;
+     text-decoration: underline;
+ }
 
-.terminal a.xterm-invalid-link:hover {
-    cursor: text;
-    text-decoration: none;
-}
+ .terminal a.xterm-invalid-link:hover {
+     cursor: text;
+     text-decoration: none;
+ }
 
-.terminal.focus:not(.xterm-cursor-style-underline):not(.xterm-cursor-style-bar) .terminal-cursor {
-    background-color: #fff;
-    color: #000;
-}
+ .terminal.focus:not(.xterm-cursor-style-underline):not(.xterm-cursor-style-bar) .terminal-cursor {
+     background-color: #fff;
+     color: #000;
+ }
 
-.terminal:not(.focus) .terminal-cursor {
-    outline: 1px solid #fff;
-    outline-offset: -1px;
-    background-color: transparent;
-}
+ .terminal:not(.focus) .terminal-cursor {
+     outline: 1px solid #fff;
+     outline-offset: -1px;
+     background-color: transparent;
+ }
 
-.terminal:not(.xterm-cursor-style-underline):not(.xterm-cursor-style-bar).focus.xterm-cursor-blink-on .terminal-cursor {
-    background-color: transparent;
-    color: inherit;
-}
+ .terminal:not(.xterm-cursor-style-underline):not(.xterm-cursor-style-bar).focus.xterm-cursor-blink-on .terminal-cursor {
+     background-color: transparent;
+     color: inherit;
+ }
 
-.terminal.xterm-cursor-style-bar .terminal-cursor,
-.terminal.xterm-cursor-style-underline .terminal-cursor {
-    position: relative;
-}
-.terminal.xterm-cursor-style-bar .terminal-cursor::before,
-.terminal.xterm-cursor-style-underline .terminal-cursor::before {
-    content: "";
-    display: block;
-    position: absolute;
-    background-color: #fff;
-}
-.terminal.xterm-cursor-style-bar .terminal-cursor::before {
-    top: 0;
-    bottom: 0;
-    left: 0;
-    width: 1px;
-}
-.terminal.xterm-cursor-style-underline .terminal-cursor::before {
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-}
-.terminal.xterm-cursor-style-bar.focus.xterm-cursor-blink.xterm-cursor-blink-on .terminal-cursor::before,
-.terminal.xterm-cursor-style-underline.focus.xterm-cursor-blink.xterm-cursor-blink-on .terminal-cursor::before {
-    background-color: transparent;
-}
-.terminal.xterm-cursor-style-bar.focus.xterm-cursor-blink .terminal-cursor::before,
-.terminal.xterm-cursor-style-underline.focus.xterm-cursor-blink .terminal-cursor::before {
-    background-color: #fff;
-}
+ .terminal.xterm-cursor-style-bar .terminal-cursor,
+ .terminal.xterm-cursor-style-underline .terminal-cursor {
+     position: relative;
+ }
+ .terminal.xterm-cursor-style-bar .terminal-cursor::before,
+ .terminal.xterm-cursor-style-underline .terminal-cursor::before {
+     content: "";
+     display: block;
+     position: absolute;
+     background-color: #fff;
+ }
+ .terminal.xterm-cursor-style-bar .terminal-cursor::before {
+     top: 0;
+     bottom: 0;
+     left: 0;
+     width: 1px;
+ }
+ .terminal.xterm-cursor-style-underline .terminal-cursor::before {
+     bottom: 0;
+     left: 0;
+     right: 0;
+     height: 1px;
+ }
+ .terminal.xterm-cursor-style-bar.focus.xterm-cursor-blink.xterm-cursor-blink-on .terminal-cursor::before,
+ .terminal.xterm-cursor-style-underline.focus.xterm-cursor-blink.xterm-cursor-blink-on .terminal-cursor::before {
+     background-color: transparent;
+ }
+ .terminal.xterm-cursor-style-bar.focus.xterm-cursor-blink .terminal-cursor::before,
+ .terminal.xterm-cursor-style-underline.focus.xterm-cursor-blink .terminal-cursor::before {
+     background-color: #fff;
+ }
 
-.terminal .composition-view {
-    background: #000;
-    color: #FFF;
-    display: none;
-    position: absolute;
-    white-space: nowrap;
-    z-index: 1;
-}
+ .terminal .composition-view {
+     background: #000;
+     color: #FFF;
+     display: none;
+     position: absolute;
+     white-space: nowrap;
+     z-index: 1;
+ }
 
-.terminal .composition-view.active {
-    display: block;
-}
+ .terminal .composition-view.active {
+     display: block;
+ }
 
-.terminal .xterm-viewport {
-    /* On OS X this is required in order for the scroll bar to appear fully opaque */
-    background-color: #000;
-    overflow-y: scroll;
-}
+ .terminal .xterm-viewport {
+     /* On OS X this is required in order for the scroll bar to appear fully opaque */
+     background-color: #000;
+     overflow-y: hidden;
+ }
 
-.terminal .xterm-wide-char,
-.terminal .xterm-normal-char {
-    display: inline-block;
-}
+ .terminal .xterm-wide-char,
+ .terminal .xterm-normal-char {
+     display: inline-block;
+ }
 
-.terminal .xterm-rows {
-    position: absolute;
-    left: 0;
-    top: 0;
-}
+ .terminal .xterm-rows {
+     position: absolute;
+     left: 0;
+     top: 0;
+ }
 
-.terminal .xterm-rows > div {
-    /* Lines containing spans and text nodes ocassionally wrap despite being the same width (#327) */
-    white-space: nowrap;
-}
+ .terminal .xterm-rows > div {
+     /* Lines containing spans and text nodes ocassionally wrap despite being the same width (#327) */
+     white-space: nowrap;
+ }
 
-.terminal .xterm-scroll-area {
-    visibility: hidden;
-}
+ .terminal .xterm-scroll-area {
+     visibility: hidden;
+ }
 
-.terminal .xterm-char-measure-element {
-    display: inline-block;
-    visibility: hidden;
-    position: absolute;
-    left: -9999em;
-}
+ .terminal .xterm-char-measure-element {
+     display: inline-block;
+     visibility: hidden;
+     position: absolute;
+     left: -9999em;
+ }
 
-/*
- *  Determine default colors for xterm.js
- */
-.terminal .xterm-bold {
-    font-weight: bold;
-}
+ .terminal.enable-mouse-events {
+     /* When mouse events are enabled (eg. tmux), revert to the standard pointer cursor */
+     cursor: default;
+ }
 
-.terminal .xterm-underline {
-    text-decoration: underline;
-}
+ .terminal .xterm-selection {
+     position: absolute;
+     top: 0;
+     left: 0;
+     z-index: 1;
+     opacity: 0.3;
+     pointer-events: none;
+ }
 
-.terminal .xterm-blink {
-    text-decoration: blink;
-}
+ .terminal .xterm-selection div {
+     position: absolute;
+     background-color: #fff;
+ }
 
-.terminal .xterm-hidden {
-    visibility: hidden;
-}
+ /*
+  *  Determine default colors for xterm.js
+  */
+ .terminal .xterm-bold {
+     font-weight: bold;
+ }
 
-.terminal .xterm-color-0 {
-    color: #000;
-}
+ .terminal .xterm-underline {
+     text-decoration: underline;
+ }
 
-.terminal .xterm-bg-color-0 {
-    background-color: #000;
-}
+ .terminal .xterm-blink {
+     text-decoration: blink;
+ }
 
-.terminal .xterm-color-1 {
-    color: #cc0000;
-}
+ .terminal .xterm-hidden {
+     visibility: hidden;
+ }
 
-.terminal .xterm-bg-color-1 {
-    background-color: #cc0000;
-}
+ .terminal .xterm-color-0 {
+     color: #2e3436;
+ }
 
-.terminal .xterm-color-2 {
-    color: #4e9a06;
-}
+ .terminal .xterm-bg-color-0 {
+     background-color: #2e3436;
+ }
 
-.terminal .xterm-bg-color-2 {
-    background-color: #4e9a06;
-}
+ .terminal .xterm-color-1 {
+     color: #cc0000;
+ }
 
-.terminal .xterm-color-3 {
-    color: #c4a000;
-}
+ .terminal .xterm-bg-color-1 {
+     background-color: #cc0000;
+ }
 
-.terminal .xterm-bg-color-3 {
-    background-color: #c4a000;
-}
+ .terminal .xterm-color-2 {
+     color: #4e9a06;
+ }
 
-.terminal .xterm-color-4 {
-    color: #3465a4;
-}
+ .terminal .xterm-bg-color-2 {
+     background-color: #4e9a06;
+ }
 
-.terminal .xterm-bg-color-4 {
-    background-color: #3465a4;
-}
+ .terminal .xterm-color-3 {
+     color: #c4a000;
+ }
 
-.terminal .xterm-color-5 {
-    color: #75507b;
-}
+ .terminal .xterm-bg-color-3 {
+     background-color: #c4a000;
+ }
 
-.terminal .xterm-bg-color-5 {
-    background-color: #75507b;
-}
+ .terminal .xterm-color-4 {
+     color: #3465a4;
+ }
 
-.terminal .xterm-color-6 {
-    color: #06989a;
-}
+ .terminal .xterm-bg-color-4 {
+     background-color: #3465a4;
+ }
 
-.terminal .xterm-bg-color-6 {
-    background-color: #06989a;
-}
+ .terminal .xterm-color-5 {
+     color: #75507b;
+ }
 
-.terminal .xterm-color-7 {
-    color: #d3d7cf;
-}
+ .terminal .xterm-bg-color-5 {
+     background-color: #75507b;
+ }
 
-.terminal .xterm-bg-color-7 {
-    background-color: #d3d7cf;
-}
+ .terminal .xterm-color-6 {
+     color: #06989a;
+ }
 
-.terminal .xterm-color-8 {
-    color: #555753;
-}
+ .terminal .xterm-bg-color-6 {
+     background-color: #06989a;
+ }
 
-.terminal .xterm-bg-color-8 {
-    background-color: #555753;
-}
+ .terminal .xterm-color-7 {
+     color: #d3d7cf;
+ }
 
-.terminal .xterm-color-9 {
-    color: #ef2929;
-}
+ .terminal .xterm-bg-color-7 {
+     background-color: #d3d7cf;
+ }
 
-.terminal .xterm-bg-color-9 {
-    background-color: #ef2929;
-}
+ .terminal .xterm-color-8 {
+     color: #555753;
+ }
 
-.terminal .xterm-color-10 {
-    color: #8ae234;
-}
+ .terminal .xterm-bg-color-8 {
+     background-color: #555753;
+ }
 
-.terminal .xterm-bg-color-10 {
-    background-color: #8ae234;
-}
+ .terminal .xterm-color-9 {
+     color: #ef2929;
+ }
 
-.terminal .xterm-color-11 {
-    color: #fce94f;
-}
+ .terminal .xterm-bg-color-9 {
+     background-color: #ef2929;
+ }
 
-.terminal .xterm-bg-color-11 {
-    background-color: #fce94f;
-}
+ .terminal .xterm-color-10 {
+     color: #8ae234;
+ }
 
-.terminal .xterm-color-12 {
-    color: #729fcf;
-}
+ .terminal .xterm-bg-color-10 {
+     background-color: #8ae234;
+ }
 
-.terminal .xterm-bg-color-12 {
-    background-color: #729fcf;
-}
+ .terminal .xterm-color-11 {
+     color: #fce94f;
+ }
 
-.terminal .xterm-color-13 {
-    color: #ad7fa8;
-}
+ .terminal .xterm-bg-color-11 {
+     background-color: #fce94f;
+ }
 
-.terminal .xterm-bg-color-13 {
-    background-color: #ad7fa8;
-}
+ .terminal .xterm-color-12 {
+     color: #729fcf;
+ }
 
-.terminal .xterm-color-14 {
-    color: #34e2e2;
-}
+ .terminal .xterm-bg-color-12 {
+     background-color: #729fcf;
+ }
 
-.terminal .xterm-bg-color-14 {
-    background-color: #34e2e2;
-}
+ .terminal .xterm-color-13 {
+     color: #ad7fa8;
+ }
 
-.terminal .xterm-color-15 {
-    color: #eeeeec;
-}
+ .terminal .xterm-bg-color-13 {
+     background-color: #ad7fa8;
+ }
 
-.terminal .xterm-bg-color-15 {
-    background-color: #eeeeec;
-}
+ .terminal .xterm-color-14 {
+     color: #34e2e2;
+ }
+
+ .terminal .xterm-bg-color-14 {
+     background-color: #34e2e2;
+ }
+
+ .terminal .xterm-color-15 {
+     color: #eeeeec;
+ }
+
+ .terminal .xterm-bg-color-15 {
+     background-color: #eeeeec;
+ }
 
 .sidenav {
     height: 100%; /* 100% Full-height */
