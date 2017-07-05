@@ -176,7 +176,7 @@ function startxtermjs() {
             switch (e.keyCode) {
                 case 8: // backspace
                     if (transport.auth.termPassword === undefined) {
-                        if (termUsername.length > 0) {
+                        if (transport.auth.termUsername.length > 0) {
                             term.write('\b');
                             term.eraseRight(term.x - 1, term.y);
                             transport.auth.termUsername = transport.auth.termUsername.slice(0, transport.auth.termUsername.length - 1);
