@@ -35,9 +35,9 @@ SSHyClient.auth.prototype = {
 	   // Purge the username and password
 	   this.termUsername = '';
 	   this.termPassword = undefined;
+       this.awaitingAuthentication = true;
 
        this.parceler.send(m);
-       this.awaitingAuthentication = true;
 	},
     // Called on successful or partially successful SSH connection authentications
     auth_success: function(success) {

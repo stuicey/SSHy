@@ -74,6 +74,9 @@ SSHyClient.Transport.prototype = {
     // Handles inbound traffic over the socket
 	// TODO: Move all of this to SSHyClient.parceler
     handle: function(r) {
+		// Add the packet length to the parceler's rx
+		this.parceler.recieveData += r.toString().length;
+		this.settings.setNetTraffic(true);
         /* Checking for encryption first since it will be the most common check
         	- Parceler should send decrypted message ( -packet length -padding length -padding ) to transport.handle_dec()
          	  from there it should be send to the relevant handler (auth/control)		*/
@@ -86,7 +89,9 @@ SSHyClient.Transport.prototype = {
         /* If we don't have a remote version set then this is the first message so we need to send our local version
            and store the remote version */
         if (!this.remote_version) {
-            this.parceler.send(this.local_version + '\r\n', true);
+			var data = this.local_version + '\r\n';
+            this.parceler.socket.send(btoa(data));
+			this.parceler.transmitData += data.length;
             this.remote_version = r.slice(0, r.length - 2); // Slice off the '/r/n' from the end of our remote version
             this.send_kex_init();
             return;

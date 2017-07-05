@@ -27,10 +27,10 @@ window.onload = function() {
 									<a class="rightarrow" href="javascript:void(0)" onclick="transport.settings.modFontSize(1)">--\></a>
 									<span class="title" style="padding-top:40px">Terminal Size</span>
 									<span class="leftarrow">Cols:
-										<input type="number" id="termCols" oninput="transport.settings.modTerm(0, this.value)">
+										<input type="number" id="termCols" min="5" oninput="transport.settings.modTerm(0, this.value)">
 									</span>
 									<span class="rightarrow">Rows:
-										<input type="number" id="termRows" oninput="transport.settings.modTerm(1, this.value)">
+										<input type="number" id="termRows" min="5" oninput="transport.settings.modTerm(1, this.value)">
 									</span>
 									<span class="title" style="padding-top:60px;">Local Echo</span>
 									<a class="leftarrow" href="javascript:void(0)" onclick="transport.settings.setLocalEcho(-1)">\<--</a>
@@ -53,6 +53,11 @@ window.onload = function() {
 										<span class="tooltiptext">0 to disable</span>
 										<input type="number" class="large" id="keepAlive" onchange="transport.settings.setKeepAlive(this.value);" placeholder="0">
 										<span style="font-size:16px;"> seconds</span>
+									</div>
+									<span class="title" style="padding-top:20px;">Network Traffic</span>
+									<div class="netTraffic">
+										<span class="leftarrow">rx: <span id="rxTraffic"></span></span>
+										<span class="rightarrow">tx: <span id="txTraffic"></span></span>
 									</div>
 								</div>
 								<span id="gear" class="gear" style="visibility:visible;" onclick="toggleNav(250)">&#9881</span>`;

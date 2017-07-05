@@ -376,10 +376,20 @@ body {
     padding: 2px 0 0 25px
 }
 
+.sidenav .netTraffic .leftarrow {
+	padding-left: 30px;
+	color: #4e9a06;
+}
+
 .sidenav .rightarrow {
     float: right;
     font-size: 12px;
     padding: 2px 25px 0 0
+}
+
+.sidenav .netTraffic .rightarrow{
+	padding-right: 40px;
+	color: #c4a000;
 }
 
 .sidenav .middle {

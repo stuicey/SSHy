@@ -156,7 +156,7 @@ SSHyClient.settings.prototype = {
 	    var i;
 	    // Remove active colour scheme if there is a custom one.
 	    if (!this.colorTango) {
-	        for (i = 0; i < 34; i++) {
+	        for (i = 0; i < 36; i++) {
 	            term_style.removeRule(13);
 	        }
 	    }
@@ -176,6 +176,9 @@ SSHyClient.settings.prototype = {
 	    term_style.insertRule('.terminal {color: ' + colors[18] + ' !important;}', 13);
 		// Changes the sidenav color
 	    term_style.insertRule('.sidenav {background-color: ' + modColorPercent(colors[0], -0.2) + ' !important;}', 13);
+		// Changes the rx and tx color to 10 and 11
+		term_style.insertRule('.sidenav .netTraffic .leftarrow {color: ' + colors[11] + ' !important;}', 13);
+		term_style.insertRule('.sidenav .netTraffic .rightarrow {color: ' + colors[12] + ' !important;}', 13);
 		// Loop through colors 1 - 15
 	    for (i = 1; i < 16; i++) {
 	        term_style.insertRule('.terminal .xterm-color-' + (i - 1) + ' {color: ' + colors[i] + ' !important;}', 13);
@@ -297,5 +300,25 @@ SSHyClient.settings.prototype = {
 			document.getElementById('termCols').value = termCols;
 			document.getElementById('termRows').value = termRows;
 		}
+	},
+	// Changes the network traffic setting to reflect transmitted or recieved data
+	setNetTraffic: function(dir){
+		// Gets the correct value we're wanting to modify
+		var value = dir === true ? transport.parceler.recieveData : transport.parceler.transmitData;
+		// Sets the direction to modify (true = recieve, false= transmit)
+		dir = dir === true ? 'rxTraffic' : 'txTraffic';
+		var element = document.getElementById(dir);
+
+		// Just want to briefly check what we're going to convert into
+		if(value < 1024){
+			value = value + 'Bytes';
+		} else if (value >= 1024 && value < 1024000){
+			value = (value / 1024).toFixed(3) + 'KB';
+		} else {
+			// Just going to stop at Mb since its unlikely to go above that
+			value = (value / 1024000).toFixed(3) + 'MB';
+		}
+
+		element.innerHTML = value;
 	}
 };

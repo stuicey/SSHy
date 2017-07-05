@@ -16,34 +16,35 @@ SSHyClient.parceler = function(web_socket, transport) {
     this.decrypted_header = this.inbound_buffer = '';
 
 	this.windowSize = SSHyClient.WINDOW_SIZE;
+
+	this.recieveData = this.transmitData = 0;
 };
 
 SSHyClient.parceler.prototype = {
 	// Send / Encrypt messages to the websocket proxy
-    send: function(data, initial) {
-        initial = initial === undefined ? false : true;
+    send: function(data) {
         // Much easier to just deal with a string here instead of an object
         data = data.toString();
-        // We don't need to pack the initial message
-        if (initial) {
-            this.socket.send(btoa(data));
-            return;
-        } else if (this.encrypting) {
+		var encrypted_packet = '';
+		if (this.encrypting) {
 			// Encapsulate the data with padding and length
             var packet = this.pack_message(data);
 
 			// Encrypt the encapsulated packet
-            var encrypted_packet = this.outbound_cipher.encrypt(packet);
+			encrypted_packet = this.outbound_cipher.encrypt(packet);
 
             // Add the mac hash & pack the sequence number
             encrypted_packet += SSHyClient.hash.HMAC(this.outbound_mac_key, struct.pack('I', this.outbound_sequence_num) + packet, this.hmacSHAVersion);
-
-            // now send it as a base64 string
-            this.socket.send(btoa(encrypted_packet));
         } else {
             // There are some situations such as KEX where we don't need to encrypt or add MAC
-            this.socket.send(btoa(this.pack_message(data)));
+            encrypted_packet = this.pack_message(data);
         }
+
+		// now send it as a base64 string
+		this.socket.send(btoa(encrypted_packet));
+
+		this.transmitData += encrypted_packet.length;
+		this.transport.settings.setNetTraffic(false);
         this.outbound_sequence_num++;
     },
 
