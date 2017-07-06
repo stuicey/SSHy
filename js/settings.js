@@ -65,6 +65,10 @@ SSHyClient.settings.prototype = {
 
 		this.shellString += r;
 
+		// Don't bother checking if we don't have enough characters for a match
+		if(this.shellString.length < 7){
+			return;
+		}
 		// Check for fish
 		if(this.shellString.indexOf(']0;fish') !== -1){
 			this.shellString = '';
