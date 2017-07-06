@@ -20,6 +20,10 @@ SSHyClient.settings = function() {
 	this.colorNames = Object.keys(this.colorSchemes); // Stores an array of colorNames
 
 	this.shellString = '';  // Used to buffer shell identifications ie ']0;fish' or 'user@host$'
+
+	// Caches the DOM elements used by netTraffic
+ 	this.rxElement = document.getElementById('rxTraffic');
+	this.txElement = document.getElementById('txTraffic');
 };
 
 SSHyClient.settings.prototype = {
@@ -302,21 +306,21 @@ SSHyClient.settings.prototype = {
 		}
 	},
 	// Changes the network traffic setting to reflect transmitted or recieved data
-	setNetTraffic: function(dir){
-		// Gets the correct value we're wanting to modify
-		var value = dir === true ? transport.parceler.recieveData : transport.parceler.transmitData;
-		// Sets the direction to modify (true = recieve, false= transmit)
-		dir = dir === true ? 'rxTraffic' : 'txTraffic';
-		var element = document.getElementById(dir);
+	setNetTraffic: function(value, dir){
+		element = dir === true ? this.rxElement : this.txElement;
 
+		var t0 = performance.now();
 		// Just want to briefly check what we're going to convert into
-		if(value < 1024){
-			value = value + 'Bytes';
-		} else if (value >= 1024 && value < 1024000){
-			value = (value / 1024).toFixed(3) + 'KB';
-		} else {
-			// Just going to stop at Mb since its unlikely to go above that
-			value = (value / 1024000).toFixed(3) + 'MB';
+		switch(true){
+			case value < 1024:
+				value = value + 'Bytes';
+				break;
+			case (value >= 1024 && value < 1024000):
+				value = (value / 1024).toFixed(3) + 'KB';
+				break;
+			default:
+				// Just going to stop at Mb since its unlikely to go above that
+				value = (value / 1024000).toFixed(3) + 'MB';
 		}
 
 		element.innerHTML = value;

@@ -184,7 +184,7 @@
 			// Send all recieved messages to SSHyClient.Transport.handle()
 			ws.onmessage = function(e) {
 				// Convert the recieved data from base64 to a string
-				transport.handle(atob(e.data));
+				transport.parceler.handle(atob(e.data));
 			};
 			// Whenever the websocket is closed make sure to display an error if appropriate
 			ws.onclose = function(e) {
@@ -203,7 +203,14 @@
 					termInit();
 					term.write('WebSocket connection failed: Error in connection establishment: code ' + e.code);
 				}
-			}
+			};
+			// Just a little abstraction from ws.send
+			ws.sendB64 = function(e){
+				this.send(btoa(e));
+
+				transport.parceler.transmitData += e.length;
+				transport.settings.setNetTraffic(transport.parceler.transmitData, false);
+			};
 		}
 
 		// Initialises xtermjs
@@ -331,6 +338,11 @@
 			<span class="tooltiptext">0 to disable</span>
 			<input type="number" class="large" id="keepAlive" onchange="settings.setKeepAlive(this.value);" placeholder="0">
 			<span style="font-size:16px;"> seconds</span>
+		</div>
+		<span class="title" style="padding-top:20px;">Network Traffic</span>
+		<div class="netTraffic">
+			<span class="leftarrow">rx: <span id="rxTraffic">0Bytes</span></span>
+			<span class="rightarrow">tx: <span id="txTraffic">0Bytes</span></span>
 		</div>
 	</div>
 	<span id="gear" class="gear" style="visibility:visible;" onclick="toggleNav(250)">&#9881</span>

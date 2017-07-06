@@ -107,7 +107,7 @@ function startSSHy() {
 	// Send all recieved messages to SSHyClient.Transport.handle()
     ws.onmessage = function(e) {
 		// Convert the recieved data from base64 to a string
-        transport.handle(atob(e.data));
+        transport.parceler.handle(atob(e.data));
     };
 	// Whenever the websocket is closed make sure to display an error if appropriate
     ws.onclose = function(e) {
@@ -127,6 +127,13 @@ function startSSHy() {
             term.write('WebSocket connection failed: Error in connection establishment: code ' + e.code);
 		}
     };
+	// Just a little abstraction from ws.send
+	ws.sendB64 = function(e){
+		this.send(btoa(e));
+
+		transport.parceler.transmitData += e.length;
+		transport.settings.setNetTraffic(transport.parceler.transmitData, false);
+	};
 }
 // Initialises xtermjs
 function termInit() {

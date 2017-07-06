@@ -377,7 +377,7 @@ body {
 }
 
 .sidenav .netTraffic .leftarrow {
-	padding-left: 30px;
+	padding-left: 25px;
 	color: #4e9a06;
 }
 
@@ -388,7 +388,7 @@ body {
 }
 
 .sidenav .netTraffic .rightarrow{
-	padding-right: 40px;
+	padding-right: 35px;
 	color: #c4a000;
 }
 
