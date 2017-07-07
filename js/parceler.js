@@ -18,6 +18,8 @@ SSHyClient.parceler = function(web_socket, transport) {
 
 	this.windowSize = SSHyClient.WINDOW_SIZE;
 
+	/* Stores the recieved and transmitted data in bytes;
+	   possible integer overflow however would need to exchange 8.1PetaBytes of data*/
 	this.recieveData = this.transmitData = 0;
 };
 
@@ -56,7 +58,7 @@ SSHyClient.parceler.prototype = {
 	// Handles inbound traffic over the socket
 	handle: function(r) {
 		// Add the packet length to the parceler's rx
-		this.recieveData += r.toString().length;
+		this.recieveData += r.length;
 		this.transport.settings.setNetTraffic(transport.parceler.recieveData, true);
 		/* Checking for encryption first since it will be the most common check
 			- Parceler should send decrypted message ( -packet length -padding length -padding ) to transport.handle_dec()

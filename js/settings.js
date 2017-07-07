@@ -21,9 +21,12 @@ SSHyClient.settings = function() {
 
 	this.shellString = '';  // Used to buffer shell identifications ie ']0;fish' or 'user@host$'
 
-	// Caches the DOM elements used by netTraffic
+	this.sidenavElementState = 0; // Stores the state of the sidenav (0 - closed, [x] - true)
+	// Caches the DOM elements
  	this.rxElement = document.getElementById('rxTraffic');
 	this.txElement = document.getElementById('txTraffic');
+	this.autoEchoElement = document.getElementById('autoEchoState');
+
 };
 
 SSHyClient.settings.prototype = {
@@ -103,24 +106,30 @@ SSHyClient.settings.prototype = {
 
     // Parses a given message (r) for signs to enable or disable local echo
     parseLocalEcho: function(r) {
-		// if we're using auto mode AND at least 0.1s has passed since last change
-		if(this.localEcho === 1 && (performance.now() - this.autoEchoTimeout) > 100){
+		// if we're using auto mode
+		if(this.localEcho === 1){
+			// Caching this since it takes a long time to get at least twice
+			var timeout = performance.now();
+			// Don't continue if we've changed state in the previous 0.1s
+			if(timeout - this.autoEchoTimeout < 100){
+				return;
+			}
 			// We only need to examine the beginning of most messages so just take the first 64 bytes to improve performance
-			r = r.substring(0,64);
+			r = r.substring(0, 64);
 			if(!this.autoEchoState){
 				// Search for '@' aswell so we catch on 'user@hostname' aswell
 				if(r.indexOf(this.fsHintLeave) != -1 && r.indexOf('@') != -1 ){
 					this.autoEchoState = true;
 					// Change the Settings UI
-					document.getElementById('autoEchoState').innerHTML = "State: Enabled";
-					this.autoEchoTimeout = performance.now();
+					this.autoEchoElement.innerHTML = "State: Enabled";
+					this.autoEchoTimeout = timeout;
 				}
 			} else {
 				// check for 'password' incase we are inputting a password
 				if(r.indexOf(this.fsHintEnter) != -1 || r.toLowerCase().indexOf('password') != -1){
 					this.autoEchoState = false;
-					document.getElementById('autoEchoState').innerHTML = "State: Disabled";
-					this.autoEchoTimeout = performance.now();
+					this.autoEchoElement.innerHTML = "State: Disabled";
+					this.autoEchoTimeout = timeout;
 				}
 			}
 		}
@@ -311,22 +320,27 @@ SSHyClient.settings.prototype = {
 	},
 	// Changes the network traffic setting to reflect transmitted or recieved data
 	setNetTraffic: function(value, dir){
-		element = dir === true ? this.rxElement : this.txElement;
-
-		var t0 = performance.now();
-		// Just want to briefly check what we're going to convert into
+		// No point recalculating if the sidenav is closed
+		if(!this.sidenavElementState){
+			return;
+		}
+		// Convert the 'value' into the correct units
 		switch(true){
 			case value < 1024:
 				value = value + 'Bytes';
 				break;
-			case (value >= 1024 && value < 1024000):
+			case (value >= 1024 && value < 1048576):
 				value = (value / 1024).toFixed(3) + 'KB';
 				break;
+			case (value >= 1048576 && value < 1073741824):
+				value = (value / 1048576).toFixed(3) + 'MB';
+				break;
 			default:
-				// Just going to stop at Mb since its unlikely to go above that
-				value = (value / 1024000).toFixed(3) + 'MB';
+				// Just going to stop at Gb since its unlikely to go above that
+				value = (value / 1073741824).toFixed(3) + 'GB';
 		}
-
+		// Set the target element we we're going to change.
+		element = dir === true ? this.rxElement : this.txElement;
 		element.innerHTML = value;
 	}
 };

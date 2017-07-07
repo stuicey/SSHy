@@ -230,7 +230,7 @@ SSHyClient.Transport.prototype = {
 	// Sends a null packet to the SSH server to keep the connection alive
 	keepAlive: function(){
 		// Make sure the websocket is still open
-		if(this.ws.readyState === 3){
+		if(ws.readyState === 3){
 			return;
 		}
 		var m = new SSHyClient.Message();

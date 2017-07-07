@@ -56,18 +56,18 @@ SSHyClient.crypto.counter = function(num, init) {
 SSHyClient.crypto.counter.prototype = {
     // increment the current counter
     increment: function() {
-        var i = this.blocksize - 1;
-        while (i > -1) {
+        var i = this.blocksize;
+        while (i--) {
             var count = String.fromCharCode((this.value.charCodeAt(i) + 1) % 256);
             this.value = setCharAt(this.value, i, count);
             if (count != '\x00') {
                 return this.value;
             }
-            i -= 1;
         }
 
         // Deals with counter resetting / overflowing
-        this.value = new Array(this.blocksize - deflate_long(this.overflow, false).length + 1).join('\x00') + x;
+		var x = deflate_long(this.overflow, false);
+		this.value = new Array(this.blocksize - x.length + 1).join('\x00') + x;
         return this.value;
 
     }

@@ -20,7 +20,9 @@ SSHyClient.auth.prototype = {
     ssh_connection: function() {
 		if(!this.termUsername || !this.termPassword){
 			// If no termUser or termPass has been set then we are likely using the wrapper
-            startxtermjs();
+			if(!term){
+				startxtermjs();
+			}
 			return;
 		}
 
@@ -32,9 +34,6 @@ SSHyClient.auth.prototype = {
        m.add_boolean(false);
        m.add_string(this.termPassword);
 
-	   // Purge the username and password
-	   this.termUsername = '';
-	   this.termPassword = undefined;
        this.awaitingAuthentication = true;
 
        this.parceler.send(m);
@@ -44,6 +43,9 @@ SSHyClient.auth.prototype = {
         if (success) {
             // Change the window title
             document.title = this.termUsername + '@' + this.hostname;
+			// Purge the username and password
+			this.termUsername = '';
+			this.termPassword = undefined;
 			// Make sure xtermjs has been initialised
 			if(!term){
 				startxtermjs();
