@@ -307,13 +307,13 @@
 <body>
 	<div id="terminal"></div>
 	<div id="settingsNav" class="sidenav" style="width:0;">
-		<a href="#" class="closebtn" onclick="toggleNav(0)">&times;</a>
+		<a href="javascript:;" class="closebtn" onclick="toggleNav(0)">&times;</a>
 		<span class="title large">Terminal Options</span>
 		<hr>
 		<span class="title" style="padding-top:20px">Font Size</span>
-		<a class="leftarrow" href="#" onclick="settings.modFontSize(-1)"><--</a>
+		<a class="leftarrow" href="javascript:;" onclick="settings.modFontSize(-1)"><--</a>
 		<span class="middle" id="currentFontSize">16px</span>
-		<a class="rightarrow" href="#" onclick="settings.modFontSize(1)">--></a>
+		<a class="rightarrow" href="javascript:;" onclick="settings.modFontSize(1)">--></a>
 		<span class="title" style="padding-top:40px">Terminal Size</span>
 		<span class="leftarrow">Cols:
 			<input type="number" id="termCols" oninput="settings.modTerm(0, this.value)">
@@ -322,16 +322,16 @@
 			<input type="number" id="termRows" oninput="settings.modTerm(1, this.value)">
 		</span>
 		<span class="title" style="padding-top:60px;">Local Echo</span>
-		<a class="leftarrow" href="#" onclick="settings.setLocalEcho(-1)"><--</a>
-		<a class="rightarrow" href="#" onclick="settings.setLocalEcho(1)">--></a>
+		<a class="leftarrow" href="javascript:;" onclick="settings.setLocalEcho(-1)"><--</a>
+		<a class="rightarrow" href="javascript:;" onclick="settings.setLocalEcho(1)">--></a>
 		<div class="fileUpload btn btn-primary nomargin">
 			<span class="tooltiptext" style="visibility:visible;" id="autoEchoState">State: Enabled</span>
 			<span class="middle" id="currentLEcho">Auto</span>
 		</div>
 		<span class="title" style="padding-top:50px">Colours</span>
-		<a class="leftarrow" href="#" onclick="settings.cycleColorSchemes(0)"><--</a>
+		<a class="leftarrow" href="javascript:;" onclick="settings.cycleColorSchemes(0)"><--</a>
 		<span class="middle" id="currentColor">Monokai</span>
-		<a class="rightarrow" href="#" onclick="settings.cycleColorSchemes(1)">--></a>
+		<a class="rightarrow" href="javascript:;" onclick="settings.cycleColorSchemes(1)">--></a>
 		<div class="fileUpload btn btn-primary">
 			<span class="tooltiptext">Format: Xresources</span>
 			<span class="middle" style="width:220px;">Upload</span>

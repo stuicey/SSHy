@@ -18,13 +18,13 @@ var fontHeight = 18;
 window.onload = function() {
 	// Appending the settings UI to keep 'wrapper.html' as small as possible for cgi builds on Linuxzoo.net
 	document.body.innerHTML += `<div id="settingsNav" class="sidenav">
-									<a href="#" class="closebtn" onclick="toggleNav(0)">&times;</a>
+									<a href="javascript:;" class="closebtn" onclick="toggleNav(0)">&times;</a>
 									<span class="title large">Terminal Options</span>
 									<hr>
 									<span class="title" style="padding-top:20px">Font Size</span>
-									<a class="leftarrow" href="#" onclick="transport.settings.modFontSize(-1)">\<--</a>
+									<a class="leftarrow" href="javascript:;" onclick="transport.settings.modFontSize(-1)">\<--</a>
 									<span class="middle" id="currentFontSize">16px</span>
-									<a class="rightarrow" href="#" onclick="transport.settings.modFontSize(1)">--\></a>
+									<a class="rightarrow" href="javascript:;" onclick="transport.settings.modFontSize(1)">--\></a>
 									<span class="title" style="padding-top:40px">Terminal Size</span>
 									<span class="leftarrow">Cols:
 										<input type="number" id="termCols" min="5" oninput="transport.settings.modTerm(0, this.value)">
@@ -33,16 +33,16 @@ window.onload = function() {
 										<input type="number" id="termRows" min="5" oninput="transport.settings.modTerm(1, this.value)">
 									</span>
 									<span class="title" style="padding-top:60px;">Local Echo</span>
-									<a class="leftarrow" href="#" onclick="transport.settings.setLocalEcho(-1)">\<--</a>
-									<a class="rightarrow" href="#" onclick="transport.settings.setLocalEcho(1)">--\></a>
+									<a class="leftarrow" href="javascript:;" onclick="transport.settings.setLocalEcho(-1)">\<--</a>
+									<a class="rightarrow" href="javascript:;" onclick="transport.settings.setLocalEcho(1)">--\></a>
 									<div class="fileUpload btn btn-primary nomargin">
 										<span class="tooltiptext" style="visibility:visible;" id="autoEchoState">State: Enabled</span>
 										<span class="middle" id="currentLEcho">Auto</span>
 									</div>
 									<span class="title" style="padding-top:50px">Colours</span>
-									<a class="leftarrow" href="#" onclick="transport.settings.cycleColorSchemes(0)">\<--</a>
+									<a class="leftarrow" href="javascript:;" onclick="transport.settings.cycleColorSchemes(0)">\<--</a>
 									<span class="middle" id="currentColor">Monokai</span>
-									<a class="rightarrow" href="#" onclick="transport.settings.cycleColorSchemes(1)">--\></a>
+									<a class="rightarrow" href="javascript:;" onclick="transport.settings.cycleColorSchemes(1)">--\></a>
 									<div class="fileUpload btn btn-primary">
 										<span class="tooltiptext">Format: Xresources</span>
 										<span class="middle" style="width:220px;">Upload</span>
