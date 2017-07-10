@@ -531,7 +531,7 @@ input::-webkit-inner-spin-button,input::-webkit-outer-spin-button {
     -webkit-appearance: none
 }
 
-textarea {
+.pasteDiv textarea {
 	min-width: 200px;
 	max-width: 200px;
 	height: 50px;
