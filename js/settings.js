@@ -173,8 +173,8 @@ SSHyClient.settings.prototype = {
 	    var i;
 	    // Remove active colour scheme if there is a custom one.
 	    if (!this.colorTango) {
-	        for (i = 0; i < 36; i++) {
-	            term_style.removeRule(13);
+	        for (i = 0; i < 37; i++) {
+	            term_style.deleteRule(13);
 	        }
 	    }
 
@@ -190,7 +190,8 @@ SSHyClient.settings.prototype = {
 	    term_style.insertRule('.terminal:not(.focus) .terminal-cursor {outline: 1px solid ' + colors[17] + ' !important;}', 13);
 	    term_style.insertRule('.terminal .xterm-viewport {background-color: ' + colors[0] + ' !important;}', 13);
 	    term_style.insertRule('html, body {background-color: ' + colors[0] + ' !important;}', 13);
-	    term_style.insertRule('.terminal {color: ' + colors[18] + ' !important;}', 13);
+		term_style.insertRule('textarea {background-color: ' + colors[0] + ' !important;}', 13);
+		term_style.insertRule('.terminal {color: ' + colors[18] + ' !important;}', 13);
 		// Changes the sidenav color
 	    term_style.insertRule('.sidenav {background-color: ' + modColorPercent(colors[0], -0.2) + ' !important;}', 13);
 		// Changes the rx and tx color to 10 and 11

@@ -530,3 +530,13 @@ input[type=number].large {
 input::-webkit-inner-spin-button,input::-webkit-outer-spin-button {
     -webkit-appearance: none
 }
+
+textarea {
+	min-width: 200px;
+	max-width: 200px;
+	height: 50px;
+	margin: 0 0 0 24px;
+	border-radius: 5px;
+	border-width: 1px;
+	color: #818181;
+}

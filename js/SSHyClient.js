@@ -54,6 +54,10 @@ window.onload = function() {
 										<input type="number" class="large" id="keepAlive" onchange="transport.settings.setKeepAlive(this.value);" placeholder="0">
 										<span style="font-size:16px;"> seconds</span>
 									</div>
+									<div id="pasteDiv">
+										<span class="title" style="padding-top:20px;">Paste</span>
+										<textarea id="pasteTextArea" onchange="term.textarea.onpaste(this.value)"></textarea>
+									</div>
 									<span class="title" style="padding-top:20px;">Network Traffic</span>
 									<div class="netTraffic">
 										<span class="leftarrow">rx: <span id="rxTraffic"></span></span>
@@ -62,6 +66,10 @@ window.onload = function() {
 								</div>
 								<span id="gear" class="gear" style="visibility:visible;" onclick="toggleNav(250)">&#9881</span>`;
 
+	// Hide the paste text area if we're not using firefox
+	if(!isFirefox){
+		document.getElementById('pasteDiv').style.display = "none";
+	}
 	// After the page loads start up the SSH client
 	startSSHy();
 };
@@ -78,8 +86,8 @@ window.onbeforeunload = function() {
 // Recalculates the terminal Columns / Rows and sends new size to SSH server + xtermjs
 function resize() {
 	// Try keep a 5px padding all around the terminal
-    termCols = Math.floor((window.innerWidth - 10) / fontWidth) - (isFirefox ? -2 : 0);
-    termRows = Math.floor((window.innerHeight - 10) / fontHeight) - (isFirefox ? 1 : 1);
+    termCols = Math.floor((window.innerWidth - 10) / fontWidth);
+    termRows = Math.floor((window.innerHeight - 10) / fontHeight) - (isFirefox ? 3 : 1);
 
     if (ws && transport && term) {
 		// Inform the SSH server and xtermjs of the new col / rows
@@ -254,9 +262,17 @@ function startxtermjs() {
 
     /* TODO: Find work around for firefox, xtermjs claims to handle this but for some reason it doesn't work */
     term.textarea.onpaste = function(ev) {
-        if (ev.clipboardData) {
-			// Get the user's data from the clipboard
-            var text = ev.clipboardData.getData('text/plain');
+		var text;
+		// 'ev' can either be plaintext or a clipboard event depending on browser
+		if(isFirefox){
+			text = ev;
+			// Clear the text area
+			document.getElementById('pasteTextArea').value = '';
+		} else {
+			text = ev.clipboardData.getData('text/plain');
+		}
+
+        if (text) {
 			// Just don't allow more than 1 million characters to be pasted.
 			if(text.length < 1000000){
 		        if (text.length > 5000) {
