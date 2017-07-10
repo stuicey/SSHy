@@ -260,7 +260,6 @@ function startxtermjs() {
         return command === null ? null : transport.expect_key(command);
     };
 
-    /* TODO: Find work around for firefox, xtermjs claims to handle this but for some reason it doesn't work */
     term.textarea.onpaste = function(ev) {
 		var text;
 		// 'ev' can either be plaintext or a clipboard event depending on browser
