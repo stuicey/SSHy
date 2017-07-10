@@ -46,9 +46,6 @@ body {
     font-family: courier-new,courier,monospace;
     font-feature-settings: "liga" 0;
     position: relative;
-    user-select: none;
-    -ms-user-select: none;
-    -webkit-user-select: none
 }
 
 .terminal.focus,.terminal:focus {
