@@ -117,6 +117,13 @@ function startSSHy() {
     // Sets up websocket listeners
     ws.onopen = function(e) {
         transport = new SSHyClient.Transport(ws);
+
+		/*
+		!! Enables or disables RSA Host checking !!
+		Since Linuxzoo changes host every time there is no reason to use it
+		*/
+
+		transport.settings.rsaCheckEnabled = false;
     };
 	// Send all recieved messages to SSHyClient.Transport.handle()
     ws.onmessage = function(e) {

@@ -27,6 +27,7 @@ SSHyClient.settings = function() {
 	this.txElement = document.getElementById('txTraffic');
 	this.autoEchoElement = document.getElementById('autoEchoState');
 
+	this.rsaCheckEnabled = true;
 };
 
 SSHyClient.settings.prototype = {

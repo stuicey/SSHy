@@ -4,6 +4,15 @@ SSHyClient.kex = {
 	sessionId: null // Session identifier; should be the same as H until a rekey event
 };
 
+function verifyKey(host_key, sig){
+	var rsa = new SSHyClient.RSAKey(new SSHyClient.Message(host_key));
+	if(!rsa.verify(SSHyClient.kex.H, new SSHyClient.Message(sig))){
+		transport.disconnect();
+		term.write('RSA signature verification failed, disconnecting.');
+		return;
+	}
+}
+
 SSHyClient.kex.DiffieHellman = function(transport, group, SHAVersion){
 	this.transport = transport;
 	this.SHAVersion = SHAVersion;
@@ -66,7 +75,32 @@ SSHyClient.kex.DiffieHellman.prototype = {
 
 		// get the host key, f and signature from the message
 		var host_key = r.get_string();
+		if(transport.settings.rsaCheckEnabled){
+			// Now lets make sure that the host_key is recognised, firstly we'll pre-fetch all the data we require (ip/port/rsaKey)
+			var key = wsproxyURL.split('/')[3];
+			// Cache the hexified host key
+			var hexHostKey = ascii2hex(host_key);
 
+			// Since we've got everthing we need lets see if the key exists already
+			var localObj = localStorage.getItem(key);
+
+			if(localObj){
+				// Check all the details match.. they should but Sanity
+				if(localObj != hexHostKey){
+					throw 'Error: Locally stored rsa key does not match remote key';
+				}
+			} else {
+				// Prompt the user just like they are in puTTy
+				if(confirm('The server\'s host key is not cached in local storage. You have no guarentee that the server is the computer you think it is.\n\rThe server\'s rsa2 key finterprint is:\r\nssh-rsa 2048 ' + ascii2hex(SSHyClient.hash.MD5(host_key)).match(/.{2}/g).join(':') + '\r\nIf you trust the host, hit `Ok` to add the key to SSHy\s cache and carry on connecting.\r\nIf you do not trust this host, hit `Cancel` to abandon the connection')){
+					// User has confirmed it is correct so save the RSA key
+					localStorage.setItem(key, hexHostKey);
+				} else {
+					// need to disconnect and kill the connection
+					ws.close();
+					throw 'User has declined the rsa-key and closed the connection';
+				}
+			}
+		}
 		this.f = r.get_mpint();
 
 		var sig = r.get_string();
@@ -95,9 +129,11 @@ SSHyClient.kex.DiffieHellman.prototype = {
 		m.add_mpint(this.f);
 		m.add_mpint(K);
 
-		// TODO: Verify host key and Signature
 		SSHyClient.kex.K = K;
 		SSHyClient.kex.sessionId = SSHyClient.kex.H = this.SHAVersion == 'SHA-1' ? new SSHyClient.hash.SHA1(m.toString()).digest() : new SSHyClient.hash.SHA256(m.toString()).digest();
+		if(transport.settings.rsaCheckEnabled){
+			verifyKey(host_key, sig);
+		}
 		this.transport.send_new_keys();
 	},
 

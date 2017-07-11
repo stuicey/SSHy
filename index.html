@@ -23,19 +23,20 @@
 	<link rel="stylesheet" href="css/fonts.css" async/>
 
 	<!-- Core defines -->
-	<script type="text/javascript" src="js/defines.js" async></script>
+	<script type="text/javascript" src="js/defines.js"></script>
 
 	<!-- Cryptography & Terminal Libraries -->
 	<script type="text/javascript" src="js/combinedLibs.min.js" async></script>
 
 	<!-- SSHy Scripts -->
+	<script src="js/message.js"></script>
+	<script src="js/transport.js"></script>
+	<script src="js/parceler.js"></script>
 	<script src="js/crypto.js" async></script>
-	<script src="js/message.js" async></script>
-	<script src="js/transport.js" async></script>
-	<script src="js/parceler.js" async></script>
 	<script src="js/auth_handler.js" async></script>
 	<script src="js/settings.js" async></script>
 	<script src="js/dhKex.js" async></script>
+	<script src="js/rsaKey.js" async></script>
 
 	<script type="text/javascript">
 		window.onload = function() {
@@ -181,7 +182,8 @@
 			// Initialise the window title
 			document.title = "SSHy Client";
 			// Opens the websocket!
-			ws = new WebSocket(wsproxyURL + html_ipaddress + ':' + html_port , 'base64');
+			wsproxyURL += html_ipaddress + ':' + html_port
+			ws = new WebSocket(wsproxyURL , 'base64');
 
 			// Sets up websocket listeners
 			ws.onopen = function(e) {
