@@ -213,7 +213,7 @@ SSHyClient.settings.prototype = {
 		if(!colorName){
 			colors = colors.toString();
 			// loop through colorSchemes and check for colors === colorSchemes[key]
-			for(var i = 0; i < this.colorNames.length; i++){
+			for(var i = 0, length = this.colorNames.length; i < length; i++){
 				if(colors == this.colorSchemes[this.colorNames[i]]().toString()){
 					colorName = this.colorNames[i];
 					this.colorCounter = i;		// Sets counter equal to the index of the colorSchemes
