@@ -87,11 +87,18 @@ SSHyClient.kex.DiffieHellman.prototype = {
 			if(localObj){
 				// Check all the details match.. they should but Sanity
 				if(localObj != hexHostKey){
-					throw 'Error: Locally stored rsa key does not match remote key';
+					if(confirm('WARNING - POTENTIAL SECURITY BREACH!\r\n\nThe server\s host key does not match the one SSHy has cached in local storage. This means that either the server administrator has changed the host key, or you have actually connected to another computer pretending to be the server.\r\nThe new rsa2 key fingerprint is:\r\nssh-rsa 2048 ' + ascii2hex(SSHyClient.hash.MD5(host_key)).match(/.{2}/g).join(':') + '\r\nIf you were expecting this change and trust the new key, hit `Ok` to add the key to SSHy\'s cache and carry on connecting.\r\nIf you do not trust this new key, hit `Cancel` to abandon the connection')){
+						// User has agree'd to the new host key so lets save it for them
+						localStorage.setItem(key, hexHostKey);
+					} else {
+						// Close the connection
+						ws.close();
+						throw 'Error: Locally stored rsa key does not match remote key';
+					}
 				}
 			} else {
 				// Prompt the user just like they are in puTTy
-				if(confirm('The server\'s host key is not cached in local storage. You have no guarentee that the server is the computer you think it is.\n\rThe server\'s rsa2 key finterprint is:\r\nssh-rsa 2048 ' + ascii2hex(SSHyClient.hash.MD5(host_key)).match(/.{2}/g).join(':') + '\r\nIf you trust the host, hit `Ok` to add the key to SSHy\s cache and carry on connecting.\r\nIf you do not trust this host, hit `Cancel` to abandon the connection')){
+				if(confirm('The server\'s host key is not cached in local storage. You have no guarentee that the server is the computer you think it is.\n\rThe server\'s rsa2 key finterprint is:\r\nssh-rsa 2048 ' + ascii2hex(SSHyClient.hash.MD5(host_key)).match(/.{2}/g).join(':') + '\r\nIf you trust the host, hit `Ok` to add the key to SSHy\'s cache and carry on connecting.\r\nIf you do not trust this host, hit `Cancel` to abandon the connection')){
 					// User has confirmed it is correct so save the RSA key
 					localStorage.setItem(key, hexHostKey);
 				} else {
