@@ -25,9 +25,6 @@ SSHyClient.Transport = function(ws, settings) {
     this.auth = new SSHyClient.auth(this.parceler);
 	this.settings = settings === undefined ? new SSHyClient.settings() : settings;
 
-    this.need_buffer = false;
-    this.temp_buffer = '';
-
     this.lastKey = '';
 
 	this.closing = false;
