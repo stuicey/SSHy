@@ -21,17 +21,21 @@ SSHy is a fast and responsive SSHv2 web client with end-to-end encryption suppli
 
 Either copy or clone the repository into a directory being currently served by a web server and navigate to `index.html`.
 
+Two versions of this project are supplied:
+* `index.html` - The main page featuring a modal login container and modifiable destination IP.
+* `wrapper.html` - A minimal wrapper intended for use with CGI builds. Features interactive terminal login and fixed destination IP. By default SSH-RSA is disabled on this version. To enable it comment out
+
 The required files are:
 ```
 css/*
 fonts/*
 js/*
-index.html
+index.html OR wrapper.html
 ```
 
-For best performance it is recommended to host a websocket proxy close to the traffic origin or destination. This can be done by modifying `wsproxyURL` near the top of `index.html` to the IP or domain of a personal websocket proxy.
+For best performance it is recommended to host a websocket proxy close to the traffic origin or destination. This can be done by modifying `wsproxyURL` near the top of `index.html` or `wrapper.html` to the IP or domain of a personal websocket proxy.
 
-This project is intended to be used with [wsProxy](http://github.com/stuicey/wsproxy) provided as a submodule in `wsproxy/`. More details on this application an be obtained from the related [README](https://github.com/stuicey/wsProxy/blob/master/README.md).
+This project is intended to be used with [wsProxy](http://github.com/stuicey/wsproxy) provided as a submodule in `wsproxy/`. This application allows for IP multiplexing by appending the destination IP to the websocket proxy URI. More details on this application an be obtained from the related [README](https://github.com/stuicey/wsProxy/blob/master/README.md).
 
 ```
 git submodule update --init --recursive
@@ -39,13 +43,31 @@ npm i -g  wsproxy/
 wsproxy
 ```
 
+Other websocket proxies such as [Websockify](https://github.com/novnc/Websockify) should be compatable with `wrapper.html`.
+
+## Building
+
+This project utilises the [Google Closure Compiler](https://github.com/google/closure-compiler) to minify and compile the JavaScript. The two versions `index.html` and `wrapper.html` can be either compiled manually or through [Atom build](https://atom.io/packages/build).
+
+Index.html
+```
+	java -jar closure-compiler.jar --js_output_file=js/combinedLibs.comb.js js/defines.js js/src/*.js js/*.js !**.comb.js !**Client.js
+```
+
+Wrapper.html
+```
+	java -jar closure-compiler.jar --js_output_file=js/combinedJS.comb.js js/defines.js js/src/*.js js/*.js !**.comb.js
+```
+
 ## Compatability
 
 SSHy was designed to be compatable with a majority of SSHv2 servers. SSHy should be able to connect to any standardly configured SSHv2 server that has the following algorithms enabled:
+
 ```
 diffie-hellman-group-exchange, diffie-hellman-group14, diffie-hellman-group1
 ssh-rsa
 aes128-ctr
 hmac
 ```
-Both SHA1 and SHA256 are supported for diffie-hellman and hamc algorithms.
+
+Both SHA1 and SHA256 are supported for diffie-hellman and HMAC algorithms.
