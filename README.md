@@ -23,7 +23,7 @@ Either copy or clone the repository into a directory being currently served by a
 
 Two versions of this project are supplied:
 * `index.html` - The main page featuring a modal login container and modifiable destination IP.
-* `wrapper.html` - A minimal wrapper intended for use with CGI builds. Features interactive terminal login and fixed destination IP. By default SSH-RSA is disabled on this version. To enable it comment out
+* `wrapper.html` - A minimal wrapper intended for use with CGI builds. Features interactive terminal login and fixed destination IP. By default SSH-RSA is disabled on this version. To enable it comment out `	transport.settings.rsaCheckEnabled = false;` inside `wrapper.html`.
 
 The required files are:
 ```
@@ -51,12 +51,12 @@ This project utilises the [Google Closure Compiler](https://github.com/google/cl
 
 Index.html
 ```
-	java -jar closure-compiler.jar --js_output_file=js/combinedLibs.comb.js js/defines.js js/src/*.js js/*.js !**.comb.js !**Client.js
+java -jar closure-compiler.jar --js_output_file=js/combinedLibs.comb.js js/defines.js js/src/*.js js/*.js !**.comb.js !**Client.js
 ```
 
 Wrapper.html
 ```
-	java -jar closure-compiler.jar --js_output_file=js/combinedJS.comb.js js/defines.js js/src/*.js js/*.js !**.comb.js
+java -jar closure-compiler.jar --js_output_file=js/combinedJS.comb.js js/defines.js js/src/*.js js/*.js !**.comb.js
 ```
 
 ## Compatability
