@@ -81,10 +81,10 @@ SSHyClient.kex.DiffieHellman.prototype = {
 			var hexHostKey = ascii2hex(host_key);
 			// Generate the short MD5'd key for randomart and confirm
 			var shortKey = ascii2hex(SSHyClient.hash.MD5(host_key)).match(/.{2}/g);
-			console.log(shortKey)
+
 			// Create the randomArt image
 			randomart(shortKey);
-			console.log(shortKey)
+
 			// Since we've got everthing we need lets see if the key exists already
 			var localObj = localStorage.getItem(key);
 

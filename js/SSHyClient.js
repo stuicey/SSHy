@@ -14,7 +14,8 @@ var termRows, termCols = 0;
 // Need to define these since we need the terminal to open before we can calculate the values
 var fontWidth = 10;
 var fontHeight = 18;
-
+// Stores timeouts for window.onresize()
+var resizeInterval;
 window.onload = function() {
 	// Appending the settings UI to keep 'wrapper.html' as small as possible for cgi builds on Linuxzoo.net
 	document.body.innerHTML += `<div id="settingsNav" class="sidenav">
@@ -79,7 +80,8 @@ window.onload = function() {
 };
 // Sets up a bind for every time the web browser is resized
 window.onresize = function(){
-	resize();
+	clearTimeout(resizeInterval);
+	resizeInterval = setTimeout(resize, 400);
 };
 // Run every time the page is refreshed / closed to disconnect from the SSH server
 window.onbeforeunload = function() {

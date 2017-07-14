@@ -16,6 +16,7 @@
 		// Need to define these since we need the terminal to open before we can calculate the values
 		var fontWidth = 10;
 		var fontHeight = 18;
+
 	</script>
 
 	<link rel="stylesheet" href="css/xterm.css" async/>
@@ -40,8 +41,10 @@
 
 		// Run every time the webpage is resized
 		window.onresize = function() {
-			resize();
+			clearTimeout(resizeInterval);
+			resizeInterval = setTimeout(resize, 400);
 		}
+
 		// Recalculates the terminal Columns / Rows and sends new size to SSH server + xtermjs
 		function resize() {
 			// Try keep a 5px padding all around the terminal
