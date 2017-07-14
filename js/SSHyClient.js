@@ -56,13 +56,17 @@ window.onload = function() {
 									</div>
 									<div id="pasteDiv">
 										<span class="title" style="padding-top:20px;">Paste</span>
-										<textarea id="pasteTextArea" onchange="term.textarea.onpaste(this.value)"></textarea>
+										<textarea id="pasteTextArea" class="pasteTextArea" onchange="term.textarea.onpaste(this.value)"></textarea>
 									</div>
 									<span class="title" style="padding-top:20px;">Network Traffic</span>
 									<div class="netTraffic">
 										<span class="leftarrow">rx: <span id="rxTraffic"></span></span>
 										<span class="rightarrow">tx: <span id="txTraffic"></span></span>
 									</div>
+									<div id="hostKey" style="display: none;">
+								        <span class="title" style="padding-top:20px;">Host Key</span>
+								        <span id="hostKeyImg" class="hostKeyImg"></span>
+								    </div>
 								</div>
 								<span id="gear" class="gear" style="visibility:visible;" onclick="toggleNav(250)">&#9881</span>`;
 

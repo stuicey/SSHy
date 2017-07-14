@@ -1,12 +1,12 @@
 SSHyClient.settings = function() {
     // Local echo reduces latency on regular key presses to aruond 0.04s compared to ~0.2s without it
-    this.localEcho = 1; // 0 - off; 1 - auto; 2 - on
+    this.localEcho = 0; // 0 - off; 1 - auto; 2 - on
 
 	/* Default the bindings to bash */
 	this.fsHintEnter = "\x1b\x5b\x3f\x31";    // seems to be the same for all shells
 	this.fsHintLeave = SSHyClient.bashFsHintLeave;
 
-	this.autoEchoState = true;		// false = no echoing ; true = echoing
+	this.autoEchoState = false;		// false = no echoing ; true = echoing
 	this.autoEchoTimeout = 0;		// stores the time of last autoecho change
 
     this.blockedKeys = [':'];		// while localecho(force-on) don't echo these keys
@@ -275,13 +275,17 @@ SSHyClient.settings.prototype = {
 		this.fontSize += sign;
 		document.getElementById("terminal").style.fontSize = this.fontSize + 'px';
 
-		var element;
-		// We should be using terminal-cursor always but sometimes it isn't available (top/htop ect)
-		try{
-			element = document.getElementsByClassName('terminal-cursor')[0].getBoundingClientRect();
-		} catch (err){
-			element = document.getElementsByClassName('xterm-color-2')[0].getBoundingClientRect();
-		}
+		// Going to use a minimal version of xtermjs.fit()
+		var subjectRow = term.rowContainer.firstElementChild;
+		// Store the current text in this row
+		var contentBuffer = subjectRow.innerHTML;
+		// Transform subjectRow to write a single character 'W'
+		subjectRow.style.display = "inline";
+		subjectRow.innerHTML = 'W';
+		var element = subjectRow.getBoundingClientRect();
+		// Revert subjectRow back to original settings
+		subjectRow.style.display = '';
+		subjectRow.innerHTML = contentBuffer;
 
 		// Recalculate the font width/height based on 'element'
 		fontWidth = element.width + 0.15;

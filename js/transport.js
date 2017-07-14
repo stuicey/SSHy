@@ -160,7 +160,7 @@ SSHyClient.Transport.prototype = {
         /* SSH_MSG_CHANNEL_DATA: text sent by the server which is displayed by writing to the terminal */
         94: function(self, m) {
             // Slice the heading 9 bytes and send the remaining xterm sequence to the terminal
-            var str = fromUtf8(m.slice(9));
+            var str = m.slice(9);
 
 			// Local Echo module
 			if(self.settings.localEcho){
@@ -179,8 +179,8 @@ SSHyClient.Transport.prototype = {
 	                term.write('\b');
 	            }
 			}
-
-            term.write(str);
+			// Convert str and write it to console
+            term.write(fromUtf8(str));
             return;
         },
         /* SSH_MSG_CHANNEL_EOF: sent by the server indicating no more data will be sent to the channel*/

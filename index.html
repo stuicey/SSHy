@@ -58,7 +58,7 @@
 			document.getElementById("settingsNav").style.width = size + 'px';
 			settings.sidenavElementState = size;
 			// We need to update the network traffic whenever the nav is re-opened
-			if(size){
+			if(size && transport){
 				settings.setNetTraffic(transport.parceler.recieveData, true);
 				settings.setNetTraffic(transport.parceler.transmitData, false);
 			}
@@ -326,8 +326,8 @@
 		<a class="leftarrow" href="javascript:;" onclick="settings.setLocalEcho(-1)"><--</a>
 		<a class="rightarrow" href="javascript:;" onclick="settings.setLocalEcho(1)">--></a>
 		<div class="fileUpload btn btn-primary nomargin">
-			<span class="tooltiptext" style="visibility:visible;" id="autoEchoState">State: Enabled</span>
-			<span class="middle" id="currentLEcho">Auto</span>
+			<span class="tooltiptext" style="visibility:hidden;" id="autoEchoState">State: Disabled</span>
+			<span class="middle" id="currentLEcho">Force Off</span>
 		</div>
 		<span class="title" style="padding-top:50px">Colours</span>
 		<a class="leftarrow" href="javascript:;" onclick="settings.cycleColorSchemes(0)"><--</a>
@@ -352,6 +352,10 @@
 		<div class="netTraffic">
 			<span class="leftarrow">rx: <span id="rxTraffic">0Bytes</span></span>
 			<span class="rightarrow">tx: <span id="txTraffic">0Bytes</span></span>
+		</div>
+		<div id="hostKey" style="display: none;">
+			<span class="title" style="padding-top:20px;">Host Key</span>
+			<span id="hostKeyImg" class="hostKeyImg"></span>
 		</div>
 	</div>
 	<span id="gear" class="gear" style="visibility:visible;" onclick="toggleNav(250)">&#9881</span>

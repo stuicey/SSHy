@@ -50,6 +50,9 @@ SSHyClient.auth.prototype = {
 			if(!term){
 				startxtermjs();
 			}
+			// Starts up the keep alive interval to 240s
+			transport.settings.setKeepAlive(240);
+			document.getElementById('keepAlive').value = 240;
             // We've been authenticated, lets open a channel
             this.open_channel('session');
         }

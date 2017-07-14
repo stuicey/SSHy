@@ -8,8 +8,7 @@ function verifyKey(host_key, sig){
 	var rsa = new SSHyClient.RSAKey(new SSHyClient.Message(host_key));
 	if(!rsa.verify(SSHyClient.kex.H, new SSHyClient.Message(sig))){
 		transport.disconnect();
-		term.write('RSA signature verification failed, disconnecting.');
-		return;
+	    throw 'RSA signature verification failed, disconnecting.';
 	}
 }
 
@@ -80,14 +79,19 @@ SSHyClient.kex.DiffieHellman.prototype = {
 			var key = wsproxyURL.split('/')[3];
 			// Cache the hexified host key
 			var hexHostKey = ascii2hex(host_key);
-
+			// Generate the short MD5'd key for randomart and confirm
+			var shortKey = ascii2hex(SSHyClient.hash.MD5(host_key)).match(/.{2}/g);
+			console.log(shortKey)
+			// Create the randomArt image
+			randomart(shortKey);
+			console.log(shortKey)
 			// Since we've got everthing we need lets see if the key exists already
 			var localObj = localStorage.getItem(key);
 
 			if(localObj){
 				// Check all the details match.. they should but Sanity
 				if(localObj != hexHostKey){
-					if(confirm('WARNING - POTENTIAL SECURITY BREACH!\r\n\nThe server\s host key does not match the one SSHy has cached in local storage. This means that either the server administrator has changed the host key, or you have actually connected to another computer pretending to be the server.\r\nThe new rsa2 key fingerprint is:\r\nssh-rsa 2048 ' + ascii2hex(SSHyClient.hash.MD5(host_key)).match(/.{2}/g).join(':') + '\r\nIf you were expecting this change and trust the new key, hit `Ok` to add the key to SSHy\'s cache and carry on connecting.\r\nIf you do not trust this new key, hit `Cancel` to abandon the connection')){
+					if(confirm('WARNING - POTENTIAL SECURITY BREACH!\r\n\nThe server\s host key does not match the one SSHy has cached in local storage. This means that either the server administrator has changed the host key, or you have actually connected to another computer pretending to be the server.\r\nThe new rsa2 key fingerprint is:\r\nssh-rsa 2048 ' + shortKey.join(':') + '\r\nIf you were expecting this change and trust the new key, hit `Ok` to add the key to SSHy\'s cache and carry on connecting.\r\nIf you do not trust this new key, hit `Cancel` to abandon the connection')){
 						// User has agree'd to the new host key so lets save it for them
 						localStorage.setItem(key, hexHostKey);
 					} else {
@@ -98,7 +102,7 @@ SSHyClient.kex.DiffieHellman.prototype = {
 				}
 			} else {
 				// Prompt the user just like they are in puTTy
-				if(confirm('The server\'s host key is not cached in local storage. You have no guarentee that the server is the computer you think it is.\n\rThe server\'s rsa2 key finterprint is:\r\nssh-rsa 2048 ' + ascii2hex(SSHyClient.hash.MD5(host_key)).match(/.{2}/g).join(':') + '\r\nIf you trust the host, hit `Ok` to add the key to SSHy\'s cache and carry on connecting.\r\nIf you do not trust this host, hit `Cancel` to abandon the connection')){
+				if(confirm('The server\'s host key is not cached in local storage. You have no guarentee that the server is the computer you think it is.\n\rThe server\'s rsa2 key finterprint is:\r\nssh-rsa 2048 ' + shortKey.join(':') + '\r\nIf you trust the host, hit `Ok` to add the key to SSHy\'s cache and carry on connecting.\r\nIf you do not trust this host, hit `Cancel` to abandon the connection')){
 					// User has confirmed it is correct so save the RSA key
 					localStorage.setItem(key, hexHostKey);
 				} else {
@@ -108,6 +112,7 @@ SSHyClient.kex.DiffieHellman.prototype = {
 				}
 			}
 		}
+
 		this.f = r.get_mpint();
 
 		var sig = r.get_string();

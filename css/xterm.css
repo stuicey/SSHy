@@ -528,7 +528,7 @@ input::-webkit-inner-spin-button,input::-webkit-outer-spin-button {
     -webkit-appearance: none
 }
 
-#pasteTextArea {
+.pasteTextArea {
 	min-width: 200px;
 	max-width: 200px;
 	height: 50px;
@@ -537,4 +537,12 @@ input::-webkit-inner-spin-button,input::-webkit-outer-spin-button {
 	border-width: 1px;
 	background-color: #000;
 	color: #818181;
+}
+
+.hostKeyImg {
+	width: 235px;
+	font-size: 14px;
+	white-space: pre;
+	text-align: center;
+	display: inline-block;
 }
