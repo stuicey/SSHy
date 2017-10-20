@@ -249,7 +249,7 @@ function startxtermjs() {
         var command;
 
         // Decides if the keypress is an alphanumeric character or needs escaping
-        if (e.key.length == 1 && !(e.altKey || e.ctrlKey || e.metaKey)) {
+        if (e.key.length == 1 && (!(e.altKey || e.ctrlKey || e.metaKey) || (e.altKey && e.ctrlKey))) {
             command = e.key;
         } else if (e.key.length == 1 && (e.shiftKey && e.ctrlKey)) {
             // allows ctrl + shift + v for pasting

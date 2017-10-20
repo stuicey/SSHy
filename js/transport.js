@@ -362,6 +362,9 @@ SSHyClient.Transport.prototype = {
             console.log("Error! code - " + m.substring(0, 1).charCodeAt(0) + " does not exist!");
         }
     },
+    str_to_bytes: function(s) {
+        return unescape(encodeURIComponent(s))
+    },
 	// Takes a char or string and sends it to the SSH server
     expect_key: function(command) {
 		// Make sure a non-null command is being sent
@@ -372,7 +375,7 @@ SSHyClient.Transport.prototype = {
 		var m = new SSHyClient.Message();
 		m.add_bytes(String.fromCharCode(SSHyClient.MSG_CHANNEL_DATA));
 		m.add_int(0);
-		m.add_string(command.toString());
+		m.add_string(this.str_to_bytes(command.toString()));
 
 		this.parceler.send(m);
     },
