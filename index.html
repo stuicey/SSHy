@@ -6,7 +6,16 @@
 	<title>SSHy.us</title>
 
 	<script type="text/javascript">
-		var wsproxyURL = "ws://localhost:5999/"
+		var wsproxyURL = "localhost"
+		var wsproxyPorts = {"ws":5999, "wss":6001}
+		var wsproxyProto = "ws"
+		// Decide if we're using secure ws or not
+		if(window.location.protocol == "https:"){
+			wsproxyProto = "wss"
+		}
+		// Build the wsproxyURL up
+		wsproxyURL = wsproxyProto + '://' + wsproxyURL + ':' + wsproxyPorts[wsproxyProto] + '/'
+		
 		var ws, transport, settings, term = null;
 
 		// Since firefox renders at a different resolution to chromium based browsers we should identify it and apply special rules
