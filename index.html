@@ -6,7 +6,7 @@
 	<title>SSHy.us</title>
 
 	<script type="text/javascript">
-		var wsproxyURL = "sshyprox.herokuapp.com"
+		var wsproxyURL = "localhost"
 		var wsproxyPorts = {"ws":5999, "wss":6001}
 		var wsproxyProto = "ws"
 		// Decide if we're using secure ws or not
@@ -20,6 +20,20 @@
 
 		// Since firefox renders at a different resolution to chromium based browsers we should identify it and apply special rules
 		var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+
+		// Test IE 11
+		if (window.msCrypto){
+			// Redirect window.crypto.getRandomValues() -> window.msCrypto.getRandomValues()
+			window.crypto = {} 
+			window.crypto.getRandomValues = function(a) { return window.msCrypto.getRandomValues(a); }
+
+			// PolyFill Uint8Array.slice() for IE 11 for sjcl AES
+			if (!Uint8Array.prototype.slice) {
+			  Object.defineProperty(Uint8Array.prototype, 'slice', {
+			    value: Array.prototype.slice
+			  });
+			}
+		}
 
 		var termRows, termCols = 0;
 		// Need to define these since we need the terminal to open before we can calculate the values
@@ -258,14 +272,23 @@
 				}
 
 				// We've already authenticated so now any keypress is a command for the SSH server
-				var command;
+				var command, pressedKey;
+
+				/** IE isn't very good so it displays one character keys as full names in .key 
+			 	EG - e.key = " " to e.key = "Spacebar"	
+			 	so assuming .char is one character we'll use that instead **/
+				if (e.char && e.char.length == 1) {
+					pressedKey = e.char;
+				} else { 
+					pressedKey = e.key
+				}
 
 				// Decides if the keypress is an alphanumeric character or needs escaping
-				if (e.key.length == 1 && (!(e.altKey || e.ctrlKey || e.metaKey) || (e.altKey && e.ctrlKey))) {
-					command = e.key;
-				} else if (e.key.length == 1 && (e.shiftKey && e.ctrlKey)) {
+				if (pressedKey.length == 1 && (!(e.altKey || e.ctrlKey || e.metaKey) || (e.altKey && e.ctrlKey))) {
+					command = pressedKey;
+				} else if (pressedKey.length == 1 && (e.shiftKey && e.ctrlKey)) {
 					// allows ctrl + shift + v for pasting
-					if (e.key != 'V') {
+					if (pressedKey != 'V') {
 						e.preventDefault();
 						return;
 					}

@@ -10,6 +10,20 @@ var ws, transport, term = null;
 // Since firefox renders at a different resolution to chromium based browsers we should identify it and apply special rules
 var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
+// Test IE 11
+if (window.msCrypto){
+	// Redirect window.crypto.getRandomValues() -> window.msCrypto.getRandomValues()
+	window.crypto = {} 
+	window.crypto.getRandomValues = function(a) { return window.msCrypto.getRandomValues(a); }
+
+	// PolyFill Uint8Array.slice() for IE 11 for sjcl AES
+	if (!Uint8Array.prototype.slice) {
+	  Object.defineProperty(Uint8Array.prototype, 'slice', {
+	    value: Array.prototype.slice
+	  });
+	}
+}
+
 var termRows, termCols = 0;
 // Need to define these since we need the terminal to open before we can calculate the values
 var fontWidth = 10;
@@ -195,8 +209,18 @@ function startxtermjs() {
             return;
         }
 
-        // So we don't spam single control characters
-        if (e.key.length > 1 && (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) && e.key != "Backspace") {
+        var pressedKey
+        /** IE isn't very good so it displays one character keys as full names in .key 
+	 	EG - e.key = " " to e.key = "Spacebar"	
+	 	so assuming .char is one character we'll use that instead **/
+		if (e.char && e.char.length == 1) {
+			pressedKey = e.char;
+		} else { 
+			pressedKey = e.key
+		}
+
+		// So we don't spam single control characters
+        if (pressedKey.length > 1 && (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) && pressedKey != "Backspace") {
             return;
         }
 
@@ -207,7 +231,7 @@ function startxtermjs() {
             }
 
 			// so we can't input stuff like 'ArrowUp'
-			if(e.key.length > 1 && (e.keyCode != 13 && e.keyCode != 8)){
+			if(pressedKey.length > 1 && (pressedKeyCode != 13 && pressedKeyCode != 8)){
 				return;
 			}
 			/* while termPassword is undefined, add all input to termUsername
@@ -236,10 +260,10 @@ function startxtermjs() {
                     break;
                 default:
                     if (transport.auth.termPassword === undefined) {
-                        transport.auth.termUsername += e.key;
-                        term.write(e.key);
+                        transport.auth.termUsername += pressedKey;
+                        term.write(pressedKey);
                     } else {
-                        transport.auth.termPassword += e.key;
+                        transport.auth.termPassword += pressedKey;
                     }
             }
             return;
@@ -249,9 +273,9 @@ function startxtermjs() {
         var command;
 
         // Decides if the keypress is an alphanumeric character or needs escaping
-        if (e.key.length == 1 && (!(e.altKey || e.ctrlKey || e.metaKey) || (e.altKey && e.ctrlKey))) {
-            command = e.key;
-        } else if (e.key.length == 1 && (e.shiftKey && e.ctrlKey)) {
+        if (pressedKey.length == 1 && (!(e.altKey || e.ctrlKey || e.metaKey) || (e.altKey && e.ctrlKey))) {
+            command = pressedKey;
+        } else if (pressedKey.length == 1 && (e.shiftKey && e.ctrlKey)) {
             // allows ctrl + shift + v for pasting
             if (e.key != 'V') {
                 e.preventDefault();
