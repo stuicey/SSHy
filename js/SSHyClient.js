@@ -231,7 +231,7 @@ function startxtermjs() {
             }
 
 			// so we can't input stuff like 'ArrowUp'
-			if(pressedKey.length > 1 && (pressedKeyCode != 13 && pressedKeyCode != 8)){
+			if(pressedKey.length > 1 && (e.keyCode != 13 && e.keyCode != 8)){
 				return;
 			}
 			/* while termPassword is undefined, add all input to termUsername
