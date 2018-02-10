@@ -151,7 +151,7 @@ SSHyClient.Transport.prototype = {
         /* SSH_MSG_CHANNEL_OPEN_CONFIRMATION: sent by the server to inform the client that a new channel has been opened */
         91: function(self, m) {
             resize()
-            self.auth.get_pty('xterm', term.cols, term.rows);
+            self.auth.mod_pty('pty-req', term.cols, term.rows, 'xterm');
             return;
         },
         /* SSH_MSG_CHANNEL_WINDOW_ADJUST: sent by the server to inform the client of the maximum window size (bytes) */

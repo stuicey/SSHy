@@ -249,7 +249,7 @@ SSHyClient.settings.prototype = {
         document.getElementById("currentFontSize").innerHTML = transport.settings.fontSize + 'px'; 
         // Recalculate rows/cols
         term.fit()
-        ransport.auth.resize_pty(term.cols, term.rows); 
+        ransport.auth.mod_pty('window-change', term.cols, term.rows); 
     }, 
     // Sets the terminal size where id= 0-> cols ; 1-> rows 
     modTerm: function(id, newAmount) { 
@@ -259,7 +259,7 @@ SSHyClient.settings.prototype = {
             term.resize(term.cols, newAmount); 
         } 
  
-        transport.auth.resize_pty(term.cols, term.rows); 
+        transport.auth.mod_pty('window-change', term.cols, term.rows); 
     }, 
     // Changes the network traffic setting to reflect transmitted or recieved data
     setNetTraffic: function(value, dir) {

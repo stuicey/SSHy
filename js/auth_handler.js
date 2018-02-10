@@ -70,39 +70,34 @@ SSHyClient.auth.prototype = {
 
         this.parceler.send(m);
     },
-    // Requests a pseudo-terminal, defaulting to xterm if no other terminal emulator is provided
-    get_pty: function(term, width, height) {
+    // Requests a pseudo-terminal, defaulting to xterm if no other terminal emulator is provided when type == "pty-req"
+    // Sends the remote server our terminal rows/cols settings, called by window.resize() when type == "window-change"
+    mod_pty: function(type, width, height, term) {
         var m = new SSHyClient.Message();
         m.add_bytes(String.fromCharCode(SSHyClient.MSG_CHANNEL_REQUEST));
         m.add_int(0);
-        m.add_string('pty-req');
+        m.add_string(type);
         m.add_boolean(false); // we don't want any enviroment vars to be returned
-        m.add_string(term);
+        if (term) {
+            m.add_string(term);
+        }
         m.add_int(width);
         m.add_int(height);
         // pixel data, which is overwritten by the above height and width
         m.add_int(0);
-		m.add_int(0);
-        // not going to use any special terminal modes currently
-        m.add_string('');
+        m.add_int(0);
+        
+        if (term) {
+            // Don't sent any special terminal modes
+            m.add_string('');
+        }
 
         this.parceler.send(m);
-        // invokes the shell session right after sending the packet
-        this.invoke_shell();
-    },
-    // called by window.resize on index.html - resizes the terminal window on the SSH server
-    // useful for screen sharing applications such as tmux or screen
-    resize_pty: function(width, height) {
-        var m = new SSHyClient.Message();
-        m.add_bytes(String.fromCharCode(SSHyClient.MSG_CHANNEL_REQUEST));
-        m.add_int(0);
-        m.add_string('window-change');
-        m.add_boolean(false);
-        m.add_int(width);
-        m.add_int(height);
-        m.add_int(0);
-		m.add_int(0);
-        this.parceler.send(m);
+       
+        if (term) {
+            // invokes the shell session right after sending the packet
+            this.invoke_shell();
+        }
     },
     // Invokes the interactive terminal using the pseudo-terminal channel
     invoke_shell: function() {
