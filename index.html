@@ -54,7 +54,7 @@
 			document.getElementById('login_cred').style.display = "block";
 			// Sets the default colorScheme to material
 			settings = new SSHyClient.settings();
-			settings.setColorScheme(settings.colorSchemes["Material"]());
+			settings.setColorScheme(1);
 
 			// Hide the paste text area if we're not using firefox
 			if(!isFirefox){
@@ -248,9 +248,20 @@
 			});
 			// start xterm.js
 			term.open(document.getElementById('terminal'), true);
+
+			// set the color scheme to whatever the user's changed it to in the mean time
+			var colName = document.getElementById('currentColor').innerHTML
+			for(i = 0; i < settings.colorSchemes.length; i++) {
+				if ( settings.colorSchemes[i][0] == colName ) {
+					settings.setColorScheme(i)
+					break
+				}
+			}
+
 			// set the terminal size on settings menu
 			document.getElementById('termCols').value = termCols;
 			document.getElementById('termRows').value = termRows;
+			
 			// clear the modal elements on screen
 			document.getElementById('load-container').style.display = "none";
 			document.getElementById('login_cred').style.display = "none";
@@ -294,7 +305,7 @@
 					}
 				} else {
 					//xtermjs is kind enough to evaluate our special characters instead of having to translate every char ourself
-					command = term.evaluateKeyEscapeSequence(e).key;
+					command = term._evaluateKeyEscapeSequence(e).key;
 				}
 
 				// Decide if we're going to locally' echo this key or not

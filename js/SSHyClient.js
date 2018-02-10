@@ -191,7 +191,7 @@ function termInit() {
 	document.getElementById('termCols').value = termCols;
 	document.getElementById('termRows').value = termRows;
 	// Sets the default colorScheme to material
-	transport.settings.setColorScheme(transport.settings.colorSchemes.Material());
+	transport.settings.setColorScheme(1);
 }
 // Binds custom listener functions to xtermjs's Terminal object
 function startxtermjs() {
@@ -283,7 +283,7 @@ function startxtermjs() {
             }
         } else {
             //xtermjs is kind enough to evaluate our special characters instead of having to translate every char ourself
-            command = term.evaluateKeyEscapeSequence(e).key;
+            command = term._evaluateKeyEscapeSequence(e).key;
         }
 
 		// Decide if we're going to locally' echo this key or not
