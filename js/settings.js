@@ -241,60 +241,26 @@ SSHyClient.settings.prototype = {
         // Set color scheme to (colorList [ colorNames [ counter ]])
         this.setColorScheme(this.colorCounter)
     },
-    // Modify the font size of the terminal
-    modFontSize: function(sign) {
-        this.fontSize += sign;
-        document.getElementById("terminal").style.fontSize = this.fontSize + 'px';
-
-        // Going to use a minimal version of xtermjs.fit()
-        var subjectRow = term.rowContainer.firstElementChild;
-        // Store the current text in this row
-        var contentBuffer = subjectRow.innerHTML;
-        // Transform subjectRow to write a single character 'W'
-        subjectRow.style.display = "inline";
-        subjectRow.innerHTML = 'W';
-        var element = subjectRow.getBoundingClientRect();
-        // Revert subjectRow back to original settings
-        subjectRow.style.display = '';
-        subjectRow.innerHTML = contentBuffer;
-
-        // Recalculate the font width/height based on 'element'
-        fontWidth = element.width + 0.15;
-        fontHeight = Math.floor(element.height);
-
-        document.getElementById("currentFontSize").innerHTML = transport.settings.fontSize + 'px';
-
-        // Send the new size to the SSH terminal & xtermjs
-        resize();
-    },
-
-    // Sets the terminal size where id= 0-> cols ; 1-> rows
-    modTerm: function(id, newAmount) {
-        if (!id) {
-            termCols = newAmount;
-        } else {
-            termRows = newAmount;
-        }
-
-        this.changeTermSize(true);
-    },
-
-    // Sends the new size to the SSH server & changes local terminal size
-    changeTermSize: function(skip) {
-        term.resize(termCols, termRows);
-        transport.auth.resize_pty(termCols, termRows);
-        // For some reason lineHeight isn't correctly calculated by xterm.js
-        var element = document.getElementsByClassName("xterm-rows");
-        if (element) {
-            element[0].style.lineHeight = null;
-        }
-
-        // If we're setting this from the settings menu then we don't need to reflect the change
-        if (skip === undefined) {
-            document.getElementById('termCols').value = termCols;
-            document.getElementById('termRows').value = termRows;
-        }
-    },
+    // Modify the font size of the terminal 
+    modFontSize: function(sign) { 
+        this.fontSize += sign; 
+        term.setOption('fontSize', this.fontSize)
+        
+        document.getElementById("currentFontSize").innerHTML = transport.settings.fontSize + 'px'; 
+        // Recalculate rows/cols
+        term.fit()
+        ransport.auth.resize_pty(term.cols, term.rows); 
+    }, 
+    // Sets the terminal size where id= 0-> cols ; 1-> rows 
+    modTerm: function(id, newAmount) { 
+        if (!id) { 
+            term.resize(newAmount, term.rows); 
+        } else { 
+            term.resize(term.cols, newAmount); 
+        } 
+ 
+        transport.auth.resize_pty(term.cols, term.rows); 
+    }, 
     // Changes the network traffic setting to reflect transmitted or recieved data
     setNetTraffic: function(value, dir) {
         // No point recalculating if the sidenav is closed

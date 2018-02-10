@@ -150,7 +150,8 @@ SSHyClient.Transport.prototype = {
         },
         /* SSH_MSG_CHANNEL_OPEN_CONFIRMATION: sent by the server to inform the client that a new channel has been opened */
         91: function(self, m) {
-            self.auth.get_pty('xterm', termCols, termRows);
+            resize()
+            self.auth.get_pty('xterm', term.cols, term.rows);
             return;
         },
         /* SSH_MSG_CHANNEL_WINDOW_ADJUST: sent by the server to inform the client of the maximum window size (bytes) */
@@ -222,7 +223,7 @@ SSHyClient.Transport.prototype = {
         m.add_int(reason);
         this.send_packet(m.toString());
         ws.close();
-        term.write("\r\nConnection to " + this.auth.hostname + " closed.");
+        term.write("\r\nConnection to " + this.auth.hostname + " closed. Code - " + reason);
     },
 	// Sends a null packet to the SSH server to keep the connection alive
 	keepAlive: function(){

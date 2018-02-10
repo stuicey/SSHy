@@ -24,10 +24,6 @@ if (window.msCrypto){
 	}
 }
 
-var termRows, termCols = 0;
-// Need to define these since we need the terminal to open before we can calculate the values
-var fontWidth = 10;
-var fontHeight = 18;
 // Stores timeouts for window.onresize()
 var resizeInterval;
 window.onload = function() {
@@ -89,6 +85,10 @@ window.onload = function() {
 	if(!isFirefox){
 		document.getElementById('pasteDiv').style.display = "none";
 	}
+
+	// Apply fit addon
+	fit.apply(Terminal)
+
 	// After the page loads start up the SSH client
 	startSSHy();
 };
@@ -105,14 +105,9 @@ window.onbeforeunload = function() {
 };
 // Recalculates the terminal Columns / Rows and sends new size to SSH server + xtermjs
 function resize() {
-	// Try keep a 5px padding all around the terminal
-    termCols = Math.floor((window.innerWidth - 10) / fontWidth);
-    termRows = Math.floor((window.innerHeight - 10) / fontHeight) - (isFirefox ? 3 : 1);
-
-    if (ws && transport && term) {
-		// Inform the SSH server and xtermjs of the new col / rows
-		transport.settings.changeTermSize();
-    }
+	if (term) {
+		term.fit()
+	}
 }
 // Toggles the settings navigator
 function toggleNav(size){
@@ -178,18 +173,17 @@ function startSSHy() {
 }
 // Initialises xtermjs
 function termInit() {
-	// Calculate the term rows/cols
-	resize();
     // Define the terminal rows/cols
-    term = new Terminal({
-        cols: termCols,
-        rows: termRows
+    term = new Terminal({ 
+        cols: 80, 
+        rows: 24 
     });
+
     // start xterm.js
     term.open(document.getElementById('terminal'), true);
 	// set the terminal size on settings menu
-	document.getElementById('termCols').value = termCols;
-	document.getElementById('termRows').value = termRows;
+	document.getElementById('termCols').value = term.cols;
+	document.getElementById('termRows').value = term.rows;
 	// Sets the default colorScheme to material
 	transport.settings.setColorScheme(1);
 }

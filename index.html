@@ -35,11 +35,7 @@
 			}
 		}
 
-		var termRows, termCols = 0;
-		// Need to define these since we need the terminal to open before we can calculate the values
-		var fontWidth = 10;
-		var fontHeight = 18;
-
+		var resizeInterval
 	</script>
 
 	<link rel="stylesheet" href="css/xterm.css" async/>
@@ -60,6 +56,9 @@
 			if(!isFirefox){
 				document.getElementById('pasteDiv').style.display = "none";
 			}
+
+			// Apply fit addon
+			fit.apply(Terminal)
 		};
 
 		// Run every time the webpage is resized
@@ -70,13 +69,8 @@
 
 		// Recalculates the terminal Columns / Rows and sends new size to SSH server + xtermjs
 		function resize() {
-			// Try keep a 5px padding all around the terminal
-			termCols = Math.floor((window.innerWidth - 10) / fontWidth);
-		    termRows = Math.floor((window.innerHeight - 10) / fontHeight) - (isFirefox ? 3 : 1);
-
-			if (ws && transport && term) {
-				// Inform the SSH server and xtermjs of the new col / rows
-				settings.changeTermSize();
+			if (term) {
+				term.fit()
 			}
 		}
 		// Toggles the settings navigator
@@ -239,12 +233,10 @@
 
 		// Initialises xtermjs
 		function termInit() {
-			// Calculate the term rows/cols
-			resize();
 			// Define the terminal rows/cols
 			term = new Terminal({
-				cols: termCols,
-				rows: termRows
+				cols: 80,
+				rows: 24
 			});
 			// start xterm.js
 			term.open(document.getElementById('terminal'), true);
@@ -257,10 +249,6 @@
 					break
 				}
 			}
-
-			// set the terminal size on settings menu
-			document.getElementById('termCols').value = termCols;
-			document.getElementById('termRows').value = termRows;
 			
 			// clear the modal elements on screen
 			document.getElementById('load-container').style.display = "none";
