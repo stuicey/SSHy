@@ -7,9 +7,6 @@
 */
 var ws, transport, term = null;
 
-// Since firefox renders at a different resolution to chromium based browsers we should identify it and apply special rules
-var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-
 // Test IE 11
 if (window.msCrypto){
 	// Redirect window.crypto.getRandomValues() -> window.msCrypto.getRandomValues()
@@ -48,7 +45,7 @@ window.onload = function() {
 									<a class="rightarrow" href="javascript:;" onclick="transport.settings.setLocalEcho(1)">--\></a>
 									<div class="fileUpload btn btn-primary nomargin">
 										<span class="tooltiptext" style="visibility:visible;" id="autoEchoState">State: Enabled</span>
-										<span class="middle" id="currentLEcho">Auto</span>
+										<span class="middle" id="currentLEcho">Force Off</span>
 									</div>
 									<span class="title" style="padding-top:50px">Colours</span>
 									<a class="leftarrow" href="javascript:;" onclick="transport.settings.cycleColorSchemes(0)">\<--</a>
@@ -65,14 +62,10 @@ window.onload = function() {
 										<input type="number" class="large" id="keepAlive" onchange="transport.settings.setKeepAlive(this.value);" placeholder="0">
 										<span style="font-size:16px;"> seconds</span>
 									</div>
-									<div id="pasteDiv">
-										<span class="title" style="padding-top:20px;">Paste</span>
-										<textarea id="pasteTextArea" class="pasteTextArea" onchange="term.textarea.onpaste(this.value)"></textarea>
-									</div>
 									<span class="title" style="padding-top:20px;">Network Traffic</span>
 									<div class="netTraffic">
-										<span class="leftarrow">rx: <span id="rxTraffic"></span></span>
-										<span class="rightarrow">tx: <span id="txTraffic"></span></span>
+										<span class="leftarrow brightgreen">rx: <span id="rxTraffic"></span></span>
+										<span class="rightarrow brightyellow">tx: <span id="txTraffic"></span></span>
 									</div>
 									<div id="hostKey" style="display: none;">
 								        <span class="title" style="padding-top:20px;">Host Key</span>
@@ -80,11 +73,6 @@ window.onload = function() {
 								    </div>
 								</div>
 								<span id="gear" class="gear" style="visibility:visible;" onclick="toggleNav(250)">&#9881</span>`;
-
-	// Hide the paste text area if we're not using firefox
-	if(!isFirefox){
-		document.getElementById('pasteDiv').style.display = "none";
-	}
 
 	// Apply fit addon
 	fit.apply(Terminal)
@@ -292,8 +280,7 @@ function startxtermjs() {
     };
 
     term.textarea.onpaste = function(ev) {
-		var text;
-		// 'ev' can either be plaintext or a clipboard event depending on browser
+		/** 'ev' can either be plaintext or a clipboard event depending on browser
 		if(isFirefox){
 			text = ev;
 			// Clear the text area
@@ -301,6 +288,8 @@ function startxtermjs() {
 		} else {
 			text = ev.clipboardData.getData('text/plain');
 		}
+		**/
+		var text = ev.clipboardData.getData('text/plain');
 
         if (text) {
 			// Just don't allow more than 1 million characters to be pasted.

@@ -33,6 +33,7 @@
 
 html, body { 
     overflow: hidden;
+    overflow: -moz-scrollbars-none;
     background-color: #000;
 }
 
@@ -106,6 +107,8 @@ html, body {
     left: 0;
     top: 0;
     bottom: 0;
+
+    overflow: -moz-scrollbars-none;
 }
 
 .xterm .xterm-screen {
@@ -165,6 +168,7 @@ html, body {
     color: #818181;
     transition: .3s;
     padding: 8px 8px 8px 32px
+    overflow-y: hidden;
 }
 
 .sidenav .leftarrow {
@@ -324,19 +328,26 @@ input[type=number].large {
     border-bottom: solid 2px #aaa
 }
 
-input::-webkit-inner-spin-button,input::-webkit-outer-spin-button {
-    -webkit-appearance: none
+.sidenav input[type=text] {
+    border: 0;
+    border-bottom: solid 2px #888;
+    margin-left: 20px;
+    width: 180px;
+    transition: border .3s;
+    background: 0 0;
+    color: #818181;
+    text-align: center;
+    outline: 0;
+    font-family: courier-new, courier, monospace;
+    font-size: 12px
 }
 
-.pasteTextArea {
-	min-width: 200px;
-	max-width: 200px;
-	height: 50px;
-	margin: 0 0 0 24px;
-	border-radius: 5px;
-	border-width: 1px;
-	background-color: #000;
-	color: #818181;
+.fileUpload:hover input[type=text] {
+    border-bottom: solid 2px #aaa
+}
+
+input::-webkit-inner-spin-button,input::-webkit-outer-spin-button {
+    -webkit-appearance: none
 }
 
 .hostKeyImg {
@@ -344,6 +355,12 @@ input::-webkit-inner-spin-button,input::-webkit-outer-spin-button {
 	font-size: 14px;
 	white-space: pre;
 	text-align: center;
-	display: inline-block;
+	display: block;
     font-family: monospace !important;
+    height: 320px;
+}
+
+.footer {
+    position: relative;
+    bottom: 80px;
 }

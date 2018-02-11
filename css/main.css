@@ -89,7 +89,10 @@ input[type="text"], input[type="password"] {
   border: none;
   border-bottom: solid 2px #c9c9c9;
   transition: border 0.3s;
+  background: none;
+  color: black;
 }
+
 input[type="text"]:focus, input[type="password"]:focus {
   border-bottom: solid 2px #969696;
 }

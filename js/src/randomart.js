@@ -106,7 +106,5 @@ function randomart(data) {
 	}
 	// Write the board to HTML
 	document.getElementById('hostKeyImg').innerHTML = boardToString(generateBoard(buffer));
-	// Enable the element
-	document.getElementById('hostKey').style.display = 'inline-block';
     return;
 }

@@ -180,8 +180,8 @@ SSHyClient.settings.prototype = {
         // Changes the sidenav color
         term_style.insertRule('.sidenav {background-color: ' + modColorPercent(themeColors.background, -0.2) + ' !important;}', 13);
         // Changes the rx and tx color to 10 and 11
-        term_style.insertRule('.sidenav .netTraffic .leftarrow {color: ' + themeColors.brightGreen + ' !important;}', 13);
-        term_style.insertRule('.sidenav .netTraffic .rightarrow {color: ' + themeColors.brightYellow + ' !important;}', 13);
+        term_style.insertRule('.brightgreen {color: ' + themeColors.brightGreen + ' !important;}', 13);
+        term_style.insertRule('.brightyellow {color: ' + themeColors.brightYellow + ' !important;}', 13);
 
         this.colorTango = false;
 
@@ -249,7 +249,7 @@ SSHyClient.settings.prototype = {
         document.getElementById("currentFontSize").innerHTML = transport.settings.fontSize + 'px'; 
         // Recalculate rows/cols
         term.fit()
-        ransport.auth.mod_pty('window-change', term.cols, term.rows); 
+        transport.auth.mod_pty('window-change', term.cols, term.rows); 
     }, 
     // Sets the terminal size where id= 0-> cols ; 1-> rows 
     modTerm: function(id, newAmount) { 

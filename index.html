@@ -9,17 +9,8 @@
 		var wsproxyURL = "localhost"
 		var wsproxyPorts = {"ws":5999, "wss":6001}
 		var wsproxyProto = "ws"
-		// Decide if we're using secure ws or not
-		if(window.location.protocol == "https:"){
-			wsproxyProto = "wss"
-		}
-		// Build the wsproxyURL up
-		wsproxyURL = wsproxyProto + '://' + wsproxyURL + ':' + wsproxyPorts[wsproxyProto] + '/'
 		
 		var ws, transport, settings, term = null;
-
-		// Since firefox renders at a different resolution to chromium based browsers we should identify it and apply special rules
-		var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
 		// Test IE 11
 		if (window.msCrypto){
@@ -52,13 +43,11 @@
 			settings = new SSHyClient.settings();
 			settings.setColorScheme(1);
 
-			// Hide the paste text area if we're not using firefox
-			if(!isFirefox){
-				document.getElementById('pasteDiv').style.display = "none";
-			}
-
 			// Apply fit addon
 			fit.apply(Terminal)
+
+			// Build the default wsProxy URL for display on sidenav
+			buildWSProxyURL()
 		};
 
 		// Run every time the webpage is resized
@@ -73,6 +62,42 @@
 				term.fit()
 			}
 		}
+
+		// Build the entire websocket url eg (wss://localhost:5999/) based on http protocol
+		function buildWSProxyURL(portPassed) {
+			// Decide if we're using secure ws or not
+			if(window.location.protocol == "https:"){
+				wsproxyProto = "wss"
+			}
+
+			var port
+			if (portPassed){
+				port = ""
+			} else {
+				port =  ':' + wsproxyPorts[wsproxyProto]
+			}
+
+			// Build the wsproxyURL up
+			wsproxyURL = wsproxyProto + '://' + wsproxyURL + port + '/'
+
+			document.getElementById("websockURL").value = wsproxyURL
+		}
+
+		// Changes the websocket proxy URL ** BEFORE ** connection ONLY
+		function modProxyURL(newURL){
+			if (!ws) {
+				// Strip it down to barebones URL:PORT(optional)
+				matches = /^w?s{0,2}:?\/{0,2}(([a-z0-9]+\.)*[a-z0-9]+\.?[a-z]+)\:?([0-9]{1,5})?/g.exec(newURL)
+				var port = ""
+				if (newURL.match(":")) {
+					port = ":"+matches[matches.length-1]
+				}
+				
+				wsproxyURL = matches[1] + port;
+				buildWSProxyURL(port)
+			}
+		}
+
 		// Toggles the settings navigator
 		function toggleNav(size) {
 			document.getElementById("settingsNav").style.width = size + 'px';
@@ -107,7 +132,7 @@
 					// test for valid domain name
 					if (!/^([a-z0-9]+\.)*[a-z0-9]+\.[a-z]+(\:[0-9]{1,5})?$/.test(text)) {
 						if (check_internal(text)) {
-							display_error("Could no resolve hostname: Please use an external address")
+							display_error("Be aware - IP addresses are resolved at the websocket proxy")
 						}
 						// test ip aswell.
 						if (!/^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$|(\:[0-9]{1,5}))){4}$/.test(text)) {
@@ -170,11 +195,6 @@
 				html_port = 22
 			}
 
-			if (check_internal(html_ipaddress) == true) {
-				display_error("Could no resolve hostname: Please use an external address")
-				return
-			}
-
 			if (termUsername.length == 0 || termPassword.length == 0) {
 				validate('username', termUsername)
 				validate('password', termPassword)
@@ -185,6 +205,9 @@
 			document.getElementById('failure').style.display = "none"
 			document.getElementById('connect').value = 'Connecting...'
 			document.getElementById('load-container').style.display = "block"
+
+			// Disable websocket proxy modifications
+			document.getElementById('websockURL').disabled = true
 
 			// Initialise the window title
 			document.title = "SSHy Client";
@@ -206,6 +229,9 @@
 			};
 			// Whenever the websocket is closed make sure to display an error if appropriate
 			ws.onclose = function(e) {
+				// Set the sidenav websocket proxy color to yellow
+				document.getElementById('websockURL').classList.remove('brightgreen')	
+				document.getElementById('websockURL').classList.add('brightyellow')	
 				if (term) {
 					// Don't display an error if SSH transport has already detected a graceful exit
 					if (transport.closing) {
@@ -229,6 +255,9 @@
 				transport.parceler.transmitData += e.length;
 				settings.setNetTraffic(transport.parceler.transmitData, false);
 			};
+
+			// Set the sidenav websocket proxy color to green
+			document.getElementById('websockURL').classList.add('brightgreen')
 		}
 
 		// Initialises xtermjs
@@ -308,8 +337,8 @@
 			};
 
 			term.textarea.onpaste = function(ev) {
-				var text;
-				// 'ev' can either be plaintext or a clipboard event depending on browser
+				/** 'ev' can either be plaintext or a clipboard event depending on browser
+
 				if(isFirefox){
 					text = ev;
 					// Clear the text area
@@ -317,6 +346,8 @@
 				} else {
 					text = ev.clipboardData.getData('text/plain');
 				}
+				**/
+				var text = ev.clipboardData.getData('text/plain');
 
 		        if (text) {
 					// Just don't allow more than 1 million characters to be pasted.
@@ -378,19 +409,22 @@
 			<input type="number" class="large" id="keepAlive" onchange="settings.setKeepAlive(this.value);" placeholder="0">
 			<span style="font-size:16px;"> seconds</span>
 		</div>
-		<div id="pasteDiv">
-			<span class="title" style="padding-top:20px;">Paste</span>
-			<textarea id="pasteTextArea" onchange="term.textarea.onpaste(this.value)"></textarea>
-		</div>
 		<span class="title" style="padding-top:20px;">Network Traffic</span>
 		<div class="netTraffic">
-			<span class="leftarrow">rx: <span id="rxTraffic">0Bytes</span></span>
-			<span class="rightarrow">tx: <span id="txTraffic">0Bytes</span></span>
+			<span class="leftarrow brightgreen">rx: <span id="rxTraffic">0Bytes</span></span>
+			<span class="rightarrow brightyellow">tx: <span id="txTraffic">0Bytes</span></span>
 		</div>
-		<div id="hostKey" style="display: none;">
+		<div id="hostKey">
 			<span class="title" style="padding-top:20px;">Host Key</span>
 			<span id="hostKeyImg" class="hostKeyImg"></span>
 		</div>
+		<span class="footer">
+			<span class="title">Websocket Proxy</span>
+			<div class="fileUpload btn btn-primary">
+				<span class="tooltiptext">Websocket Proxy URL</span>
+				<input type="text" class="large" id="websockURL" onchange="modProxyURL(this.value)">
+			</div>
+		</span>
 	</div>
 	<span id="gear" class="gear" style="visibility:visible;" onclick="toggleNav(250)">&#9881</span>
 
