@@ -269,6 +269,7 @@
 			});
 			// start xterm.js
 			term.open(document.getElementById('terminal'), true);
+			term.focus()
 
 			// set the color scheme to whatever the user's changed it to in the mean time
 			var colName = document.getElementById('currentColor').innerHTML

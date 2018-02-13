@@ -169,6 +169,8 @@ function termInit() {
 
     // start xterm.js
     term.open(document.getElementById('terminal'), true);
+    term.focus()
+    
 	// set the terminal size on settings menu
 	document.getElementById('termCols').value = term.cols;
 	document.getElementById('termRows').value = term.rows;
