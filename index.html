@@ -267,8 +267,10 @@
 				cols: 80,
 				rows: 24
 			});
+			
 			// start xterm.js
 			term.open(document.getElementById('terminal'), true);
+			term.fit()
 			term.focus()
 
 			// set the color scheme to whatever the user's changed it to in the mean time
@@ -338,18 +340,15 @@
 			};
 
 			term.textarea.onpaste = function(ev) {
-				/** 'ev' can either be plaintext or a clipboard event depending on browser
+				var text 
 
-				if(isFirefox){
-					text = ev;
-					// Clear the text area
-					document.getElementById('pasteTextArea').value = '';
-				} else {
+				// Yay IE11 stuff!
+				if ( window.clipboardData && window.clipboardData.getData ) {
+					text = window.clipboardData.getData('Text')
+				} else if ( ev.clipboardData && ev.clipboardData.getData ) {
 					text = ev.clipboardData.getData('text/plain');
 				}
-				**/
-				var text = ev.clipboardData.getData('text/plain');
-
+						
 		        if (text) {
 					// Just don't allow more than 1 million characters to be pasted.
 					if(text.length < 1000000){

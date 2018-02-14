@@ -169,8 +169,9 @@ function termInit() {
 
     // start xterm.js
     term.open(document.getElementById('terminal'), true);
+    term.fit()
     term.focus()
-    
+
 	// set the terminal size on settings menu
 	document.getElementById('termCols').value = term.cols;
 	document.getElementById('termRows').value = term.rows;
@@ -224,8 +225,7 @@ function startxtermjs() {
                 case 8: // backspace
                     if (transport.auth.termPassword === undefined) {
                         if (transport.auth.termUsername.length > 0) {
-                            term.write('\b');
-                            term.eraseRight(term.x - 1, term.y);
+                            termBackspace(term)
                             transport.auth.termUsername = transport.auth.termUsername.slice(0, transport.auth.termUsername.length - 1);
                         }
                     } else {
@@ -282,17 +282,15 @@ function startxtermjs() {
     };
 
     term.textarea.onpaste = function(ev) {
-		/** 'ev' can either be plaintext or a clipboard event depending on browser
-		if(isFirefox){
-			text = ev;
-			// Clear the text area
-			document.getElementById('pasteTextArea').value = '';
-		} else {
+		var text 
+
+		// Yay IE11 stuff!
+		if ( window.clipboardData && window.clipboardData.getData ) {
+			text = window.clipboardData.getData('Text')
+		} else if ( ev.clipboardData && ev.clipboardData.getData ) {
 			text = ev.clipboardData.getData('text/plain');
 		}
-		**/
-		var text = ev.clipboardData.getData('text/plain');
-
+				
         if (text) {
 			// Just don't allow more than 1 million characters to be pasted.
 			if(text.length < 1000000){
