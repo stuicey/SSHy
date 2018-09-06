@@ -297,7 +297,7 @@ function startxtermjs() {
 		        if (text.length > 5000) {
 					// If its a long string then chunk it down to reduce load on SSHyClient.parceler
 		            text = splitSlice(text);
-		            for (var i = 0; i < text.length - 1; i++) {
+		            for (var i = 0; i < text.length; i++) {
 		                transport.expect_key(text[i]);
 		            }
 		            return;
