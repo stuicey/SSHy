@@ -150,6 +150,7 @@ SSHyClient.Transport.prototype = {
         },
         /* SSH_MSG_CHANNEL_OPEN_CONFIRMATION: sent by the server to inform the client that a new channel has been opened */
         91: function(self, m) {
+            self.auth.channelOpened = true;
             resize()
             self.auth.mod_pty('pty-req', term.cols, term.rows, 'xterm');
             return;
