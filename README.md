@@ -51,12 +51,12 @@ This project utilises the [Google Closure Compiler](https://github.com/google/cl
 
 Index.html
 ```
-java -jar closure-compiler.jar --js_output_file=js/combinedLibs.comb.js js/defines.js js/src/*.js js/*.js !**.comb.js !**Client.js
+java -jar closure-compiler.jar --js_output_file=js/combinedLibs.comb.js js/defines.js js/src/*.js js/*.js '!**.comb.js' '!**Client.js'
 ```
 
 Wrapper.html
 ```
-java -jar closure-compiler.jar --js_output_file=js/combinedJS.comb.js js/defines.js js/src/*.js js/*.js !**.comb.js
+java -jar closure-compiler.jar --js_output_file=js/combinedJS.comb.js js/defines.js js/src/*.js js/*.js '!**.comb.js'
 ```
 
 ## Compatability
