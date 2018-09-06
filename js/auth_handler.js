@@ -6,6 +6,7 @@ SSHyClient.auth = function(parceler) {
 	this.termUsername = '';
 	this.termPassword = undefined;
 	this.failedAttempts = 0;
+    this.channelOpened = false;
 };
 
 SSHyClient.auth.prototype = {
@@ -73,6 +74,10 @@ SSHyClient.auth.prototype = {
     // Requests a pseudo-terminal, defaulting to xterm if no other terminal emulator is provided when type == "pty-req"
     // Sends the remote server our terminal rows/cols settings, called by window.resize() when type == "window-change"
     mod_pty: function(type, width, height, term) {
+        if (!this.channelOpened) {
+            return;
+        }
+
         var m = new SSHyClient.Message();
         m.add_bytes(String.fromCharCode(SSHyClient.MSG_CHANNEL_REQUEST));
         m.add_int(0);
