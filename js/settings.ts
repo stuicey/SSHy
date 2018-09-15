@@ -1,11 +1,30 @@
+import { SSHyClientDefines } from './defines';
+
 export class SSHyClientSettings {
+  localEcho: number;
+  fsHintEnter: string;
+  fsHintLeave: string;
+  autoEchoState: boolean;
+  autoEchoTimeout: number;
+  blockedKeys: string[];
+  fontSize: number;
+  colorTango: boolean;
+  colorNames: string[];
+  colorCounter: number;
+  shellString: string;
+  sidenavElementState: number;
+  rxElement: HTMLSpanElement;
+  txElement: HTMLSpanElement;
+  autoEchoElement: HTMLSpanElement;
+  rsaCheckEnabled: boolean;
+
   constructor() {
     // Local echo reduces latency on regular key presses to aruond 0.04s compared to ~0.2s without it
     this.localEcho = 0; // 0 - off; 1 - auto; 2 - on
 
     /* Default the bindings to bash */
     this.fsHintEnter = '\x1b\x5b\x3f\x31'; // seems to be the same for all shells
-    this.fsHintLeave = SSHyClient.bashFsHintLeave;
+    this.fsHintLeave = SSHyClientDefines.bashFsHintLeave;
 
     this.autoEchoState = false; // false = no echoing ; true = echoing
     this.autoEchoTimeout = 0; // stores the time of last autoecho change
@@ -16,7 +35,7 @@ export class SSHyClientSettings {
 
     this.fontSize = 16;
 
-    this.colorTango = true
+    this.colorTango = true;
     this.colorNames = Object.keys(this.colorSchemes);
     this.colorCounter = 0; // Stores the current index of the theme loaded in colorSchemes
 
@@ -60,14 +79,14 @@ export class SSHyClientSettings {
     // Check for fish
     if (this.shellString.indexOf(']0;fish') !== -1) {
       this.shellString = '';
-      this.fsHintLeave = SSHyClient.fishFsHintLeave;
+      this.fsHintLeave = SSHyClientDefines.fishFsHintLeave;
       return;
     }
 
     // Catch all for bash
     if (this.shellString.indexOf('@') !== -1) {
       this.shellString = '';
-      this.fsHintLeave = SSHyClient.bashFsHintLeave;
+      this.fsHintLeave = SSHyClientDefines.bashFsHintLeave;
       return;
     }
   }
@@ -206,7 +225,7 @@ export class SSHyClientSettings {
         sensitivity: 'base'
       }).compare);
 
-      colScheme = [];
+      let colScheme = [];
 
       for (var i = 0; i < lines.length; i++) {
         // Regex the line for a color code #xxx or #xxxxxx
@@ -246,11 +265,11 @@ export class SSHyClientSettings {
         brightWhite: colScheme[16],
         cursor: colScheme[17],
         foreground: colScheme[18]
-      }
-      colName = element.name === '.Xresources' ? 'custom' : element.name.split('.')[0]
+      };
+      const colName = element.name === '.Xresources' ? 'custom' : element.name.split('.')[0];
 
       // Add to the colorSchemes list
-      transport.settings.colorSchemes.push([colName, colScheme])
+      transport.settings.colorSchemes.push([colName, colScheme]);
       // Get the new key 
       transport.settings.colorNames = Object.keys(transport.settings.colorSchemes);
       transport.settings.setColorScheme(transport.settings.colorSchemes.length - 1)
@@ -271,11 +290,11 @@ export class SSHyClientSettings {
   // Modify the font size of the terminal
   modFontSize(sign) {
     this.fontSize += sign;
-    term.setOption('fontSize', this.fontSize)
+    term.setOption('fontSize', this.fontSize);
 
     document.getElementById('currentFontSize').innerHTML = transport.settings.fontSize + 'px';
     // Recalculate rows/cols
-    term.fit()
+    term.fit();
     transport.auth.mod_pty('window-change', term.cols, term.rows);
   }
 

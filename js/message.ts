@@ -8,11 +8,13 @@
 
 */
 
+import { deflate_long, inflate_long } from './src/utilities';
+
 export class SSHyClientMessage {
   position: number;
   packet: string;
 
-  constructor(content) {
+  constructor(content?: string) {
     this.position = 0;
 
     this.packet = content === undefined ? String() : String(content);

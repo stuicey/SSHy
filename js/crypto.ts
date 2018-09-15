@@ -1,13 +1,15 @@
-import { SSHyClientDefaults } from './defines';
+import * as sjcl from 'sjcl';
+import { SSHyClientDefines } from './defines';
 
-export class SSHyClientCrypto extends SSHyClientDefaults {
+export class SSHyClientCrypto {
     // AES wrapper for Libs/aes.min.js (SJCL)
     AES(key, mode, iv, counter) {
         // Setup our cipher and give it the key and mode
+        new sjcl.cipher.aes();
         this.cipher = new sjcl.cipher.aes(sjcl.codec.bytes.toBits(toByteArray(key)), mode);
         this.mode = mode;
         // some support for CBC mode - however not fully implemented
-        if (this.mode == SSHyClient.AES_CBC) {
+        if (this.mode == SSHyClientDefines.AES_CBC) {
             this.iv = toByteArray(iv);
         }
         this.counter = counter;
@@ -16,7 +18,7 @@ export class SSHyClientCrypto extends SSHyClientDefaults {
     public encrypt(plaintext) {
         // encrypt the plaintext!
         var ciphertext = this.cipher.encrypt(toByteArray(plaintext), this.iv, this.counter);
-        if (this.mode == SSHyClient.AES_CBC) {
+        if (this.mode == SSHyClientDefines.AES_CBC) {
             // take the last 16 bytes for our IV
             this.iv = ciphertext.slice(-16);
         }
@@ -28,7 +30,7 @@ export class SSHyClientCrypto extends SSHyClientDefaults {
         var plaintext;
         ciphertext = toByteArray(ciphertext);
         // do different stuff for CTR & CBC mode
-        if (this.mode == SSHyClient.AES_CBC) {
+        if (this.mode == SSHyClientDefines.AES_CBC) {
             plaintext = this.cipher.decrypt(ciphertext, this.iv);
             this.iv = ciphertext.slice(-16);
         } else {
@@ -72,4 +74,4 @@ export class SSHyClientCrypto extends SSHyClientDefaults {
     }
 }
 
-// SSHyClient.crypto = {};
+// SSHyClientCrypto = {};

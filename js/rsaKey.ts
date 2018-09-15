@@ -1,3 +1,5 @@
+import { deflate_long, inflate_long } from './src/utilities';
+
 export class SSHyClientRSAKey {
   constructor(msg) {
     msg.get_string();

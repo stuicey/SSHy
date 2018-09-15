@@ -1,4 +1,11 @@
+import { SSHyClientDefines } from './defines';
+
 export class SSHyClientParceler {
+  encrypting: boolean;
+  macSize: number;
+  block_size: number;
+  windowSize: number;
+
   constructor(web_socket, transport) {
     this.socket = web_socket;
     this.transport = transport;
@@ -17,7 +24,7 @@ export class SSHyClientParceler {
 
     this.prevHeader = this.inbound_buffer = '';
 
-    this.windowSize = SSHyClient.WINDOW_SIZE;
+    this.windowSize = SSHyClientDefines.WINDOW_SIZE;
 
     /* Stores the recieved and transmitted data in bytes;
          possible integer overflow however would need to exchange 8.1PetaBytes of data*/

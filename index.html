@@ -40,7 +40,7 @@
 		window.onload = function() {
 			document.getElementById('login_cred').style.display = "block";
 			// Sets the default colorScheme to material
-			settings = new SSHyClient.settings();
+			settings = new SSHyClientSettings();
 			settings.setColorScheme(1);
 
 			// Apply fit addon
@@ -353,7 +353,7 @@
 					// Just don't allow more than 1 million characters to be pasted.
 					if(text.length < 1000000){
 				        if (text.length > 5000) {
-							// If its a long string then chunk it down to reduce load on SSHyClient.parceler
+							// If its a long string then chunk it down to reduce load on SSHyClientParceler
 				            text = splitSlice(text);
 				            for (var i = 0; i < text.length; i++) {
 				                transport.expect_key(text[i]);
