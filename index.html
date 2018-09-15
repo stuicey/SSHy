@@ -44,7 +44,7 @@
 			settings.setColorScheme(1);
 
 			// Apply fit addon
-			fit.apply(Terminal)
+			fit.apply(Terminal);
 
 			// Build the default wsProxy URL for display on sidenav
 			buildWSProxyURL()
@@ -54,7 +54,7 @@
 		window.onresize = function() {
 			clearTimeout(resizeInterval);
 			resizeInterval = setTimeout(resize, 400);
-		}
+		};
 
 		// Recalculates the terminal Columns / Rows and sends new size to SSH server + xtermjs
 		function resize() {

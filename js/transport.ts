@@ -1,4 +1,5 @@
-SSHyClient.Transport = function(ws, settings) {
+export class SSHyClientTransport {
+  constructor(ws, settings) {
     this.local_version = 'SSH-2.0-SSHyClient';
     this.remote_version = '';
 
@@ -8,29 +9,28 @@ SSHyClient.Transport = function(ws, settings) {
 
     // Our supported Algorithms
     this.preferred_algorithms = ['diffie-hellman-group-exchange-sha256,diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha256,diffie-hellman-group14-sha1,diffie-hellman-group1-sha256,diffie-hellman-group1-sha1',
-        'ssh-rsa',
-        'aes128-ctr',
-        'hmac-sha2-256,hmac-sha1',
-        'none',
-		''
+      'ssh-rsa',
+      'aes128-ctr',
+      'hmac-sha2-256,hmac-sha1',
+      'none',
+      ''
     ];
 
     // Objects storing references to our different algorithm modules
     this.preferred_kex = null;
     this.preferred_mac = null;
-	this.preferred_hash = null;
+    this.preferred_hash = null;
 
-	// Other SSHyClient module classes
+    // Other SSHyClient module classes
     this.parceler = new SSHyClient.parceler(ws, this);
     this.auth = new SSHyClient.auth(this.parceler);
-	this.settings = settings === undefined ? new SSHyClient.settings() : settings;
+    this.settings = settings === undefined ? new SSHyClient.settings() : settings;
 
     this.lastKey = '';
 
-	this.closing = false;
-};
+    this.closing = false;
+  }
 
-SSHyClient.Transport.prototype = {
 	/* 	Lookup table for all of our supported KEX algorithms
 		- Called by kex_info[<string> id]
 		- returns <object> KEX algorithm */
@@ -206,7 +206,7 @@ SSHyClient.Transport.prototype = {
 
 		Using WINDOW_SIZE from puTTy
 	*/
-    winAdjust: function() {
+    winAdjust() {
         var m = new SSHyClient.Message();
         m.add_bytes(String.fromCharCode(SSHyClient.MSG_CHANNEL_WINDOW_ADJUST));
         m.add_int(0);
@@ -216,7 +216,7 @@ SSHyClient.Transport.prototype = {
         this.parceler.windowSize = SSHyClient.WINDOW_SIZE;
     },
     // Disconnect the web client from the server with a given error code (11 - SSH_DISCONNECT_BY_APPLICATION )
-    disconnect: function(reason) {
+    disconnect(reason) {
 		this.closing = true;
         reason = reason === undefined ? 11 : reason;
         var m = new SSHyClient.Message();
@@ -225,9 +225,9 @@ SSHyClient.Transport.prototype = {
         this.send_packet(m.toString());
         ws.close();
         term.write("\r\nConnection to " + this.auth.hostname + " closed. Code - " + reason);
-    },
+    }
 	// Sends a null packet to the SSH server to keep the connection alive
-	keepAlive: function(){
+	keepAlive(){
 		// Make sure the websocket is still open
 		if(ws.readyState === 3){
 			return;
@@ -237,19 +237,19 @@ SSHyClient.Transport.prototype = {
 		m.add_string('');
 
 		transport.send_packet(m.toString());
-	},
+	}
 	/* 	Cuts the padding 00's off the end of a message by reading the padding length
 		- param <string> m
 		returns <string>	*/
-    cut_padding: function(m) {
+    cut_padding(m) {
         return m.substring(1, m.length - m[0].charCodeAt(0));
-    },
+    }
 	// Sends the raw packet to the parceler to be encapsulated and sent via websocket
-    send_packet: function(m) {
+    send_packet(m) {
         this.parceler.send(m);
-    },
+    }
 	// Initiates the key exchange process by sending our supported algorithms & ciphers
-    send_kex_init: function() {
+    send_kex_init() {
         var m = new SSHyClient.Message();
         m.add_bytes(String.fromCharCode(SSHyClient.MSG_KEX_INIT));
         // add 16 random bytes
@@ -270,9 +270,9 @@ SSHyClient.Transport.prototype = {
         this.local_kex_message = m;
 
         this.send_packet(m);
-    },
+    }
 	// Parses the server's kex init and selects best fit algorithms & ciphers
-    parse_kex_reply: function(m) {
+    parse_kex_reply(m) {
         m = new SSHyClient.Message(m);
 		// Cuts the 16 byte random cookie and message flags from the beginning
 		m.get_bytes(17);
@@ -307,14 +307,14 @@ SSHyClient.Transport.prototype = {
         // Set those preferred Algs
         this.preferred_kex = this.kex_info[kex](this);
         this.preferred_mac = this.mac_info[mac](this);
-    },
+    }
 
     /* 	Takes a character and size then generates a key to be used by ssh
     	A = Initial IV 		client -> server
     	C = Encryption Key 	client -> server
     	E = Integrity Key 	client -> server
     */
-    generate_key: function(char, size) {
+    generate_key(char, size) {
         var m = new SSHyClient.Message();
         m.add_mpint(SSHyClient.kex.K);
         m.add_bytes(SSHyClient.kex.H);
@@ -322,9 +322,9 @@ SSHyClient.Transport.prototype = {
         m.add_bytes(SSHyClient.kex.sessionId);
 
         return this.preferred_kex.SHAVersion == 'SHA-1' ? new SSHyClient.hash.SHA1(m.toString()).digest().substring(0, size) : new SSHyClient.hash.SHA256(m.toString()).digest().substring(0, size);
-    },
+    }
 	// Sets up the keys and ciphers that the parceler will use
-    activate_encryption: function() {
+    activate_encryption() {
         this.parceler.block_size = 16;
 		this.parceler.macSize = this.preferred_hash;
 
@@ -351,9 +351,9 @@ SSHyClient.Transport.prototype = {
         this.parceler.encrypting = true;
 
         this.auth.request_auth();
-    },
+    }
 	// Takes an arbitrary packet and processes it to be looked up by the handler_table
-    handle_dec: function(m) {
+    handle_dec(m) {
         // Cut the padding off
         m = this.cut_padding(m);
         // Should now be in format [ptype][message]
@@ -363,12 +363,12 @@ SSHyClient.Transport.prototype = {
             console.log(err);
             console.log("Error! code - " + m.substring(0, 1).charCodeAt(0) + " does not exist!");
         }
-    },
-    str_to_bytes: function(s) {
+    }
+    str_to_bytes(s) {
         return unescape(encodeURIComponent(s))
-    },
+    }
 	// Takes a char or string and sends it to the SSH server
-    expect_key: function(command) {
+    expect_key(command) {
 		// Make sure a non-null command is being sent
 		if(!command){
 			return;
@@ -380,9 +380,9 @@ SSHyClient.Transport.prototype = {
 		m.add_string(this.str_to_bytes(command.toString()));
 
 		this.parceler.send(m);
-    },
+    }
 	// Sends the new keys message signaling we're using the generated keys from now on
-    send_new_keys: function(SHAVersion) {
+    send_new_keys(SHAVersion) {
         var m = new SSHyClient.Message();
         m.add_bytes(String.fromCharCode(SSHyClient.MSG_NEW_KEYS));
 
