@@ -1,0 +1,27 @@
+{
+  "name": "sshy",
+  "version": "0.2.0",
+  "description": "SSHy is a HTML5 SSHv2 client library implementing E2E encryption",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stuicey/SSHy.git"
+  },
+  "author": "stuicey",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/stuicey/SSHy/issues"
+  },
+  "homepage": "https://github.com/stuicey/SSHy#readme",
+  "dependencies": {
+    "sjcl": "^1.0.7",
+    "jsbn": "https://api.github.com/repos/TerminalPres/jsbn/tarball"
+  },
+  "devDependencies": {
+    "@types/jsbn": "^1.2.29",
+    "@types/sjcl": "^1.0.28"
+  }
+}

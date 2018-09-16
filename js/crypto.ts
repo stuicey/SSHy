@@ -1,11 +1,20 @@
 import * as sjcl from 'sjcl';
+import { SjclCipher } from 'sjcl';
 import { SSHyClientDefines } from './defines';
+import { BigInteger } from 'jsbn';
+import { deflate_long, fromByteArray, setCharAt, toByteArray } from './src/utilities';
 
 export class SSHyClientCrypto {
+    mode: number;
+    blocksize: number;
+    overflow: number;
+    iv: Uint8Array;
+    value: string;
+    cipher: SjclCipher;
+
     // AES wrapper for Libs/aes.min.js (SJCL)
     AES(key, mode, iv, counter) {
         // Setup our cipher and give it the key and mode
-        new sjcl.cipher.aes();
         this.cipher = new sjcl.cipher.aes(sjcl.codec.bytes.toBits(toByteArray(key)), mode);
         this.mode = mode;
         // some support for CBC mode - however not fully implemented
@@ -17,7 +26,7 @@ export class SSHyClientCrypto {
 
     public encrypt(plaintext) {
         // encrypt the plaintext!
-        var ciphertext = this.cipher.encrypt(toByteArray(plaintext), this.iv, this.counter);
+        const ciphertext = this.cipher.encrypt(toByteArray(plaintext), this.iv, this.counter);
         if (this.mode == SSHyClientDefines.AES_CBC) {
             // take the last 16 bytes for our IV
             this.iv = ciphertext.slice(-16);
@@ -27,7 +36,7 @@ export class SSHyClientCrypto {
     }
 
     public decrypt(ciphertext) {
-        var plaintext;
+        let plaintext;
         ciphertext = toByteArray(ciphertext);
         // do different stuff for CTR & CBC mode
         if (this.mode == SSHyClientDefines.AES_CBC) {
@@ -48,18 +57,18 @@ export class SSHyClientCrypto {
 
         // setup the initial counter value depending on if we recieved a number or not.
         if (init === 0) {
-            this.value = new array(this.blocksize + 1).join('\xFF');
+            this.value = new Array(this.blocksize + 1).join('\xFF');
         } else {
-            var val = deflate_long(init.subtract(BigInteger.ONE), false);
+            const val = deflate_long(init.subtract(BigInteger.ONE), false);
             this.value = new Array(this.blocksize - val.length + 1).join('\x00') + val;
         }
     };
 
     // increment the current counter
     increment() {
-        var i = this.blocksize;
+        let i = this.blocksize;
         while (i--) {
-            var count = String.fromCharCode((this.value.charCodeAt(i) + 1) % 256);
+            const count = String.fromCharCode((this.value.charCodeAt(i) + 1) % 256);
             this.value = setCharAt(this.value, i, count);
             if (count != '\x00') {
                 return this.value;
@@ -67,7 +76,7 @@ export class SSHyClientCrypto {
         }
 
         // Deals with counter resetting / overflowing
-        var x = deflate_long(this.overflow, false);
+        let x = deflate_long(this.overflow, false);
         this.value = new Array(this.blocksize - x.length + 1).join('\x00') + x;
         return this.value;
 
