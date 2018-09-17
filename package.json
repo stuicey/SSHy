@@ -17,11 +17,13 @@
   },
   "homepage": "https://github.com/stuicey/SSHy#readme",
   "dependencies": {
+    "jsbn": "https://api.github.com/repos/TerminalPres/jsbn/tarball",
     "sjcl": "^1.0.7",
-    "jsbn": "https://api.github.com/repos/TerminalPres/jsbn/tarball"
+    "xterm": "^3.7.0"
   },
   "devDependencies": {
     "@types/jsbn": "^1.2.29",
-    "@types/sjcl": "^1.0.28"
+    "@types/sjcl": "^1.0.28",
+    "@types/xterm": "^3.0.0"
   }
 }

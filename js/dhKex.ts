@@ -4,6 +4,8 @@ import { ascii2hex, deflate_long, inflate_long, read_rng } from './src/utilities
 import { SSHyClientDefines } from './defines';
 import { BigInteger } from 'jsbn';
 import { SSHyClientTransport } from './transport';
+import { randomart } from './src/randomart';
+import { SHA1, SHA256 } from './src/Hash';
 
 // SSHyClient.kex
 
@@ -161,7 +163,9 @@ export class DiffieHellman {
         m.add_mpint(K);
 
         this.K = K;
-        this.sessionId = this.H = this.SHAVersion == 'SHA-1' ? new SSHyClient.hash.SHA1(m.toString()).digest() : new SSHyClient.hash.SHA256(m.toString()).digest();
+        this.sessionId = this.H = (this.SHAVersion == 'SHA-1' ?
+            new SHA1(m.toString()) : new SHA256(m.toString())
+        ).digest();
         if (this.transport.settings.rsaCheckEnabled) {
             this.verifyKey(host_key, sig);
         }

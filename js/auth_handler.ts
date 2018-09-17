@@ -1,9 +1,9 @@
 import { SSHyClientParceler } from './parceler';
 import { SSHyClientMessage } from './message';
 import { SSHyClientDefines } from './defines';
+import { SSHyClientTransport } from './transport';
 
 export class SSHyClientAuth {
-    parceler: SSHyClientParceler;
     channelOpened: boolean;
     failedAttempts: number;
     termUsername: string;
@@ -11,13 +11,13 @@ export class SSHyClientAuth {
     termPassword?: string;
     hostname: string;
     awaitingAuthentication: boolean;
+    transport: SSHyClientTransport;
 
-    constructor(parceler: SSHyClientParceler) {
-        this.auth(parceler);
+    constructor(public parceler: SSHyClientParceler) {
+        this.auth();
     }
 
-    auth(parceler: SSHyClientParceler) {
-        this.parceler = parceler; // We shouldn't need anything from the transport handler
+    auth() {
         this.authenticated = null;
         this.awaitingAuthentication = false;
         this.hostname = wsproxyURL ? wsproxyURL.split('/')[2].split(':')[0] : '';
@@ -25,6 +25,7 @@ export class SSHyClientAuth {
         this.termPassword = undefined;
         this.failedAttempts = 0;
         this.channelOpened = false;
+        this.transport = this.parceler.transport;
     }
 
     // Requests we want to authenticate ourselves with the SSH server
@@ -71,7 +72,7 @@ export class SSHyClientAuth {
                 startxtermjs();
             }
             // Starts up the keep alive interval to 240s
-            transport.settings.setKeepAlive(240);
+            this.transport.settings.setKeepAlive(240);
             document.getElementById('keepAlive').value = 240;
             // We've been authenticated, lets open a channel
             this.open_channel('session');
@@ -94,7 +95,7 @@ export class SSHyClientAuth {
 
     // Requests a pseudo-terminal, defaulting to xterm if no other terminal emulator is provided when type == "pty-req"
     // Sends the remote server our terminal rows/cols settings, called by window.resize() when type == "window-change"
-    mod_pty(type, width, height, term) {
+    mod_pty(type, width, height, term?) {
         if (!this.channelOpened) {
             return;
         }

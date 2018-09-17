@@ -7,8 +7,12 @@
 */
 import { SSHyClientTransport } from './transport';
 import { splitSlice, termBackspace } from './src/utilities';
+import { Terminal } from 'xterm';
+import { fit } from 'xterm/lib/addons/fit/fit';
 
-let ws, transport, term = null;
+let ws: WebSocket = null;
+let transport: SSHyClientTransport = null;
+let term: Terminal = null;
 
 // Test IE 11
 if (window.msCrypto) {
@@ -180,8 +184,8 @@ function termInit() {
     term.focus();
 
     // set the terminal size on settings menu
-    document.getElementById('termCols').value = term.cols;
-    document.getElementById('termRows').value = term.rows;
+    (document.getElementById('termCols') as HTMLInputElement).value = term.cols.toString();
+    (document.getElementById('termRows') as HTMLInputElement).value = term.rows.toString();
     // Sets the default colorScheme to material
     transport.settings.setColorScheme(1);
 }
@@ -290,7 +294,7 @@ function startxtermjs() {
     };
 
     term.textarea.onpaste = function(ev) {
-        let text: string;
+        let text: string | string[];
 
         // Yay IE11 stuff!
         if (window.clipboardData && window.clipboardData.getData) {
@@ -302,7 +306,7 @@ function startxtermjs() {
         if (text && text.length < 1000000) {
             if (text.length > 5000) {
                 // If its a long string then chunk it down to reduce load on SSHyClientParceler
-                text = splitSlice(text);
+                text = splitSlice(text as string);
                 for (let i = 0; i < text.length; i++) {
                     transport.expect_key(text[i]);
                 }

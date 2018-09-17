@@ -8,8 +8,9 @@
 
 */
 
-import { deflate_long, inflate_long } from './src/utilities';
 import { BigInteger } from 'jsbn';
+import { deflate_long, inflate_long } from './src/utilities';
+import * as struct from './src/struct';
 
 export class SSHyClientMessage {
     position: number;
@@ -35,7 +36,7 @@ export class SSHyClientMessage {
     }
 
     get_int() {
-        return struct.unpack('I', this.get_bytes(4))[0];
+        return struct.unpack(this.get_bytes(4))[0];
     }
 
     get_string() {
@@ -57,7 +58,7 @@ export class SSHyClientMessage {
     }
 
     add_int(i) {
-        this.packet += struct.pack('I', i);
+        this.packet += struct.pack(i);
         return this;
     }
 

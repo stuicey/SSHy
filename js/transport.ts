@@ -6,6 +6,7 @@ import { SSHyClientSettings } from './settings';
 import { SSHyClientDefines } from './defines';
 import { filter, fromUtf8, inflate_long, read_rng } from './src/utilities';
 import { SSHyClientCrypto } from './crypto';
+import { SHA1, SHA256 } from './src/Hash';
 
 export class SSHyClientTransport {
     local_version: string;
@@ -190,7 +191,7 @@ export class SSHyClientTransport {
     local_kex_message?: string;
     remote_kex_message?: string;
 
-    preferred_kex?: string;
+    preferred_kex?: DiffieHellman;
     preferred_mac?: string;
     preferred_hash?: string;
 
@@ -354,7 +355,7 @@ export class SSHyClientTransport {
         m.add_bytes(char);
         m.add_bytes(SSHyClient.kex.sessionId);
 
-        return this.preferred_kex.SHAVersion == 'SHA-1' ? new SSHyClient.hash.SHA1(m.toString()).digest().substring(0, size) : new SSHyClient.hash.SHA256(m.toString()).digest().substring(0, size);
+        return (this.preferred_kex.SHAVersion == 'SHA-1' ? new SHA1(m.toString()) : new SHA256(m.toString())).digest().substring(0, size);
     }
 
 // Sets up the keys and ciphers that the parceler will use

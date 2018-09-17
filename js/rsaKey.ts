@@ -1,5 +1,6 @@
 import { deflate_long, inflate_long } from './src/utilities';
 import { BigInteger } from 'jsbn';
+import { SHA1 } from './src/Hash';
 
 export class SSHyClientRSAKey {
     e: BigInteger;
@@ -26,7 +27,7 @@ export class SSHyClientRSAKey {
             return false;
         }
         const sigData = inflate_long(SSHsig.get_string(), true);
-        const hashObj = inflate_long(this.pkcs1imify(new SSHyClient.hash.SHA1(data).digest()), true);
+        const hashObj = inflate_long(this.pkcs1imify(new SHA1(data).digest()), true);
 
         return sigData.modPow(this.e, this.n).equals(hashObj);
     };

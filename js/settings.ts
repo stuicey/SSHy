@@ -1,5 +1,6 @@
 import { SSHyClientDefines } from './defines';
 import { modColorPercent } from './src/utilities';
+import { SSHyClientTransport } from './transport';
 
 export class SSHyClientSettings {
     localEcho: number;
@@ -18,6 +19,7 @@ export class SSHyClientSettings {
     txElement: HTMLSpanElement;
     autoEchoElement: HTMLSpanElement;
     rsaCheckEnabled: boolean;
+    transport: SSHyClientTransport; // TODO: Initialise
     // All our supported terminal color themes in [bg, color1, .... , color15, cursor, fg]
     colorSchemes: [
         ['Solarized', {background: '#002b36', black: '#002b36', red: '#dc322f', green: '#859900', yellow: '#b58900', blue: '#268bd2', magenta: '#6c71c4', cyan: '#2aa198', white: '#93a1a1', brightBlack: '#657b83', brightRed: '#dc322f', brightGreen: '#859900', brightYellow: '#b58900', brightBlue: '#268bd2', brightMagenta: '#6c71c4', brightCyan: '#2aa198', brightWhite: '#fdf6e3', cursor: '#93a1a1', foreground: '#93a1a1'}],
@@ -154,10 +156,10 @@ export class SSHyClientSettings {
             return;
         }
         // Incase someone is typing very fast don't echo to perserve servers formatting.
-        if (!transport.lastKey) {
+        if (!this.transport.lastKey) {
             term.write(e.key);
         }
-        transport.lastKey += e.key;
+        this.transport.lastKey += e.key;
     }
 
     // Sets the keep alive iterval or clears a current interval based on 'time'
@@ -173,7 +175,7 @@ export class SSHyClientSettings {
             }
         }
         // otherwise create a new interval
-        this.keepAliveInterval = setInterval(transport.keepAlive, time);
+        this.keepAliveInterval = setInterval(this.transport.keepAlive, time);
     }
 
     // Set xtermjs's color scheme to the given color
@@ -218,7 +220,7 @@ export class SSHyClientSettings {
         const reader = new FileReader();
         const element = document.getElementById('Xresources').files[0];
         reader.readAsText(element);
-        reader.onload = function() {
+        reader.onload = () => {
             const file = reader.result;
             let lines = file.split('\n');
             // natural sort the Xresources list to bg, 1 - 15, cur, fg colours
@@ -271,10 +273,10 @@ export class SSHyClientSettings {
             const colName = element.name === '.Xresources' ? 'custom' : element.name.split('.')[0];
 
             // Add to the colorSchemes list
-            transport.settings.colorSchemes.push([colName, colScheme]);
+            this.transport.settings.colorSchemes.push([colName, colScheme]);
             // Get the new key
-            transport.settings.colorNames = Object.keys(transport.settings.colorSchemes);
-            transport.settings.setColorScheme(transport.settings.colorSchemes.length - 1)
+            this.transport.settings.colorNames = Object.keys(this.transport.settings.colorSchemes);
+            this.transport.settings.setColorScheme(this.transport.settings.colorSchemes.length - 1)
         };
     }
 
@@ -294,10 +296,10 @@ export class SSHyClientSettings {
         this.fontSize += sign;
         term.setOption('fontSize', this.fontSize);
 
-        document.getElementById('currentFontSize').innerHTML = transport.settings.fontSize + 'px';
+        document.getElementById('currentFontSize').innerHTML = this.transport.settings.fontSize + 'px';
         // Recalculate rows/cols
         term.fit();
-        transport.auth.mod_pty('window-change', term.cols, term.rows);
+        this.transport.auth.mod_pty('window-change', term.cols, term.rows);
     }
 
     // Sets the terminal size where id= 0-> cols ; 1-> rows
@@ -308,7 +310,7 @@ export class SSHyClientSettings {
             term.resize(term.cols, newAmount);
         }
 
-        transport.auth.mod_pty('window-change', term.cols, term.rows);
+        this.transport.auth.mod_pty('window-change', term.cols, term.rows);
     }
 
     // Changes the network traffic setting to reflect transmitted or recieved data

@@ -1,10 +1,13 @@
 import { SSHyClientDefines } from './defines';
 import { SSHyClientTransport } from './transport';
+import { SSHyClientCrypto } from './crypto';
 import { read_rng } from './src/utilities';
+import * as struct from './src/struct';
+import { HMAC } from './src/Hash';
 
 export class SSHyClientParceler {
     encrypting: boolean;
-    macSize: number|string;
+    macSize: number | string;
     block_size: number;
     windowSize: number;
     prevHeader?: string;
@@ -14,11 +17,11 @@ export class SSHyClientParceler {
     outbound_enc_iv?: string;
     outbound_enc_key?: string;
     outbound_mac_key?: string;
-    outbound_cipher?: string;
+    outbound_cipher?: SSHyClientCrypto;
     inbound_iv?: string;
     inbound_enc_key?: string;
     inbound_mac_key?: string;
-    inbound_cipher?: string;
+    inbound_cipher?: SSHyClientCrypto;
     hmacSHAVersion?: string;
     recieveData: number;
     transmitData: number;
@@ -56,7 +59,7 @@ export class SSHyClientParceler {
             const encrypted_packet = this.outbound_cipher.encrypt(packet);
 
             // Add the mac hash & pack the sequence number
-            packet = encrypted_packet + SSHyClient.hash.HMAC(this.outbound_mac_key, struct.pack('I', this.outbound_sequence_num) + packet, this.hmacSHAVersion);
+            packet = encrypted_packet + new HMAC(this.outbound_mac_key, struct.pack(this.outbound_sequence_num) + packet, this.hmacSHAVersion);
         }
 
         // Now send it as a base64 string
@@ -70,7 +73,7 @@ export class SSHyClientParceler {
         const padding = 3 + this.block_size - ((data.length + 8) % this.block_size);
 
         // Adds the message length, padding length and data together
-        let packet = struct.pack('I', data.length + padding + 1) + struct.pack('B', padding) + data;
+        let packet = struct.pack(data.length + padding + 1) + struct.pack(padding) + data;
 
         // RFC says we should use random bytes but we should only need if we are encrypting. Otherwise it is a waste of time
         packet += this.encrypting ? read_rng(padding) : new Array(padding + 1).join('\x00');
@@ -82,7 +85,7 @@ export class SSHyClientParceler {
     handle(r) {
         // Add the packet length to the parceler's rx
         this.recieveData += r.length;
-        this.transport.settings.setNetTraffic(transport.parceler.recieveData, true);
+        this.transport.settings.setNetTraffic(this.transport.parceler.recieveData, true);
         /* Checking for encryption first since it will be the most common check
                 - Parceler should send decrypted message ( -packet length -padding length -padding ) to transport.handle_dec()
                   from there it should be send to the relevant handler (auth/control)		*/
@@ -124,12 +127,12 @@ export class SSHyClientParceler {
                 this.prevHeader = '';
             }
             // Unpack the packet size from the decrypted header
-            const packet_size = struct.unpack('I', header.substring(0, 4))[0];
+            const packet_size = struct.unpack(header.substring(0, 4))[0];
             // We can store the start of our message for later now
             const leftover = header.substring(4);
 
             // Attempt to read [packet_size] from inbound buffer; returns null on failure
-            buffer = this.read_ibuffer(packet_size + this.macSize - leftover.length);
+            buffer = this.read_ibuffer(packet_size + (this.macSize as number) - leftover.length);
             if (!buffer) {
                 // Couldn't read [packet_size] so store the prevHeader
                 this.prevHeader = header;
@@ -152,8 +155,8 @@ export class SSHyClientParceler {
             */
             if (this.macSize) {
                 const mac = buffer.substring(packet_size - leftover.length);
-                const mac_payload = struct.pack('I', this.inbound_sequence_num) + struct.pack('I', packet_size) + packet;
-                const our_mac = SSHyClient.hash.HMAC(this.inbound_mac_key, mac_payload, this.hmacSHAVersion);
+                const mac_payload = struct.pack(this.inbound_sequence_num) + struct.pack(packet_size) + packet;
+                const our_mac = new HMAC(this.inbound_mac_key, mac_payload, this.hmacSHAVersion);
                 if (our_mac != mac) {
                     // Oops something went wrong, lets close the connection
                     this.transport.disconnect();

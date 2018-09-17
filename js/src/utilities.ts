@@ -1,10 +1,11 @@
 import { BigInteger } from 'jsbn';
+import * as struct from './struct';
 
 export const inflate_long = (a): BigInteger => {
     let c = new BigInteger('0', 10);
     a.length % 4 && (a = Array(4 - a.length % 4 + 1).join('\x00') + a);
     for (let b = 0; b < a.length; b += 4)
-        c = c.shiftLeft(32), c = c.add(new BigInteger(struct.unpack('I', a.substring(b, b + 4))[0].toString(), 10));
+        c = c.shiftLeft(32), c = c.add(new BigInteger(struct.unpack(a.substring(b, b + 4))[0].toString(), 10));
     return c
 };
 
@@ -13,7 +14,7 @@ export const deflate_long = (a, c?) => {
     c = void 0 == c ? !0 : c;
     let b = '';
     let d = new BigInteger('-1', 10);
-    for (let f = new BigInteger('ffffffff', 16); !a.equals(BigInteger.ZERO) && !a.equals(d);) b = struct.pack('I', a.and(f)) + b, a = a.shiftRight(32);
+    for (let f = new BigInteger('ffffffff', 16); !a.equals(BigInteger.ZERO) && !a.equals(d);) b = struct.pack(a.and(f)) + b, a = a.shiftRight(32);
     let f = !1;
     let e = 0;
     for (; e < b.length; ++e) {
@@ -43,7 +44,7 @@ export const toByteArray = (a): Uint8Array => {
 };
 
 // Converts byte arrays to strings
-export const fromByteArray = (a) => {
+export const fromByteArray = (a): string => {
     return String.fromCharCode.apply(null, new Uint8Array(a));
 };
 
