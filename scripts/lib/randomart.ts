@@ -3,7 +3,7 @@
 	to run in web browsers based on SSH RSA keys
 */
 
-const symbols = {
+const symbols: string[][] = {
     '-2': 'E',
     '-1': 'S',
     '0': ' ',
@@ -21,7 +21,7 @@ const symbols = {
     '12': '#',
     '13': '/',
     '14': '^'
-};
+} as any;
 
 const bounds = {
     width: 17,
@@ -40,7 +40,7 @@ function createBoard(bounds: {width: number, height: number}): number[][] {
     return result;
 }
 
-function generateBoard(data: number[]): number[][] {
+function generateBoard(data: string[]): number[][] {
     const board = createBoard(bounds);
 
     let x = Math.floor(bounds.width / 2);
@@ -92,7 +92,7 @@ function boardToString(board: number[][]): string {
             result[i][j] = symbols[board[j][i]] || symbols[0];
         }
         // Add | to start and end of result[i]
-        result[i] = '|' + result[i].join('') + '|';
+        result[i] = '|' + (result[i] as string[]).join('') + '|';
     }
     result.splice(0, 0, '\n+---[ RSA2048 ]---+');
     result.push('+-----------------+');
@@ -100,10 +100,10 @@ function boardToString(board: number[][]): string {
 }
 
 export const randomart = (data: string[]): void => {
-    const buffer = [];
+    const buffer: string[] = [];
     for (let i = 0, length = data.length; i < length; i++)
         buffer.push('0x' + data[i]);
     // Write the board to HTML
-    document.getElementById('hostKeyImg').innerHTML = boardToString(generateBoard(buffer));
+    (document.getElementById('hostKeyImg') as HTMLSpanElement).innerHTML = boardToString(generateBoard(buffer));
     return;
 };

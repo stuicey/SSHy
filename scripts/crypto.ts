@@ -2,18 +2,19 @@ import * as sjcl from 'sjcl';
 import { SjclCipher } from 'sjcl';
 import { SSHyClientDefines } from './defines';
 import { BigInteger } from 'jsbn';
-import { deflate_long, fromByteArray, setCharAt, toByteArray } from './src/utilities';
+import { deflate_long, fromByteArray, setCharAt, toByteArray } from './lib/utilities';
 
 export class SSHyClientCrypto {
-    mode: number;
-    blocksize: number;
-    overflow: number;
-    iv: Uint8Array;
-    value: string;
-    cipher: SjclCipher;
+    mode!: number;
+    blocksize!: number;
+    overflow?: number;
+    iv?: Uint8Array;
+    value!: string;
+    cipher!: SjclCipher;
+    private _counter!: number;
 
     // AES wrapper for Libs/aes.min.js (SJCL)
-    AES(key, mode, iv, counter) {
+    AES(key: string, mode: number, iv: string, counter: number) {
         // Setup our cipher and give it the key and mode
         this.cipher = new sjcl.cipher.aes(sjcl.codec.bytes.toBits(toByteArray(key)), mode);
         this.mode = mode;
@@ -21,12 +22,12 @@ export class SSHyClientCrypto {
         if (this.mode == SSHyClientDefines.AES_CBC) {
             this.iv = toByteArray(iv);
         }
-        this.counter = counter;
+        this._counter = counter;
     }
 
-    public encrypt(plaintext) {
+    public encrypt(plaintext: string) {
         // encrypt the plaintext!
-        const ciphertext = this.cipher.encrypt(toByteArray(plaintext), this.iv, this.counter);
+        const ciphertext = this.cipher.encrypt(toByteArray(plaintext), this.iv, this._counter);
         if (this.mode == SSHyClientDefines.AES_CBC) {
             // take the last 16 bytes for our IV
             this.iv = ciphertext.slice(-16);
@@ -35,7 +36,7 @@ export class SSHyClientCrypto {
         return fromByteArray(ciphertext);
     }
 
-    public decrypt(ciphertext) {
+    public decrypt(ciphertext: Uint8Array) {
         let plaintext;
         ciphertext = toByteArray(ciphertext);
         // do different stuff for CTR & CBC mode
@@ -43,20 +44,20 @@ export class SSHyClientCrypto {
             plaintext = this.cipher.decrypt(ciphertext, this.iv);
             this.iv = ciphertext.slice(-16);
         } else {
-            plaintext = this.cipher.encrypt(ciphertext, this.iv, this.counter);
+            plaintext = this.cipher.encrypt(ciphertext, this.iv, this._counter);
         }
         return fromByteArray(plaintext);
     }
 
     // Defines our custom counter
-    counter(num, init) {
-        init = init === undefined ? 1 : init;
+    counter(num: number, init: BigInteger) {
+        init = init === undefined ? BigInteger.ONE : init;
 
         this.blocksize = num / 8;
         this.overflow = 0;
 
         // setup the initial counter value depending on if we recieved a number or not.
-        if (init === 0) {
+        if (init === BigInteger.ZERO) {
             this.value = new Array(this.blocksize + 1).join('\xFF');
         } else {
             const val = deflate_long(init.subtract(BigInteger.ONE), false);
@@ -66,7 +67,7 @@ export class SSHyClientCrypto {
 
     // increment the current counter
     increment() {
-        let i = this.blocksize;
+        let i: number = this.blocksize;
         while (i--) {
             const count = String.fromCharCode((this.value.charCodeAt(i) + 1) % 256);
             this.value = setCharAt(this.value, i, count);

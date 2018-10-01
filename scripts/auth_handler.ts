@@ -2,23 +2,21 @@ import { SSHyClientParceler } from './parceler';
 import { SSHyClientMessage } from './message';
 import { SSHyClientDefines } from './defines';
 import { SSHyClientTransport } from './transport';
+import { startxtermjs, term } from './SSHyClient';
+import { display_error, wsproxyURL } from './frontend';
 
 export class SSHyClientAuth {
     channelOpened: boolean;
     failedAttempts: number;
     termUsername: string;
-    authenticated: boolean;
+    authenticated?: boolean;
     termPassword?: string;
     hostname: string;
     awaitingAuthentication: boolean;
     transport: SSHyClientTransport;
 
     constructor(public parceler: SSHyClientParceler) {
-        this.auth();
-    }
-
-    auth() {
-        this.authenticated = null;
+        this.authenticated = undefined;
         this.awaitingAuthentication = false;
         this.hostname = wsproxyURL ? wsproxyURL.split('/')[2].split(':')[0] : '';
         this.termUsername = '';
@@ -60,7 +58,7 @@ export class SSHyClientAuth {
     }
 
     // Called on successful or partially successful SSH connection authentications
-    auth_success(success) {
+    auth_success(success: boolean) {
         if (success) {
             // Change the window title
             document.title = this.termUsername + '@' + this.hostname;
@@ -72,8 +70,9 @@ export class SSHyClientAuth {
                 startxtermjs();
             }
             // Starts up the keep alive interval to 240s
-            this.transport.settings.setKeepAlive(240);
-            document.getElementById('keepAlive').value = 240;
+            const keepAlive = 240;
+            this.transport.settings.setKeepAlive(keepAlive);
+            (document.getElementById('keepAlive') as HTMLInputElement).value = keepAlive.toString();
             // We've been authenticated, lets open a channel
             this.open_channel('session');
         }
@@ -81,8 +80,8 @@ export class SSHyClientAuth {
     }
 
     // Opens a channel - generally called right after authenticating with the SSH server
-    open_channel(type, onsuccess?) {
-        onsuccess = onsuccess === undefined ? null : onsuccess;
+    open_channel(type: string /*, onsuccess?*/) {
+        // onsuccess = onsuccess === undefined ? null : onsuccess;
         const m = new SSHyClientMessage();
         m.add_bytes(String.fromCharCode(SSHyClientDefines.MSG_CHANNEL_OPEN));
         m.add_string(type);
@@ -95,7 +94,7 @@ export class SSHyClientAuth {
 
     // Requests a pseudo-terminal, defaulting to xterm if no other terminal emulator is provided when type == "pty-req"
     // Sends the remote server our terminal rows/cols settings, called by window.resize() when type == "window-change"
-    mod_pty(type, width, height, term?) {
+    mod_pty(type: string, width: number, height: number, term?: string) {
         if (!this.channelOpened) {
             return;
         }
@@ -152,7 +151,7 @@ export class SSHyClientAuth {
             // if we've failed authentication more than 5 times than disconect and warn the user
             if (++this.failedAttempts >= 5) {
                 term.write('Too many failed authentication attempts');
-                transport.disconnect();
+                this.transport.disconnect();
                 return;
             }
             term.write(this.termUsername + '@' + this.hostname + '\'s password:');

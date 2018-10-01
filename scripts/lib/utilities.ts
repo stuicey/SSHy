@@ -1,7 +1,7 @@
 import { BigInteger } from 'jsbn';
 import * as struct from './struct';
 
-export const inflate_long = (a): BigInteger => {
+export const inflate_long = (a: string): BigInteger => {
     let c = new BigInteger('0', 10);
     a.length % 4 && (a = Array(4 - a.length % 4 + 1).join('\x00') + a);
     for (let b = 0; b < a.length; b += 4)
@@ -9,8 +9,8 @@ export const inflate_long = (a): BigInteger => {
     return c
 };
 
-export const deflate_long = (a, c?) => {
-    a = 'number' == typeof a ? new BigInteger(a.toString(), 10) : a.clone();
+export const deflate_long = (long: number|BigInteger, c?: boolean) => {
+    let a: BigInteger = 'number' == typeof long ? new BigInteger(long.toString(), 10) : long.clone();
     c = void 0 == c ? !0 : c;
     let b = '';
     let d = new BigInteger('-1', 10);
@@ -35,7 +35,7 @@ export const deflate_long = (a, c?) => {
 };
 
 // Converts strings to byte arrays
-export const toByteArray = (a): Uint8Array => {
+export const toByteArray = (a: string): Uint8Array => {
     const bufView = new Uint8Array(a.length);
     for (let i = 0; i < a.length; i++) {
         bufView[i] = a.charCodeAt(i);
@@ -44,7 +44,7 @@ export const toByteArray = (a): Uint8Array => {
 };
 
 // Converts byte arrays to strings
-export const fromByteArray = (a): string => {
+export const fromByteArray = (a: any[]): string => {
     return String.fromCharCode.apply(null, new Uint8Array(a));
 };
 

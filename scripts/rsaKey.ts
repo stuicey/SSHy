@@ -1,6 +1,6 @@
-import { deflate_long, inflate_long } from './src/utilities';
+import { deflate_long, inflate_long } from './lib/utilities';
 import { BigInteger } from 'jsbn';
-import { SHA1 } from './src/Hash';
+import { SHA1 } from './lib/Hash';
 
 export class SSHyClientRSAKey {
     e: BigInteger;

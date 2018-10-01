@@ -1,5 +1,5 @@
 import { SSHyClientDefines } from './defines';
-import { modColorPercent } from './src/utilities';
+import { modColorPercent } from './lib/utilities';
 import { SSHyClientTransport } from './transport';
 
 export class SSHyClientSettings {
@@ -14,7 +14,7 @@ export class SSHyClientSettings {
     colorNames: string[];
     colorCounter: number;
     shellString: string;
-    sidenavElementState: number;
+    sidenavElementState: string;
     rxElement: HTMLSpanElement;
     txElement: HTMLSpanElement;
     autoEchoElement: HTMLSpanElement;

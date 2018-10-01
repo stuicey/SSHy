@@ -6,19 +6,28 @@
 	- Starts xterm.js and SSHyClient.Transport
 */
 import { SSHyClientTransport } from './transport';
-import { splitSlice, termBackspace } from './src/utilities';
+import { splitSlice, termBackspace } from './lib/utilities';
 import { Terminal } from 'xterm';
 import { fit } from 'xterm/lib/addons/fit/fit';
+import { wsproxyURL } from './frontend';
 
-let ws: WebSocket = null;
-let transport: SSHyClientTransport = null;
-let term: Terminal = null;
+export let transport: SSHyClientTransport;
+export let term: Terminal & {
+    fit(this: Terminal): void,
+    _evaluateKeyEscapeSequence(this: Terminal, e: KeyboardEvent): {key: string}
+};
+
+export interface IWebSocket_B64 extends WebSocket {
+    sendB64: (e: string) => void;
+}
+
+export let ws: IWebSocket_B64;
 
 // Test IE 11
-if (window.msCrypto) {
+if ((window as any).msCrypto) {
     // Redirect window.crypto.getRandomValues() -> window.msCrypto.getRandomValues()
-    window.crypto = {};
-    window.crypto.getRandomValues = function(a) { return window.msCrypto.getRandomValues(a); };
+    (window as any).crypto = {};
+    window.crypto.getRandomValues = function(a) { return (window as any).msCrypto.getRandomValues(a); };
 
     // PolyFill Uint8Array.slice() for IE 11 for sjcl AES
     if (!Uint8Array.prototype.slice) {
@@ -29,8 +38,8 @@ if (window.msCrypto) {
 }
 
 // Stores timeouts for window.onresize()
-let resizeInterval;
-window.onload = function() {
+export let resizeInterval: number;
+window.onload = () => {
     // Appending the settings UI to keep 'wrapper.html' as small as possible for cgi builds on Linuxzoo.net
     document.body.innerHTML += `<div id="settingsNav" class="sidenav">
 									<a href="javascript:;" class="closebtn" onclick="toggleNav(0)">&times;</a>
@@ -88,36 +97,36 @@ window.onload = function() {
     startSSHy();
 };
 // Sets up a bind for every time the web browser is resized
-window.onresize = function() {
+window.onresize = () => {
     clearTimeout(resizeInterval);
     resizeInterval = setTimeout(resize, 400);
 };
 // Run every time the page is refreshed / closed to disconnect from the SSH server
-window.onbeforeunload = function() {
+window.onbeforeunload = () => {
     if (ws || transport) {
         transport.disconnect();
     }
 };
 
 // Recalculates the terminal Columns / Rows and sends new size to SSH server + xtermjs
-function resize() {
+export const resize = () => {
     if (term) {
         term.fit()
     }
-}
+};
 
 // Toggles the settings navigator
-function toggleNav(size) {
-    document.getElementById('settingsNav').style.width = size;
+export const toggleNav = (size: string) => {
+    (document.getElementById('settingsNav') as HTMLDivElement).style.width = size;
     transport.settings.sidenavElementState = size;
     // We need to update the network traffic whenever the nav is re-opened
     if (size) {
         transport.settings.setNetTraffic(transport.parceler.recieveData, true);
         transport.settings.setNetTraffic(transport.parceler.transmitData, false);
     }
-    const element = document.getElementById('gear').style;
+    const element = (document.getElementById('gear') as HTMLSpanElement).style;
     element.visibility = element.visibility === 'hidden' ? 'visible' : 'hidden';
-}
+};
 
 // Starts the SSH client in scripts/transport.js
 function startSSHy() {
@@ -125,7 +134,7 @@ function startSSHy() {
     document.title = 'SSHy Client';
 
     // Opens the websocket!
-    ws = new WebSocket(wsproxyURL, 'base64');
+    ws = new WebSocket(wsproxyURL, 'base64') as IWebSocket_B64;
 
     // Sets up websocket listeners
     ws.onopen = function(e) {
@@ -158,11 +167,11 @@ function startSSHy() {
         } else {
             // Since no terminal exists we need to initialse one before being able to write the error
             termInit();
-            term.write('WebSocket connection failed: Error in connection establishment: code ' + e.code);
+            (term as Terminal).write('WebSocket connection failed: Error in connection establishment: code ' + e.code);
         }
     };
     // Just a little abstraction from ws.send
-    ws.sendB64 = function(e) {
+    (ws as any).sendB64 = function(e: string) {
         this.send(btoa(e));
 
         transport.parceler.transmitData += e.length;
@@ -176,7 +185,7 @@ function termInit() {
     term = new Terminal({
         cols: 80,
         rows: 24
-    });
+    }) as typeof term;
 
     // start xterm.js
     term.open(document.getElementById('terminal'), true);
@@ -191,7 +200,7 @@ function termInit() {
 }
 
 // Binds custom listener functions to xtermjs's Terminal object
-function startxtermjs() {
+export function startxtermjs() {
     termInit();
 
     // if we haven't authenticated yet we're doing an interactive login
@@ -290,20 +299,20 @@ function startxtermjs() {
            could be controversial? but putty does this too (each key press shows up twice)
            Instead we're checking the our locally echoed key and replacing it if the
            recieved key !== locally echoed key */
-        return command === null ? null : transport.expect_key(command);
+        return command === null ? null : transport.expect_key(command as string);
     };
 
     term.textarea.onpaste = function(ev) {
-        let text: string | string[];
+        let text: string | string[] | null = null;
 
         // Yay IE11 stuff!
-        if (window.clipboardData && window.clipboardData.getData) {
-            text = window.clipboardData.getData('Text')
+        if ((window as any).clipboardData && (window as any).clipboardData.getData) {
+            text = (window as any).clipboardData.getData('Text')
         } else if (ev.clipboardData && ev.clipboardData.getData) {
             text = ev.clipboardData.getData('text/plain');
         }
 
-        if (text && text.length < 1000000) {
+        if (text != null && text.length < 1000000) {
             if (text.length > 5000) {
                 // If its a long string then chunk it down to reduce load on SSHyClientParceler
                 text = splitSlice(text as string);
@@ -312,7 +321,7 @@ function startxtermjs() {
                 }
                 return;
             }
-            transport.expect_key(text);
+            transport.expect_key(text as string);
         } else {
             alert('Error: Pasting large strings is not permitted.');
         }

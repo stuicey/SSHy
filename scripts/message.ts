@@ -9,8 +9,8 @@
 */
 
 import { BigInteger } from 'jsbn';
-import { deflate_long, inflate_long } from './src/utilities';
-import * as struct from './src/struct';
+import { deflate_long, inflate_long } from './lib/utilities';
+import * as struct from './lib/struct';
 
 export class SSHyClientMessage {
     position: number;
@@ -26,7 +26,7 @@ export class SSHyClientMessage {
         return this.packet;
     }
 
-    get_bytes(n) {
+    get_bytes(n: number) {
         const b = this.packet.substring(this.position, this.position + n);
         this.position += n;
         if (b.length < n && n < 1048576) { // n < 1Mb
@@ -47,7 +47,7 @@ export class SSHyClientMessage {
         return inflate_long(this.get_string());
     }
 
-    add_bytes(d) {
+    add_bytes(d: string) {
         this.packet += d;
         return this;
     }

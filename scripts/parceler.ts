@@ -1,9 +1,9 @@
 import { SSHyClientDefines } from './defines';
 import { SSHyClientTransport } from './transport';
 import { SSHyClientCrypto } from './crypto';
-import { read_rng } from './src/utilities';
-import * as struct from './src/struct';
-import { HMAC } from './src/Hash';
+import { read_rng } from './lib/utilities';
+import * as struct from './lib/struct';
+import { HMAC } from './lib/Hash';
 
 export class SSHyClientParceler {
     encrypting: boolean;
@@ -14,6 +14,7 @@ export class SSHyClientParceler {
     inbound_buffer?: string;
     outbound_sequence_num: number;
     inbound_sequence_num: number;
+    inbound_enc_iv?: string;
     outbound_enc_iv?: string;
     outbound_enc_key?: string;
     outbound_mac_key?: string;

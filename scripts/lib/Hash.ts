@@ -29,7 +29,8 @@ export class SHA1 implements ISSHyClientHash {
         h[f >> 5] |= 128 << 24 - f % 32;
         h[(f + 64 >>> 9 << 4) + 15] = f;
         for (f = 0; f < h.length; f += 16) {
-            for (var m = g, n = c, p = d, q = e, r = k, b = 0; 80 > b; b++) {
+            let m = g, n = c, p = d, q = e, r = k;
+            for (let b = 0; 80 > b; b++) {
                 if (16 > b) a[b] = h[f + b];
                 else {
                     var l = a[b - 3] ^ a[b - 8] ^ a[b - 14] ^ a[b - 16];
@@ -157,8 +158,10 @@ export class SHA256 implements ISSHyClientHash {
 }
 
 export class HMAC {
-    constructor(a, g, SHAVersion) {
+    constructor(a: string, g: string, SHAVersion: string) {
         let b: SHA1 | SHA256, digestmod: SHA1 | SHA256;
+        let f;
+        let c;
         if (SHAVersion == 'SHA-1')
             digestmod = b = SHA1 as any;
         else
