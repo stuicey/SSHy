@@ -1,4 +1,4 @@
-SSHyClient = {
+export const SSHyClientDefines = {
     // Global Defines
     MSG_DISCONNECT: 1,
     MSG_IGNORE: 2,
@@ -42,8 +42,8 @@ SSHyClient = {
     AES_CBC: 2,
     AES_CTR: 6,
 
-	/* Fish Binding */
-	fishFsHintLeave: "\x1b\x5b\x33\x32",
-	/* Bash Binding */
-	bashFsHintLeave: "\x1b\x5d\x30\x3b"
+    /* Fish Binding */
+    fishFsHintLeave: '\x1b\x5b\x33\x32',
+    /* Bash Binding */
+    bashFsHintLeave: '\x1b\x5d\x30\x3b'
 };

@@ -8,61 +8,68 @@
 
 */
 
-SSHyClient.Message = function(content) {
-    this.position = 0;
+import { BigInteger } from 'jsbn';
+import { deflate_long, inflate_long } from './lib/utilities';
+import * as struct from './lib/struct';
 
-    this.packet = content === undefined ? String() : String(content);
-};
+export class SSHyClientMessage {
+    position: number;
+    packet: string;
 
-SSHyClient.Message.prototype = {
-    toString: function() {
+    constructor(content?: string) {
+        this.position = 0;
+
+        this.packet = content === undefined ? String() : String(content);
+    };
+
+    toString() {
         return this.packet;
-    },
+    }
 
-    get_bytes: function(n) {
-        var b = this.packet.substring(this.position, this.position + n);
+    get_bytes(n: number) {
+        const b = this.packet.substring(this.position, this.position + n);
         this.position += n;
         if (b.length < n && n < 1048576) { // n < 1Mb
             return b + new Array(n - b.length + 1).join('\x00');
         }
         return b;
-    },
+    }
 
-    get_int: function() {
-        return struct.unpack('I', this.get_bytes(4))[0];
-    },
+    get_int() {
+        return struct.unpack(this.get_bytes(4))[0];
+    }
 
-    get_string: function() {
+    get_string() {
         return this.get_bytes(this.get_int());
-    },
+    }
 
-    get_mpint: function() {
+    get_mpint(): BigInteger {
         return inflate_long(this.get_string());
-    },
+    }
 
-    add_bytes: function(d) {
+    add_bytes(d: string) {
         this.packet += d;
         return this;
-    },
+    }
 
-    add_boolean: function(b) {
+    add_boolean(b) {
         this.add_bytes(b === true ? '\x01' : '\x00');
         return this;
-    },
+    }
 
-    add_int: function(i) {
-        this.packet += struct.pack('I', i);
+    add_int(i) {
+        this.packet += struct.pack(i);
         return this;
-    },
+    }
 
-    add_mpint: function(d) {
+    add_mpint(d) {
         this.add_string(deflate_long(d));
         return this;
-    },
+    }
 
-    add_string: function(d) {
+    add_string(d) {
         this.add_int(d.length);
         this.packet += d;
         return this;
     }
-};
+}
