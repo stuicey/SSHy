@@ -159,7 +159,7 @@ SSHyClient.settings.prototype = {
 
         // Interact with xtermjs
         if (term) {
-        	term._setTheme(themeColors)
+        	term.setOption('theme',themeColors)
 		}
 
         // Remove the old CSS rules if its a custom theme
@@ -248,7 +248,7 @@ SSHyClient.settings.prototype = {
         
         document.getElementById("currentFontSize").innerHTML = transport.settings.fontSize + 'px'; 
         // Recalculate rows/cols
-        term.fit()
+        fitAddon.fit()
         transport.auth.mod_pty('window-change', term.cols, term.rows); 
     }, 
     // Sets the terminal size where id= 0-> cols ; 1-> rows 
@@ -287,3 +287,4 @@ SSHyClient.settings.prototype = {
         element.innerHTML = value;
     }
 };
+
