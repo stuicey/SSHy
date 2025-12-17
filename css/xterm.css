@@ -1,49 +1,41 @@
 /**
-* xterm.js: xterm, in the browser
-* Copyright (c) 2014-2016, SourceLair Private Company (www.sourcelair.com (MIT License)
-* Copyright (c) 2012-2013, Christopher Jeffrey (MIT License)
-* https://github.com/chjj/term.js
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in
-* all copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-* THE SOFTWARE.
-*
-* Originally forked from (with the author's permission):
-*   Fabrice Bellard's javascript vt100 for jslinux:
-*   http://bellard.org/jslinux/
-*   Copyright (c) 2011 Fabrice Bellard
-*   The original design remains. The terminal itself
-*   has been extended to include xterm CSI codes, among
-*   other features.
-*/
+ * Copyright (c) 2014 The xterm.js authors. All rights reserved.
+ * Copyright (c) 2012-2013, Christopher Jeffrey (MIT License)
+ * https://github.com/chjj/term.js
+ * @license MIT
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * Originally forked from (with the author's permission):
+ *   Fabrice Bellard's javascript vt100 for jslinux:
+ *   http://bellard.org/jslinux/
+ *   Copyright (c) 2011 Fabrice Bellard
+ *   The original design remains. The terminal itself
+ *   has been extended to include xterm CSI codes, among
+ *   other features.
+ */
 
-html, body { 
-    overflow: hidden;
-    overflow: -moz-scrollbars-none;
-    -ms-overflow-style: none;
-    background-color: #000;
-}
-
-::-webkit-scrollbar {
-    display: none
-}
+/**
+ *  Default styles for xterm.js
+ */
 
 .xterm {
-    font-family: courier-new, courier, monospace;
     font-feature-settings: "liga" 0;
     position: relative;
     user-select: none;
@@ -63,21 +55,21 @@ html, body {
      * The z-index of the helpers must be higher than the canvases in order for
      * IMEs to appear on top.
      */
-    z-index: 10;
+    z-index: 5;
 }
 
 .xterm .xterm-helper-textarea {
-    /*
-     * HACK: to fix IE's blinking cursor
-     * Move textarea out of the screen to the far left, so that the cursor is not visible.
-     */
+    padding: 0;
+    border: 0;
+    margin: 0;
+    /* Move textarea out of the screen to the far left, so that the cursor is not visible */
     position: absolute;
     opacity: 0;
     left: -9999em;
     top: 0;
     width: 0;
     height: 0;
-    z-index: -10;
+    z-index: -5;
     /** Prevent wrapping so the IME appears against the textarea at the correct position */
     white-space: nowrap;
     overflow: hidden;
@@ -108,8 +100,6 @@ html, body {
     left: 0;
     top: 0;
     bottom: 0;
-
-    overflow: -moz-scrollbars-none;
 }
 
 .xterm .xterm-screen {
@@ -126,11 +116,17 @@ html, body {
     visibility: hidden;
 }
 
-.xterm .xterm-char-measure-element {
+.xterm-char-measure-element {
     display: inline-block;
     visibility: hidden;
     position: absolute;
+    top: 0;
     left: -9999em;
+    line-height: normal;
+}
+
+.xterm {
+    cursor: text;
 }
 
 .xterm.enable-mouse-events {
@@ -138,230 +134,38 @@ html, body {
     cursor: default;
 }
 
-.xterm:not(.enable-mouse-events) {
-    cursor: text;
-}
-
-.sidenav {
-    height: 100%;
-    width: 0;
-    position: fixed;
-    z-index: 3;
-    top: 0;
-    right: -1px;
-    background-color: #000;
-    border-left: 1px solid #444;
-    overflow-x: hidden;
-    padding-top: 60px;
-    transition: .5s;
-    font-family: courier-new,courier,monospace;
-    font-size: 20px;
-    color: #818181;
-    opacity: .4
-}
-
-.sidenav:hover {
-    opacity: 1
-}
-
-.sidenav a {
-    text-decoration: none;
-    color: #818181;
-    transition: .3s;
-    padding: 8px 8px 8px 32px;
-    overflow-y: hidden;
-}
-
-.sidenav .leftarrow {
-    float: left;
-    font-size: 12px;
-    padding: 2px 0 0 25px
-}
-
-.sidenav .netTraffic .leftarrow {
-	padding-left: 25px;
-	color: #4e9a06;
-}
-
-.sidenav .rightarrow {
-    float: right;
-    font-size: 12px;
-    padding: 2px 25px 0 0
-}
-
-.sidenav .netTraffic .rightarrow{
-	padding-right: 35px;
-	color: #c4a000;
-}
-
-.sidenav .middle {
-    padding: 0;
-    text-align: center;
-    width: 150px;
-    font-size: 18px;
-    display: inline-block
-}
-
-.sidenav .title {
-    width: 240px;
-    text-align: center;
-    display: block
-}
-
-.sidenav .title.large {
-    font-size: 22px;
-    font-weight: 700
-}
-
-.sidenav hr {
-    background-color: #424242;
-    height: 1px;
-    border: 0
-}
-
-.offcanvas a:focus,.sidenav a:hover {
-    color: #f1f1f1
-}
-
-.sidenav .closebtn {
-    position: absolute;
-    top: -8px;
-    right: 0;
-    font-size: 36px;
-    margin-left: 50px
-}
-
-#main {
-    transition: margin-left .5s;
-    padding: 20px
-}
-
-@media screen and (max-height:450px) {
-    .sidenav {
-        padding-top: 15px
-    }
-
-    .sidenav a {
-        font-size: 18px
-    }
-}
-
-span.gear {
-    position: absolute;
-    top: 0;
-    z-index: 1;
-    right: 5px;
-    color: #ddd;
-    font-size: 28px;
-    opacity: .5;
-    transition: 1s
-}
-
-span.gear:hover {
-    text-shadow: 0 0 2px #fff;
-    opacity: 1
-}
-
-.fileUpload {
-    position: relative;
-    overflow: visible;
-    margin: 10px
-}
-
-.fileUpload.nomargin {
-    margin: 0 0 0 45px;
-    position: absolute
-}
-
-.fileUpload input.upload {
-    position: absolute;
-    top: 0;
-    right: 0;
-    margin: 0;
-    padding: 0;
-    font-size: 20px;
+.xterm.xterm-cursor-pointer {
     cursor: pointer;
-    opacity: 0;
-    filter: alpha(opacity=0)
 }
 
-span.tooltiptext {
-    width: 175px;
-    background-color: #333;
-    height: 10px;
-    text-align: center;
-    padding: 0 0 10px;
-    margin-left: 25px;
-    font-size: 15px;
-    border-radius: 6px;
+.xterm.column-select.focus {
+    /* Column selection mode */
+    cursor: crosshair;
+}
+
+.xterm .xterm-accessibility,
+.xterm .xterm-message {
     position: absolute;
-    top: 25px;
-    opacity: 0;
-    transition: opacity .5s linear
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 10;
+    color: transparent;
 }
 
-.fileUpload:hover .tooltiptext {
-    opacity: 1
+.xterm .live-region {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
 }
 
-.fileUpload.nomargin .tooltiptext {
-    margin-left: -8px
+.xterm-dim {
+    opacity: 0.5;
 }
 
-input[type=number] {
-    border: 0;
-    border-bottom: solid 2px #888;
-    margin-left: 15px;
-    width: 40px;
-    transition: border .3s;
-    background: 0 0;
-    color: #818181;
-    text-align: center;
-    outline: 0;
-    -moz-appearance: textfield
-}
-
-input[type=number].large {
-    margin-left: 50px
-}
-
-.fileUpload:hover input[type=number] {
-    border-bottom: solid 2px #aaa
-}
-
-.sidenav input[type=text] {
-    border: 0;
-    border-bottom: solid 2px #888;
-    margin-left: 20px;
-    width: 180px;
-    transition: border .3s;
-    background: 0 0;
-    color: #818181;
-    text-align: center;
-    outline: 0;
-    font-family: courier-new, courier, monospace;
-    font-size: 12px
-}
-
-.fileUpload:hover input[type=text] {
-    border-bottom: solid 2px #aaa
-}
-
-input::-webkit-inner-spin-button,input::-webkit-outer-spin-button {
-    -webkit-appearance: none
-}
-
-.hostKeyImg {
-	width: 235px;
-	font-size: 14px;
-	white-space: pre;
-	text-align: center;
-	display: block;
-    font-family: monospace !important;
-    height: 320px;
-}
-
-.footer {
-    position: relative;
-    bottom: 80px;
+.xterm-underline {
+    text-decoration: underline;
 }

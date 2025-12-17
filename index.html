@@ -7,10 +7,12 @@
 
 	<script type="text/javascript">
 		var wsproxyURL = "localhost"
+                var wsproxyEncoding = "base64"
 		var wsproxyPorts = {"ws":5999, "wss":6001}
 		var wsproxyProto = "ws"
 		
 		var ws, transport, settings, term = null;
+                var fitAddon = null;
 
 		// Test IE 11
 		if (window.msCrypto){
@@ -29,25 +31,45 @@
 		var resizeInterval
 	</script>
 
-	<link rel="stylesheet" href="css/xterm.css" async/>
-	<link rel="stylesheet" href="css/main.css" async/>
-	<link rel="stylesheet" href="css/fonts.css" async/>
+	<link rel="stylesheet" href="css/xterm.css" />
+	<link rel="stylesheet" href="css/main.css" />
+	<link rel="stylesheet" href="css/fonts.css" />
 
 	<!-- Cryptography & Terminal Libraries -->
 	<script type="text/javascript" src="js/combinedLibs.comb.js" async></script>
 
 	<script type="text/javascript">
+              // Really struggling to encode string as a binary array buffer
+              // this technique seems to work, but why!
+              // Adapted from the following
+              // https://stackoverflow.com/questions/6965107/converting-between-strings-and-arraybuffers
+              // https://developers.google.com/web/updates/2012/06/How-to-convert-ArrayBuffer-to-and-from-String
+              //
+              function ab2str(buf) {
+                return String.fromCharCode.apply(null, new Uint8Array(buf));
+              }
+              
+              function str2ab(str) {
+                var buf = new ArrayBuffer(str.length*1); // 2 bytes for each char
+                var bufView = new Uint8Array(buf);
+                for (var i=0, strLen=str.length; i<strLen; i++) {
+                  bufView[i] = str.charCodeAt(i);
+                }
+                return buf;
+              }
+              function setProxyEncoding(en) {
+                wsproxyEncoding = en;
+              }
+
 		window.onload = function() {
 			document.getElementById('login_cred').style.display = "block";
 			// Sets the default colorScheme to material
 			settings = new SSHyClient.settings();
 			settings.setColorScheme(1);
 
-			// Apply fit addon
-			fit.apply(Terminal)
-
 			// Build the default wsProxy URL for display on sidenav
 			buildWSProxyURL()
+                        setProxyEncoding('binary');
 
 			// Connect upon hitting Enter from the password field
 			document.getElementById("password").addEventListener("keyup", function(event) {
@@ -65,9 +87,15 @@
 
 		// Recalculates the terminal Columns / Rows and sends new size to SSH server + xtermjs
 		function resize() {
-			if (term) {
-				term.fit()
-			}
+                  if (term) {
+                      // Calculate best rows and columns for the div
+                      fitAddon.fit();
+                      // Let the SSH session know the new size
+                      transport.auth.mod_pty('window-change', term.cols, term.rows);
+                      // Update the side panel
+                      document.getElementById('termCols').value = term.cols;
+                      document.getElementById('termRows').value = term.rows;
+                    }
 		}
 
 		// Build the entire websocket url eg (wss://localhost:5999/) based on http protocol
@@ -193,6 +221,11 @@
 			var termUsername = document.getElementById('username').value
 			var termPassword = document.getElementById('password').value
 
+                    if (wsproxyEncoding == 'binary') {
+                    } else {
+                      wsproxyEncoding = 'base64';
+                    }
+                
 			// find the port number
 			if (html_ipaddress.includes(':')) {
 				var split = html_ipaddress.split(':')
@@ -220,7 +253,13 @@
 			document.title = "SSHy Client";
 			// Opens the websocket!
 			wsproxyURL += html_ipaddress + ':' + html_port
-			ws = new WebSocket(wsproxyURL , 'base64');
+
+                        if (wsproxyEncoding == 'binary') {
+                          ws = new WebSocket(wsproxyURL);
+                          ws.binaryType = "arraybuffer";
+                        } else {
+                          ws = new WebSocket(wsproxyURL, 'base64');
+                        }
 
 			// Sets up websocket listeners
 			ws.onopen = function(e) {
@@ -232,7 +271,13 @@
 			// Send all recieved messages to SSHyClient.Transport.handle()
 			ws.onmessage = function(e) {
 				// Convert the recieved data from base64 to a string
-				transport.parceler.handle(atob(e.data));
+                                if (wsproxyEncoding == 'binary') {
+                                  // ArrayBuffer to String
+                                  transport.parceler.handle(ab2str(e.data));
+                                } else {
+                                  // Convert the recieved data from base64 to a string
+                                  transport.parceler.handle(atob(e.data));
+                                }
 			};
 			// Whenever the websocket is closed make sure to display an error if appropriate
 			ws.onclose = function(e) {
@@ -257,10 +302,16 @@
 			};
 			// Just a little abstraction from ws.send
 			ws.sendB64 = function(e){
-				this.send(btoa(e));
+                             if (wsproxyEncoding == 'binary') {
+                               this.send(str2ab(e));
 
+                               transport.parceler.transmitData += e.length;
+                               transport.settings.setNetTraffic(transport.parceler.transmitData, false);
+                             } else {
+				this.send(btoa(e));
 				transport.parceler.transmitData += e.length;
 				settings.setNetTraffic(transport.parceler.transmitData, false);
+                             }
 			};
 
 			// Set the sidenav websocket proxy color to green
@@ -271,13 +322,16 @@
 		function termInit() {
 			// Define the terminal rows/cols
 			term = new Terminal({
-				cols: 80,
-				rows: 24
+				//cols: 80,
+				//rows: 24
 			});
 			
 			// start xterm.js
 			term.open(document.getElementById('terminal'), true);
-			term.fit()
+    			fitAddon = new FitAddon();
+    			term.loadAddon(fitAddon);
+
+			fitAddon.fit()
 			term.focus()
 
 			// set the color scheme to whatever the user's changed it to in the mean time
@@ -297,88 +351,66 @@
 		function startxtermjs() {
 			termInit();
 
-			// sets up some listeners for the terminal (keydown, paste)
-			term.textarea.onkeydown = function(e) {
-				// Sanity Checks
-				if (!ws || !transport || transport.auth.failedAttempts >= 5 || transport.auth.awaitingAuthentication) {
-					return;
-				}
+    // sets up some listeners for the terminal (keydown, paste)
+    term.onData((data) => {
+      if (!ws || !transport || !transport.auth.authenticated) {
+        // If no connection dont send, and unauthenticated connections handled
+        // elsewhere
+        return;
+      }
+      if (data.length > 5000) {
+        // Apparently long strings kill SSHyClient.parceler, although it is
+        // probably best to sort that there rather than here...
+        var blocks;
+        blocks = splitSlice(data);
+        //console.log("ondata length ",blocks.length);
+        for (var i = 0; i < blocks.length; i++) {
+            //console.log("ondata block ",i,blocks[i].charCodeAt(0))
+            transport.expect_key(blocks[i]);
+        }
+      } else {
+        //console.log("ondata ",data.charCodeAt(0), data.substr(1))
+        transport.expect_key(data);
+      }
+    });
 
-				// So we don't spam single control characters
-				if (e.key.length > 1 && (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) && e.key != "Backspace") {
-					return;
-				}
+ term.attachCustomKeyEventHandler(e=> {
+                // Sanity Checks
+        if (e.type != 'keydown') {return;}
 
-				// We've already authenticated so now any keypress is a command for the SSH server
-				var command, pressedKey;
+        // If websocket is closed, ran out of attempts to authenticate, or just
+        // waiting to confirm the username and password, dont forward keys
+        if (!ws || !transport || transport.auth.failedAttempts >= 5 || transport.auth.awaitingAuthentication) {
+          return false;
+        }
+        var pressedKey
+        /** IE isn't very good so it displays one character keys as full names in .key
+                EG - e.key = " " to e.key = "Spacebar"
+                so assuming .char is one character we'll use that instead **/
+        if (e.char && e.char.length == 1) {
+          pressedKey = e.char;
+        } else {
+          pressedKey = e.key
+        }
 
-				/** IE isn't very good so it displays one character keys as full names in .key 
-			 	EG - e.key = " " to e.key = "Spacebar"	
-			 	so assuming .char is one character we'll use that instead **/
-				if (e.char && e.char.length == 1) {
-					pressedKey = e.char;
-				} else { 
-					pressedKey = e.key
-				}
+        if (pressedKey.length == 1 && (e.shiftKey && e.ctrlKey)) {
+            // allows ctrl + shift + v for pasting
+            // and dont forward those keys to the terminal
+            if (e.key == 'V') {
+               return false;
+            }
+        }
 
-				// Decides if the keypress is an alphanumeric character or needs escaping
-				if (pressedKey.length == 1 && (!(e.altKey || e.ctrlKey || e.metaKey) || (e.altKey && e.ctrlKey))) {
-					command = pressedKey;
-				} else if (pressedKey.length == 1 && (e.shiftKey && e.ctrlKey)) {
-					// allows ctrl + shift + v for pasting
-					if (pressedKey != 'V') {
-						e.preventDefault();
-						return;
-					}
-				} else {
-					//xtermjs is kind enough to evaluate our special characters instead of having to translate every char ourself
-					command = term._evaluateKeyEscapeSequence(e).key;
-				}
+        return;
+    });
 
-				// Decide if we're going to locally' echo this key or not
-				if (settings.localEcho) {
-					settings.parseKey(e);
-				}
-				/* Regardless of local echo we still want a reply to confirm / update terminal
-				   could be controversial? but putty does this too (each key press shows up twice)
-				   Instead we're checking the our locally echoed key and replacing it if the
-				   recieved key !== locally echoed key */
-				return command === null ? null : transport.expect_key(command);
-			};
 
-			term.textarea.onpaste = function(ev) {
-				var text 
-
-				// Yay IE11 stuff!
-				if ( window.clipboardData && window.clipboardData.getData ) {
-					text = window.clipboardData.getData('Text')
-				} else if ( ev.clipboardData && ev.clipboardData.getData ) {
-					text = ev.clipboardData.getData('text/plain');
-				}
-						
-		        if (text) {
-					// Just don't allow more than 1 million characters to be pasted.
-					if(text.length < 1000000){
-				        if (text.length > 5000) {
-							// If its a long string then chunk it down to reduce load on SSHyClient.parceler
-				            text = splitSlice(text);
-				            for (var i = 0; i < text.length; i++) {
-				                transport.expect_key(text[i]);
-				            }
-				            return;
-				        }
-				        transport.expect_key(text);
-				    } else {
-						alert('Error: Pasting large strings is not permitted.');
-					}
-				}
-		    };
 		}
 	</script>
 </head>
 
 <body>
-	<div id="terminal"></div>
+	<div id="terminal" style="height:100%;"></div>
 	<div id="settingsNav" class="sidenav" style="width:0;">
 		<a href="javascript:;" class="closebtn" onclick="toggleNav(0)">&times;</a>
 		<span class="title large">Terminal Options</span>

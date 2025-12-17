@@ -71,8 +71,13 @@ SSHyClient.parceler.prototype = {
 
 		/* If we don't have a remote_version then send our version and set the remote_version */
 		if (!this.transport.remote_version) {
-			this.transport.handler_table[0](this.transport, r);
-			return;
+  			var end = r.indexOf('\r\n');
+  			if (end != -1) {
+    			var rv = r.slice(0, end+2);
+    			this.transport.handler_table[0](this.transport, rv);
+    			r = r.slice(end+2);
+  			} // else that would be bad and probably we should die here
+  			if (r.length<=0) { return; }
 		}
 
 		this.inbound_buffer += r;

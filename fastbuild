@@ -1,0 +1,50 @@
+#
+# for development reasons I didnt want a minimised set of files to debug,
+# so this little script builds the libraries in a fast and unobscure way.
+# Does not minify or need a java closure compiler.
+
+rm -f js/combinedJS.comb.js
+
+cat \
+js/defines.js \
+js/src/BigInteger.min.js \
+js/src/Hash.min.js \
+js/src/aes.min.js \
+js/src/randomart.js \
+js/src/struct.min.js \
+js/src/utilities.min.js \
+js/dhKex.js \
+js/transport.js \
+js/src/xterm-addon-fit.js \
+js/auth_handler.js \
+js/crypto.js \
+js/message.js \
+js/parceler.js \
+js/rsaKey.js \
+js/src/xterm.js \
+js/settings.js \
+js/SSHyClient.js \
+>> js/combinedJS.comb.js
+
+rm -f js/combinedLibs.comb.js
+
+cat \
+js/defines.js \
+js/src/BigInteger.min.js \
+js/src/Hash.min.js \
+js/src/aes.min.js \
+js/src/randomart.js \
+js/src/struct.min.js \
+js/src/utilities.min.js \
+js/dhKex.js \
+js/transport.js \
+js/src/xterm-addon-fit.js \
+js/auth_handler.js \
+js/crypto.js \
+js/message.js \
+js/parceler.js \
+js/rsaKey.js \
+js/src/xterm.js \
+js/settings.js \
+>> js/combinedLibs.comb.js
+
